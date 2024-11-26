@@ -1,0 +1,15 @@
+[submodule "submodules/luau"]
+	path = submodules/luau
+	url = git@github.com:luau-lang/luau.git
+[submodule "submodules/raylib"]
+	path = submodules/raylib
+	url = git@github.com:raysan5/raylib.git
+[submodule "submodules/raylib-cpp"]
+	path = submodules/raylib-cpp
+	url = git@github.com:RobLoach/raylib-cpp.git
+[submodule "submodules/nlohmann-json"]
+	path = submodules/nlohmann-json
+	url = git@github.com:nlohmann/json.git
+[submodule "submodules/imgui"]
+	path = submodules/imgui
+	url = git@github.com:ocornut/imgui.git
