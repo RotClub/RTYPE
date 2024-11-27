@@ -69,7 +69,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: "./package/r-type_client"
+          asset_path: "./r-type_client"
           asset_name: "r-type"
           asset_content_type: application/octet-stream
 
@@ -79,7 +79,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: "./package/r-type_server"
+          asset_path: "./r-type_server"
           asset_name: "r-type_server"
           asset_content_type: application/octet-stream
 
@@ -89,7 +89,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: "./package/r-type_engine.so"
+          asset_path: "./r-type_engine.so"
           asset_name: "r-type_engine.so"
           asset_content_type: application/octet-stream
 
