@@ -19,13 +19,13 @@ fi
 
 if [ "$1" = "release" ] || [ -z "$DISPLAY" ]; then
     echo "Building as release"
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -B cmake_build .
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -B cmake-build-release .
 elif [ "$1" = "profile" ]; then
     echo "Building as profile"
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -B cmake_build .
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -B cmake-build-relwithdebinfo .
 else
     echo "Building as debug"
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -B cmake_build ..
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -B cmake-build-debug ..
 fi
 
 # Build
