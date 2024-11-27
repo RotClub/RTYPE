@@ -1,0 +1,114 @@
+name: CMake - Build & Publish release
+on:
+  push:
+    tags:
+      - '*.*.*.rc'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-cmake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up CMake
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc cmake libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
+
+      - name: Build Project targets
+        run: ./build.sh release
+
+      - name: Move targets to package folder
+        run: |
+          mkdir -p package
+          mv r-type_server package/
+          mv r-type_client package/
+          mv r-type_engine.so package/
+
+      - name: Upload Cmake package folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmakePackage
+          path: "./package"
+          retention-days: 1
+          if-no-files-found: 'error'
+
+  publish:
+    needs: [build-cmake]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download CMake Package
+        uses: actions/download-artifact@v4
+        with:
+          name: cmakePackage
+
+      - name: Extract tag name
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: Production ${{ env.TAG_NAME }}
+          prerelease: false
+          draft: false
+
+      - name: Upload Client to Pre Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: "./r-type_client"
+          asset_name: "r-type"
+          asset_content_type: application/octet-stream
+
+      - name: Upload Server to Pre Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: "./r-type_server"
+          asset_name: "r-type_server"
+          asset_content_type: application/octet-stream
+
+      - name: Upload Server to Pre Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: "./r-type_engine.so"
+          asset_name: "r-type_engine.so"
+          asset_content_type: application/octet-stream
+
+  check-tag:
+    needs: [publish]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract tag name
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Delete tag
+        run: |
+          git fetch --tags
+          git tag -d $TAG_NAME
+          git push origin --delete $TAG_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
