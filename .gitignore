@@ -1,0 +1,6 @@
+.idea
+.vscode
+cmake_build
+r-type_client
+r-type_engine.so
+r-type_server
