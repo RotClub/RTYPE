@@ -19,18 +19,24 @@ fi
 
 if [ "$1" = "release" ] || [ -z "$DISPLAY" ]; then
     echo "Building as release"
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -B cmake-build-release .
+    DCMAKE_BUILD_TYPE=Release
+    BUILD_FOLDER=cmake-build-release
 elif [ "$1" = "profile" ]; then
     echo "Building as profile"
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -B cmake-build-relwithdebinfo .
+    DCMAKE_BUILD_TYPE=RelWithDebInfo
+    BUILD_FOLDER=cmake-build-relwithdebinfo
 else
     echo "Building as debug"
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -B cmake-build-debug ..
+    DCMAKE_BUILD_TYPE=Debug
+    BUILD_FOLDER=cmake-build-debug
 fi
+
+# Configure
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="$DCMAKE_BUILD_TYPE" -B "$BUILD_FOLDER" .
 
 # Build
 if [ -n "$TARGET" ]; then
-  cmake --build .build --target r-type_"$TARGET" -j $(nproc)
+  cmake --build "$BUILD_FOLDER" --target r-type_"$TARGET" -j $(nproc)
 else
-  cmake --build .build -j $(nproc)
+  cmake --build "$BUILD_FOLDER" -j $(nproc)
 fi
