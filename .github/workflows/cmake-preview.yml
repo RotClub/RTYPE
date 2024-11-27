@@ -19,7 +19,7 @@ jobs:
       - name: Set up CMake
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc cmake libxrandr-dev libxinerama-dev
+          sudo apt-get install -y gcc cmake libxrandr-dev libxinerama-dev libxcursor-dev
 
       - name: Build Project targets
         run: ./build.sh debug
