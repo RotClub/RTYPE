@@ -37,7 +37,7 @@ add_subdirectory("./submodules/raylib")
 add_subdirectory("./submodules/raylib-cpp")
 
 # Linking
-target_link_libraries(${PROJECT_NAME}_engine PRIVATE
+target_link_libraries(${PROJECT_NAME}_engine PUBLIC
         ${NLOHMANN_JSON_TARGET_NAME}
         raylib
         raylib_cpp
