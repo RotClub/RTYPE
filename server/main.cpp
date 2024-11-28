@@ -1,7 +1,15 @@
-//
-// Created by Yanis Moyon on 26/11/2024.
-//
+/*
+** EPITECH PROJECT, 2024
+** RTYPE
+** File description:
+** main
+*/
 
-int main(void) {
-  return 0;
+#include "Engine.hpp"
+
+int main(int argc, char **argv)
+{
+    Engine engine = Engine::GetInstance();
+    engine.Log(Engine::LogLevel::INFO, "Hello, World!");
+    return 0;
 }
