@@ -14,6 +14,7 @@
     #include "lualib.h"
     #include "luacode.h"
     #include <queue>
+    #include <string>
     #include <filesystem>
 
     #define MAX_LOGS 50
@@ -47,7 +48,7 @@ class Engine {
         void execute() const;
 
         Node *root;
-        std::queue<const log_t> logQueue;
+        std::queue<log_t> logQueue;
 
     private:
         Engine();

@@ -9,6 +9,8 @@
     #define NODE_HPP_
 
     #include <vector>
+    #include <string>
+    #include <stdexcept>
     #include "../Types.hpp"
 
 class Node {
