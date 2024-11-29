@@ -18,6 +18,8 @@
 
     #define MAX_LOGS 50
 
+    #define LUA_PATH "/lua"
+
 class Engine {
     public:
         Engine(Engine &other) = delete;

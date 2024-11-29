@@ -70,7 +70,8 @@ std::string Engine::_getLogLevelString(const LogLevel level)
 
 std::string Engine::_getFileContents(const std::string &filename)
 {
-    std::filesystem::path filePath = gamePath / filename;
+    const std::filesystem::path filePath = gamePath / LUA_PATH / filename;
+    std::cout << filePath << std::endl;
     if (!std::filesystem::exists(filePath)) {
         Log(LogLevel::ERROR, "File " + filename + " does not exist");
         return "";
