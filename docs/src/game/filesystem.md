@@ -18,7 +18,7 @@ The manifest file is used for the server to know the presence of a valid game an
     "name": "string",
     "description": "string",
     "max_players": 4,
-    "developers": ["string", "string"],
+    "authors": ["string", "string"],
     "version": 1.0
 }
 ```
