@@ -9,19 +9,25 @@
     #define ENGINE_HPP_
 
     #include "Nodes/Node.hpp"
+    #include "lua.h"
+    #include "luaconf.h"
+    #include "lualib.h"
+    #include "luacode.h"
     #include <queue>
-    #include <utility>
-    #include <chrono>
-    #include <ctime>
+    #include <string>
+    #include <filesystem>
 
     #define MAX_LOGS 50
 
+    #define LUA_PATH "/lua"
+
 class Engine {
     public:
-        Engine();
+        Engine(Engine &other) = delete;
+        void operator=(const Engine &) = delete;
         ~Engine();
 
-        static const Engine &GetInstance();
+        static Engine &GetInstance();
 
         enum class LogLevel {
             INFO,
@@ -35,14 +41,23 @@ class Engine {
             const std::string &message;
         } log_t;
 
-        void Log(const LogLevel level, const std::string &message);
+        void Log(LogLevel level, const std::string &message);
         void ClearLogs();
 
+        bool LoadLuaFile(const std::string &filename);
+        void execute() const;
+
         Node *root;
-        std::queue<const log_t> logQueue;
+        std::queue<log_t> logQueue;
 
     private:
-        std::string _getLogLevelString(const LogLevel level);
+        Engine();
+        static Engine *_instance;
+
+        static std::string _getLogLevelString(LogLevel level);
+        std::string _getFileContents(const std::string &filename);
+        lua_State *L;
+        std::filesystem::path gamePath;
 };
 
 #endif /* !ENGINE_HPP_ */

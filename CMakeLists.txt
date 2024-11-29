@@ -30,6 +30,8 @@ add_executable(${PROJECT_NAME}_client ${SERVER_SRC})
 # Libraries
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(LUAU_BUILD_TESTS OFF)
 find_package(Threads REQUIRED)
 add_subdirectory("./submodules/nlohmann-json")
 add_subdirectory("./submodules/luau")
@@ -37,7 +39,7 @@ add_subdirectory("./submodules/raylib")
 add_subdirectory("./submodules/raylib-cpp")
 
 # Linking
-target_link_libraries(${PROJECT_NAME}_engine PRIVATE
+target_link_libraries(${PROJECT_NAME}_engine PUBLIC
         ${NLOHMANN_JSON_TARGET_NAME}
         raylib
         raylib_cpp
