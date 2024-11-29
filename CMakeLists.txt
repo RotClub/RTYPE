@@ -30,6 +30,8 @@ add_executable(${PROJECT_NAME}_client ${SERVER_SRC})
 # Libraries
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(LUAU_BUILD_TESTS OFF)
 find_package(Threads REQUIRED)
 add_subdirectory("./submodules/nlohmann-json")
 add_subdirectory("./submodules/luau")
