@@ -8,6 +8,10 @@
 #include "Client.hpp"
 
 int main(void) {
-    Client *client = Client::InitiateInstance("127.0.0.1", 5000);
+    Client &client = Client::InitiateInstance("127.0.0.1", 5000);
+    Engine &engine = Engine::GetInstance();
+    engine.Log(Engine::LogLevel::INFO, "Client started");
+    engine.Log(Engine::LogLevel::INFO, "IP: " + client.getIp());
+    engine.Log(Engine::LogLevel::INFO, "Port: " + std::to_string(client.getPort()));
     return 0;
 }

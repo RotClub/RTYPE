@@ -25,7 +25,7 @@ include_directories(server)
 # Executables
 add_library(${PROJECT_NAME}_engine SHARED ${COMMON_SRC})
 add_executable(${PROJECT_NAME}_server ${SERVER_SRC})
-add_executable(${PROJECT_NAME}_client ${SERVER_SRC})
+add_executable(${PROJECT_NAME}_client ${CLIENT_SRC})
 
 # Libraries
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)

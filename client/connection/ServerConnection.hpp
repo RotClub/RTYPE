@@ -9,7 +9,7 @@
     #define SERVERCONNECTION_HPP_
 
     #include "Defines.hpp"
-    #include "SafeQueue.hpp"
+    #include "connection/SafeQueue.hpp"
 
     #include <string>
     #include <thread>

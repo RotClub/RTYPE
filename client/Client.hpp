@@ -16,8 +16,8 @@
             Client(Client const &) = delete;
             void operator=(Client const &) = delete;
 
-            static Client *InitiateInstance(std::string ip, int port);
-            static Client *GetInstance();
+            static Client &InitiateInstance(std::string ip, int port);
+            static Client &GetInstance();
 
             std::string getIp() const;
             int getPort() const;

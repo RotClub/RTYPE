@@ -9,24 +9,32 @@
 
 Client *Client::_instance = nullptr;
 
-Client *Client::InitiateInstance(std::string ip, int port)
+Client &Client::InitiateInstance(std::string ip, int port)
 {
     if (_instance != nullptr)
-        return nullptr;
+        return Client::GetInstance();
     _instance = new Client(ip, port);
-    return _instance;
+    return *_instance;
 }
 
-Client *Client::GetInstance()
+Client &Client::GetInstance()
 {
     if (_instance == nullptr)
-        return nullptr;
-    return _instance;
+        throw std::runtime_error("Instance not initiated");
+    return *_instance;
 }
 
 Client::Client(std::string ip, int port)
 {
     _ip = ip;
     _port = port;
+}
+
+std::string Client::getIp() const {
+    return _ip;
+}
+
+int Client::getPort() const {
+    return _port;
 }
 
