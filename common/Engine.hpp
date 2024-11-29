@@ -13,12 +13,13 @@
     #include "luaconf.h"
     #include "lualib.h"
     #include "luacode.h"
+    #include "Lua/lua.hpp"
     #include <queue>
     #include <filesystem>
 
     #define MAX_LOGS 50
 
-    #define LUA_PATH "/lua"
+    #define LUA_PATH "lua/"
 
 class Engine {
     public:
@@ -43,8 +44,9 @@ class Engine {
         void Log(LogLevel level, const std::string &message);
         void ClearLogs();
 
+        std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
-        void execute() const;
+        void execute();
 
         Node *root;
         std::queue<const log_t> logQueue;
@@ -54,7 +56,6 @@ class Engine {
         static Engine *_instance;
 
         static std::string _getLogLevelString(LogLevel level);
-        std::string _getFileContents(const std::string &filename);
         lua_State *L;
         std::filesystem::path gamePath;
 };

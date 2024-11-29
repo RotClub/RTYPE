@@ -11,17 +11,17 @@
 #include <iostream>
 #include <fstream>
 
-#include "../submodules/luau/VM/src/lvm.h"
-
 Engine::Engine()
     : root(nullptr), L(luaL_newstate()), gamePath("games/rtype")
 {
     luaL_openlibs(L);
+    luau_ExposeFunctions(L);
+    luaL_sandbox(L);
 }
 
 Engine::~Engine()
 {
-    // lua_close(L);
+    lua_close(L);
     ClearLogs();
 }
 
@@ -68,10 +68,9 @@ std::string Engine::_getLogLevelString(const LogLevel level)
     return "UNKNOWN";
 }
 
-std::string Engine::_getFileContents(const std::string &filename)
+std::string Engine::GetLuaFileContents(const std::string &filename)
 {
     const std::filesystem::path filePath = gamePath / LUA_PATH / filename;
-    std::cout << filePath << std::endl;
     if (!std::filesystem::exists(filePath)) {
         Log(LogLevel::ERROR, "File " + filename + " does not exist");
         return "";
@@ -92,7 +91,7 @@ std::string Engine::_getFileContents(const std::string &filename)
 
 bool Engine::LoadLuaFile(const std::string &filename)
 {
-    std::string source = _getFileContents(filename);
+    std::string source = GetLuaFileContents(filename);
     if (source.empty())
         return false;
     size_t bytecodeSize = 0;
@@ -106,7 +105,10 @@ bool Engine::LoadLuaFile(const std::string &filename)
     return true;
 }
 
-void Engine::execute() const
+void Engine::execute()
 {
-    lua_pcall(L, 0, 0, 0);
+    luaL_sandboxthread(L);
+    if (lua_pcall(L, 0, LUA_MULTRET, 0) != 0) {
+        Log(LogLevel::ERROR, lua_tostring(L, -1));
+    }
 }
