@@ -143,6 +143,20 @@ static void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *function
     lua_setglobal(L, name);
 }
 
+void luau_ExposeConstants(lua_State *L, Types::VMState state)
+{
+    lua_pushinteger(L, state == Types::VMState::CLIENT);
+    lua_setglobal(L, "CLIENT");
+
+    lua_pushinteger(L, state == Types::VMState::SERVER);
+    lua_setglobal(L, "SERVER");
+
+    #ifdef RTYPE_DEBUG
+        lua_pushinteger(L, RTYPE_DEBUG);
+        lua_setglobal(L, "DEBUG");
+    #endif
+}
+
 void luau_ExposeFunctions(lua_State *L)
 {
     luau_ExposeGlobalFunction(L, luau_Include, "include");

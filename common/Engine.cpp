@@ -8,13 +8,13 @@
 #include "Engine.hpp"
 #include <iostream>
 #include <ctime>
-#include <iostream>
 #include <fstream>
 
-Engine::Engine()
-    : root(nullptr), L(luaL_newstate()), gamePath("games/rtype")
+Engine::Engine(Types::VMState state)
+    : root(nullptr), L(luaL_newstate()), gamePath("games/rtype"), _state(state)
 {
     luaL_openlibs(L);
+    luau_ExposeConstants(L, state);
     luau_ExposeFunctions(L);
     luaL_sandbox(L);
 }
@@ -25,12 +25,18 @@ Engine::~Engine()
     ClearLogs();
 }
 
+Engine& Engine::StartInstance(Types::VMState state)
+{
+    _instance = new Engine(state);
+    return *_instance;
+}
+
 Engine *Engine::_instance = nullptr;
 
 Engine &Engine::GetInstance()
 {
     if (_instance == nullptr)
-        _instance = new Engine();
+        throw std::runtime_error("Engine instance not started");
     return *_instance;
 }
 
