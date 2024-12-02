@@ -13,13 +13,15 @@
     #include "luaconf.h"
     #include "lualib.h"
     #include "luacode.h"
+    #include "Lua/lua.hpp"
     #include <queue>
     #include <string>
     #include <filesystem>
+    #include <map>
 
     #define MAX_LOGS 50
 
-    #define LUA_PATH "/lua"
+    #define LUA_PATH "lua/"
 
 class Engine {
     public:
@@ -27,9 +29,11 @@ class Engine {
         void operator=(const Engine &) = delete;
         ~Engine();
 
+        static Engine &StartInstance(Types::VMState state);
         static Engine &GetInstance();
 
         enum class LogLevel {
+            DEBUG,
             INFO,
             WARNING,
             ERROR
@@ -44,20 +48,33 @@ class Engine {
         void Log(LogLevel level, const std::string &message);
         void ClearLogs();
 
+        void addPacket(const std::string &packetName, bool reliable);
+        bool hasPacket(const std::string &packetName) const;
+        bool isPacketReliable(const std::string &packetName) const;
+
+        std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
-        void execute() const;
+        void execute();
 
         Node *root;
         std::queue<log_t> logQueue;
 
     private:
-        Engine();
+        Engine(Types::VMState state);
         static Engine *_instance;
 
+        /* NET LIBRARY
+         * This value contains all packets registered by the server that need to be sent to the client.
+         * The key is the packet name and the value is a boolean that indicates if the packet is reliable or not.
+         * true  = reliable   (TCP)
+         * false = unreliable (UDP)
+         */
+        std::map<std::string, bool> _packetsRegistry;
+
         static std::string _getLogLevelString(LogLevel level);
-        std::string _getFileContents(const std::string &filename);
         lua_State *L;
         std::filesystem::path gamePath;
+        Types::VMState _state;
 };
 
 #endif /* !ENGINE_HPP_ */

@@ -7,11 +7,9 @@
 
 #include "Engine.hpp"
 
-#include <iostream>
-
 int main(int argc, char **argv)
 {
-    Engine &engine = Engine::GetInstance();
+    Engine &engine = Engine::StartInstance(Types::VMState::SERVER);
     engine.Log(Engine::LogLevel::INFO, "Server starting...");
     if (engine.LoadLuaFile("index.luau"))
         engine.execute();

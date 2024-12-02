@@ -1,1 +1,1 @@
-print("coucou")
+net.Start("Testing Network")
