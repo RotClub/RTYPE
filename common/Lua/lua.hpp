@@ -24,11 +24,17 @@
     LUA_API int luau_Import(lua_State *L);
 
     /* NET LIBRARY */
-    LUA_API int luau_netCreatePacket(lua_State *L);
+    LUA_API int luau_NetCreatePacket(lua_State *L);
     LUA_API int luau_NetStart(lua_State *L);
     LUA_API int luau_NetSendToServer(lua_State *L);
     LUA_API int luau_NetSendToClient(lua_State *L);
     LUA_API int luau_NetBroadcast(lua_State *L);
+
+    /* READ/WRITE OPERATIONS */ // ALL OPERATIONS HERE MUST HAVE A READ AND WRITE PAIR
+    LUA_API int luau_NetWriteString(lua_State *L);
+    LUA_API int luau_NetReadString(lua_State *L);
+    /* READ/WRITE OPERATIONS */
+
     /* NET LIBRARY */
 
 #endif //LUA_HPP

@@ -44,7 +44,7 @@ LUA_API int luau_Include(lua_State *L)
 }
 
 /* NET LIBRARY */
-LUA_API int luau_netCreatePacket(lua_State *L)
+LUA_API int luau_NetCreatePacket(lua_State *L)
 {
     const char *packetName = lua_tostring(L, 1);
     if (!packetName) {
@@ -94,6 +94,26 @@ LUA_API int luau_NetBroadcast(lua_State *L)
     std::cout << "Broadcasting packet: " << packetName << std::endl;
     return lua_gettop(L);
 }
+
+/* READ/WRITE OPERATIONS */ // ALL OPERATIONS HERE MUST HAVE A READ AND WRITE PAIR
+LUA_API int luau_NetWriteString(lua_State *L)
+{
+    const char *str = lua_tostring(L, 1);
+    if (!str) {
+        lua_pushstring(L, "Invalid string provided.");
+        lua_error(L);
+    }
+    // TODO: add the real deal here.
+    return lua_gettop(L);
+}
+
+LUA_API int luau_NetReadString(lua_State *L)
+{
+    // TODO: add the real deal here.
+    return lua_gettop(L);
+}
+/* READ/WRITE OPERATIONS */
+
 /* NET LIBRARY */
 
 static void luau_ExposeGlobalFunction(lua_State *L, const lua_CFunction func, const char *name)
@@ -129,11 +149,13 @@ void luau_ExposeFunctions(lua_State *L)
 
     /* NET LIBRARY */
     constexpr luaL_Reg netLibrary[] = {
-        {"CreatePacket", luau_netCreatePacket},
+        {"CreatePacket", luau_NetCreatePacket},
         {"Start", luau_NetStart},
         {"SendToServer", luau_NetSendToServer},
         {"SendToClient", luau_NetSendToClient},
         {"Broadcast", luau_NetBroadcast},
+        {"WriteString", luau_NetWriteString},
+        {"ReadString", luau_NetReadString},
         {nullptr, nullptr}
     };
     luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
