@@ -24,6 +24,11 @@ namespace Types {
                 return Vector2(0, 0);
             }
     };
+
+    enum class VMState {
+        CLIENT,
+        SERVER
+    };
 }
 
 #endif /* !TYPES_HPP_ */

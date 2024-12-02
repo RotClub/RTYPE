@@ -29,6 +29,7 @@ class Engine {
         void operator=(const Engine &) = delete;
         ~Engine();
 
+        static Engine &StartInstance(Types::VMState state);
         static Engine &GetInstance();
 
         enum class LogLevel {
@@ -59,7 +60,7 @@ class Engine {
         std::queue<log_t> logQueue;
 
     private:
-        Engine();
+        Engine(Types::VMState state);
         static Engine *_instance;
 
         /* NET LIBRARY
@@ -73,6 +74,7 @@ class Engine {
         static std::string _getLogLevelString(LogLevel level);
         lua_State *L;
         std::filesystem::path gamePath;
+        Types::VMState _state;
 };
 
 #endif /* !ENGINE_HPP_ */
