@@ -42,6 +42,11 @@ Engine &Engine::GetInstance()
 
 void Engine::Log(const LogLevel level, const std::string &message)
 {
+    if (level == LogLevel::DEBUG) {
+    #ifndef RTYPE_DEBUG
+        return;
+    #endif
+    }
     if (logQueue.size() >= MAX_LOGS)
         logQueue.pop();
     const std::time_t t = std::time(nullptr);
