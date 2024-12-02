@@ -1,5 +1,3 @@
 print("Starting R-Type")
 
-print(CLIENT)
-print(SERVER)
-print(DEBUG)
+include("init.luau")
