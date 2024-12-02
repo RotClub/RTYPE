@@ -25,7 +25,7 @@ include_directories(server)
 # Executables
 add_library(${PROJECT_NAME}_engine SHARED ${COMMON_SRC})
 add_executable(${PROJECT_NAME}_server ${SERVER_SRC})
-add_executable(${PROJECT_NAME}_client ${SERVER_SRC})
+add_executable(${PROJECT_NAME}_client ${CLIENT_SRC})
 
 # Libraries
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -82,21 +82,27 @@ add_compile_options(${PROJECT_NAME}_engine PRIVATE -Wall -Wextra -Wformat=2
         -Wshadow -Wwrite-strings -Wconversion -Wunreachable-code -Wstrict-aliasing=2
         -fno-common -fstrict-aliasing -Wunused-macros #-fno-gnu-unique
 )
-add_compile_definitions(MallocNanoZone=0)
+
 
 if (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
     target_compile_options(${PROJECT_NAME}_server PRIVATE -O2)
     target_compile_options(${PROJECT_NAME}_client PRIVATE -O2)
+    target_compile_definitions(${PROJECT_NAME}_client PRIVATE -DRTYPE_LUAVM_MODE="CLIENT")
+    target_compile_definitions(${PROJECT_NAME}_server PRIVATE -DRTYPE_LUAVM_MODE="SERVER")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g3")
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     target_compile_options(${PROJECT_NAME}_client PRIVATE -O2)
     target_compile_options(${PROJECT_NAME}_server PRIVATE -O2)
+    target_compile_definitions(${PROJECT_NAME}_client PUBLIC -DRTYPE_LUAVM_MODE="CLIENT")
+    target_compile_definitions(${PROJECT_NAME}_server PUBLIC -DRTYPE_LUAVM_MODE="SERVER")
     set(CMAKE_CXX_FLAGS_RELEASE "-g3")
 else()
     target_compile_options(${PROJECT_NAME}_client PRIVATE -O0)
     target_compile_options(${PROJECT_NAME}_server PRIVATE -O0)
+    target_compile_definitions(${PROJECT_NAME}_client PRIVATE -DRTYPE_LUAVM_MODE="CLIENT_DEBUG")
+    target_compile_definitions(${PROJECT_NAME}_server PRIVATE -DRTYPE_LUAVM_MODE="SERVER_DEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "-g3")
     set(CMAKE_CXX_FLAGS_DEBUG "-fomit-frame-pointer -fsanitize=address")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
