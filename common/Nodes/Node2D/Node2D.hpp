@@ -8,7 +8,8 @@
 #ifndef NODE2D_HPP_
     #define NODE2D_HPP_
 
-    #include "../Node.hpp"
+    #include "Nodes/Node.hpp"
+    #include "Types.hpp"
 
 class Node2D : public Node {
     public:

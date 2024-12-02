@@ -116,6 +116,84 @@ LUA_API int luau_NetReadString(lua_State *L)
 
 /* NET LIBRARY */
 
+/* NODE LIBRARY */
+void luau_ExposeRootNode(lua_State *L)
+{
+    Node *root = Engine::GetInstance().root;
+    *(Node**)lua_newuserdata(L, sizeof(Node*)) = root;
+    luaL_getmetatable(L, "NodeMetaTable");
+    lua_setmetatable(L, -2);
+    lua_setglobal(L, "root");
+}
+
+LUA_API int luau_NodeGetName(lua_State *L)
+{
+    Node* node = *(Node**)luaL_checkudata(L, 1, "NodeMetaTable");
+    lua_pushstring(L, node->name.c_str());
+    return 1;
+}
+
+LUA_API int luau_NodeSetName(lua_State *L)
+{
+    Node* node = *(Node**)luaL_checkudata(L, 1, "NodeMetaTable");
+    const char *name = luaL_checkstring(L, 2);
+    node->name = name;
+    return 0;
+}
+
+LUA_API int luau_NodeGetChildren(lua_State *L)
+{
+    Node* node = *(Node**)luaL_checkudata(L, 1, "NodeMetaTable");
+    std::vector<Node> &children = node->children;
+    lua_newtable(L);
+    for (size_t i = 0; i < children.size(); i++) {
+        *(Node**)lua_newuserdata(L, sizeof(Node*)) = &children[i];
+        luaL_getmetatable(L, "NodeMetaTable");
+        lua_setmetatable(L, -2);
+        lua_rawseti(L, -2, i + 1);
+    }
+    return 1;
+}
+
+LUA_API int luau_NodeGetChild(lua_State* L) {
+    Node* node = *(Node**)luaL_checkudata(L, 1, "NodeMetaTable");
+    const char* childName = luaL_checkstring(L, 2);
+    int find = 0;
+
+    std::vector<Node> &children = node->children;
+    for (auto &child : children) {
+        if (child.name == childName) {
+            *(Node**)lua_newuserdata(L, sizeof(Node*)) = &child;
+            luaL_getmetatable(L, "NodeMetaTable");
+            lua_setmetatable(L, -2);
+            find = 1;
+        }
+    }
+    if (!find)
+        lua_pushnil(L);
+    return 1;
+}
+
+LUA_API int luau_NodeCreate(lua_State *L)
+{
+    const char *name = luaL_checkstring(L, 1);
+    Node *node = new Node(name);
+    *(Node**)lua_newuserdata(L, sizeof(Node*)) = node;
+    luaL_getmetatable(L, "NodeMetaTable");
+    lua_setmetatable(L, -2);
+    return 1;
+}
+
+LUA_API int luau_NodeAddChild(lua_State *L)
+{
+    Node* node = *(Node**)luaL_checkudata(L, 1, "NodeMetaTable");
+    Node* child = *(Node**)luaL_checkudata(L, 2, "NodeMetaTable");
+    node->children.push_back(*child);
+    return 0;
+}
+
+/* NODE LIBRARY */
+
 static void luau_ExposeGlobalFunction(lua_State *L, const lua_CFunction func, const char *name)
 {
     lua_pushcfunction(L, func, name);
@@ -157,6 +235,11 @@ void luau_ExposeConstants(lua_State *L, Types::VMState state)
     #endif
 }
 
+void luau_ExposeObjectMethods(lua_State *L)
+{
+
+}
+
 void luau_ExposeFunctions(lua_State *L)
 {
     luau_ExposeGlobalFunction(L, luau_Include, "include");
@@ -174,4 +257,8 @@ void luau_ExposeFunctions(lua_State *L)
     };
     luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
     /* NET LIBRARY */
+
+    /* NODE LIBRARY */
+    luau_ExposeRootNode(L);
+    /* NODE LIBRARY */
 }

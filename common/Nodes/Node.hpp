@@ -10,8 +10,6 @@
 
     #include <vector>
     #include <string>
-    #include <stdexcept>
-    #include "../Types.hpp"
 
 class Node {
     public:

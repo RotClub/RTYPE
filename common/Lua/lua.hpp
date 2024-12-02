@@ -18,10 +18,13 @@
     #include "luacode.h"
     #include <queue>
     #include <filesystem>
+    #include "Types.hpp"
 
     void luau_ExposeFunctions(lua_State *L);
 
     void luau_ExposeConstants(lua_State *L, Types::VMState state);
+
+    void luau_ExposeRootNode(lua_State *L);
 
     LUA_API int luau_Import(lua_State *L);
 
@@ -38,5 +41,12 @@
     /* READ/WRITE OPERATIONS */
 
     /* NET LIBRARY */
+
+    /* NODE LIBRARY */
+    LUA_API int luau_NodeGetName(lua_State *L);
+    LUA_API int luau_NodeSetName(lua_State *L);
+    LUA_API int luau_NodeGetChildren(lua_State *L);
+    LUA_API int luau_NodeGetChild(lua_State *L);
+    /* NODE LIBRARY */
 
 #endif //LUA_HPP

@@ -10,14 +10,12 @@
 
     #include "Nodes/Node.hpp"
     #include "lua.h"
-    #include "luaconf.h"
-    #include "lualib.h"
-    #include "luacode.h"
     #include "Lua/lua.hpp"
     #include <queue>
     #include <string>
     #include <filesystem>
     #include <map>
+    #include "Types.hpp"
 
     #define MAX_LOGS 50
 
