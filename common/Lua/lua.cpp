@@ -44,11 +44,54 @@ LUA_API int luau_Include(lua_State *L)
 }
 
 /* NET LIBRARY */
+LUA_API int luau_netCreatePacket(lua_State *L)
+{
+    const char *packetName = lua_tostring(L, 1);
+    if (!packetName) {
+        lua_pushstring(L, "Invalid packet name provided.");
+        lua_error(L);
+    }
+    if (Engine::GetInstance().hasPacket(packetName)) {
+        lua_pushstring(L, "Packet already exists.");
+        lua_error(L);
+    }
+    const bool reliable = lua_toboolean(L, 2);
+    Engine::GetInstance().addPacket(packetName, reliable);
+    return lua_gettop(L);
+}
+
 LUA_API int luau_NetStart(lua_State *L)
 {
     const char *packetName = lua_tostring(L, 1);
-    const bool reliable = lua_toboolean(L, 2);
-    std::cout << "Starting network packet: " << packetName << " (reliable: " << reliable << ")" << std::endl;
+    if (!packetName) {
+        lua_pushstring(L, "Invalid packet name provided.");
+        lua_error(L);
+    }
+    if (!Engine::GetInstance().hasPacket(packetName)) {
+        lua_pushstring(L, std::format("Packet \"{}\" has not been initialized. Try calling net.CreatePacket first.", packetName).c_str());
+        lua_error(L);
+    }
+    // TODO: add the real deal here.
+    return lua_gettop(L);
+}
+
+LUA_API int luau_NetSendToServer(lua_State *L)
+{
+    const char *packetName = lua_tostring(L, 1);
+    std::cout << "Sending packet to server: " << packetName << std::endl;
+    return lua_gettop(L);
+}
+
+LUA_API int luau_NetSendToClient(lua_State *L)
+{
+    const char *packetName = lua_tostring(L, 1);
+    std::cout << "Sending packet to client: " << packetName << std::endl;
+    return lua_gettop(L);
+}
+LUA_API int luau_NetBroadcast(lua_State *L)
+{
+    const char *packetName = lua_tostring(L, 1);
+    std::cout << "Broadcasting packet: " << packetName << std::endl;
     return lua_gettop(L);
 }
 /* NET LIBRARY */
@@ -86,7 +129,11 @@ void luau_ExposeFunctions(lua_State *L)
 
     /* NET LIBRARY */
     constexpr luaL_Reg netLibrary[] = {
+        {"CreatePacket", luau_netCreatePacket},
         {"Start", luau_NetStart},
+        {"SendToServer", luau_NetSendToServer},
+        {"SendToClient", luau_NetSendToClient},
+        {"Broadcast", luau_NetBroadcast},
         {nullptr, nullptr}
     };
     luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");

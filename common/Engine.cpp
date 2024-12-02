@@ -38,9 +38,9 @@ void Engine::Log(const LogLevel level, const std::string &message)
 {
     if (logQueue.size() >= MAX_LOGS)
         logQueue.pop();
-    std::time_t t = std::time(nullptr);
-    std::tm* now = std::localtime(&t);
-    std::string timestamp = "[" + std::to_string(now->tm_mday) + "-" + std::to_string(now->tm_mon + 1) + "-" + std::to_string(now->tm_year + 1900) + " @ " + std::to_string(now->tm_hour) + ":" + std::to_string(now->tm_min) + ":" + std::to_string(now->tm_sec) + "]";
+    const std::time_t t = std::time(nullptr);
+    const std::tm* now = std::localtime(&t);
+    const std::string timestamp = "[" + std::to_string(now->tm_mday) + "-" + std::to_string(now->tm_mon + 1) + "-" + std::to_string(now->tm_year + 1900) + " @ " + std::to_string(now->tm_hour) + ":" + std::to_string(now->tm_min) + ":" + std::to_string(now->tm_sec) + "]";
     std::cout << timestamp << " " << _getLogLevelString(level) << ": " << message << std::endl;
     logQueue.push({
         .level = level,
@@ -55,9 +55,27 @@ void Engine::ClearLogs()
         logQueue.pop();
 }
 
+void Engine::addPacket(const std::string &packetName, const bool reliable)
+{
+    _packetsRegistry[packetName] = reliable;
+    // TODO: Network packet creation to all clients if SERVER. if CLIENT, just create the packet
+}
+
+bool Engine::hasPacket(const std::string &packetName) const
+{
+    return _packetsRegistry.contains(packetName);
+}
+
+bool Engine::isPacketReliable(const std::string &packetName) const
+{
+    return _packetsRegistry.at(packetName);
+}
+
 std::string Engine::_getLogLevelString(const LogLevel level)
 {
     switch (level) {
+        case LogLevel::DEBUG:
+            return "DEBUG";
         case LogLevel::INFO:
             return "INFO";
         case LogLevel::WARNING:

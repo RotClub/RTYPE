@@ -1,1 +1,1 @@
-net.Start("Testing Network", false)
+net.Start("Testing Network")

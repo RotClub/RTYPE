@@ -24,7 +24,11 @@
     LUA_API int luau_Import(lua_State *L);
 
     /* NET LIBRARY */
+    LUA_API int luau_netCreatePacket(lua_State *L);
     LUA_API int luau_NetStart(lua_State *L);
+    LUA_API int luau_NetSendToServer(lua_State *L);
+    LUA_API int luau_NetSendToClient(lua_State *L);
+    LUA_API int luau_NetBroadcast(lua_State *L);
     /* NET LIBRARY */
 
 #endif //LUA_HPP
