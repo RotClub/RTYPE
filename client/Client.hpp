@@ -8,8 +8,10 @@
 #ifndef CLIENT_HPP_
     #define CLIENT_HPP_
 
-    #include <string>
     #include "../common/Engine.hpp"
+    #include "connection/ServerConnection.hpp"
+
+    #include <string>
 
     class Client {
         public:
@@ -21,14 +23,14 @@
 
             std::string getIp() const;
             int getPort() const;
+            ClientConnection &getServerConnection();
         protected:
             Client(std::string ip, int port);
             static Client *_instance;
         private:
             std::string _ip;
             int _port;
-            // socket
-            // serverDataManager
+            ClientConnection _serverConnection;
             // window
             // loadingScreen
             // resourceManager

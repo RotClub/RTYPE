@@ -5,21 +5,24 @@
 ** ServerConnection
 */
 
-#include "ServerConnection.hpp"
+#include "ClientConnection.hpp"
 
-ServerConnection::ServerConnection(std::string ip, int port, std::tuple<SafeQueue<std::string> *, SafeQueue<std::string> *> queues)
-    : _ip(ip), _port(port), _queues(queues)
+ClientConnection::ClientConnection(std::string ip, int port)
+    : GlobalConnection(), _ip(ip), _port(port)
 {
 }
 
-ServerConnection::~ServerConnection()
+ClientConnection::~ClientConnection()
 {
     disconnectFromServer();
 }
 
-void ServerConnection::connectToServer()
+void ClientConnection::connectToServer(bool udp)
 {
-    _fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (udp)
+        _fd = socket(AF_INET, SOCK_DGRAM, 0);
+    else
+        _fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_fd == -1) {
         throw std::runtime_error("Error creating socket");
     }
@@ -30,15 +33,14 @@ void ServerConnection::connectToServer()
         throw std::runtime_error("Error connecting to server");
     }
     _connected = true;
-    _thread = std::thread(&ServerConnection::_serverLoop, this);
+    _thread = std::thread(&ClientConnection::_loop, this);
 }
 
-void ServerConnection::disconnectFromServer()
+void ClientConnection::disconnectFromServer()
 {
     if (!_connected) {
         return;
     }
-    std::cout << "Disconnecting..." << std::endl;
     _connected = false;
     try {
         _thread.join();
@@ -49,71 +51,89 @@ void ServerConnection::disconnectFromServer()
     _fd = -1;
 }
 
-std::string ServerConnection::tryReceive()
+bool ClientConnection::establishConnection()
 {
-    char buffer[1024];
-    int valread = 0;
-    memset(buffer, 0, 1024);
-    if (FD_ISSET(_fd, &_readfds)) {
-        valread = read(_fd, buffer, 1024);
-        if (valread == -1) {
-            throw std::runtime_error("Error reading from server");
-        }
-        if (valread == 0) {
-            return "";
-        }
-        return std::string(buffer);
-    }
-    return "";
+    std::string keyword = KEYWORD;
+    Packet pckt = PacketBuilder().writeString(keyword).build();
+    sendToServer(pckt);
+    Packet response = getLatestPacket();
+    if (response.size == 0)
+        return false;
+    return true;
 }
 
-void ServerConnection::sendToServer(std::string msg, std::string endWith)
+Packet ClientConnection::_tryReceive()
 {
-    std::get<OUT>(_queues)->enqueue(msg + endWith);
-}
+    uint32_t dataSize = 0;
+    size_t bytesRead = 0;
 
-int ServerConnection::_selectFd() {
-    int retval;
-    timeval tv = {1, 0};
-
-    FD_ZERO(&_readfds);
-    FD_SET(_fd, &_readfds);
-    retval = select(_fd + 1, &_readfds, NULL, NULL, &tv);
-    if (retval == -1) {
-        throw std::runtime_error("Error selecting socket");
+    while (bytesRead < sizeof(dataSize)) {
+        int result = read(_fd, reinterpret_cast<char*>(&dataSize) + bytesRead, sizeof(dataSize) - bytesRead);
+        if (result == -1)
+            throw std::runtime_error("Error reading data size from server");
+        if (result == 0)
+            return NULL_PACKET;
+        bytesRead += result;
     }
-    return retval;
+
+    std::vector<void *> buffer(dataSize);
+    bytesRead = 0;
+
+    while (bytesRead < dataSize) {
+        int result = read(_fd, buffer.data() + bytesRead, dataSize - bytesRead);
+        if (result == -1)
+            throw std::runtime_error("Error reading data from server");
+        if (result == 0)
+            return NULL_PACKET;
+        bytesRead += result;
+    }
+
+    return (Packet){dataSize, buffer};
 }
 
-void ServerConnection::_receiveLoop()
+void ClientConnection::sendToServer(Packet pckt)
+{
+    std::get<OUT>(_queues)->enqueue(pckt);
+}
+
+void ClientConnection::_receiveLoop()
 {
     int sel;
     sel = _selectFd();
-    if (sel == 0) {
+    if (sel == 0)
         return;
-    }
-    _buffer += tryReceive();
-    while (_buffer.find("\n") != std::string::npos) {
-        std::get<IN>(_queues)->enqueue(_buffer.substr(0, _buffer.find("\n")));
-        std::cout << "<- : " << _buffer.substr(0, _buffer.find("\n")) << std::endl;
-        _buffer = _buffer.substr(_buffer.find("\n") + 1);
-    }
+    _buffer = _tryReceive();
+    if (_buffer.size == 0)
+        return;
+    std::get<IN>(_queues)->enqueue(_buffer);
+    _buffer = NULL_PACKET;
 }
 
-void ServerConnection::_sendLoop()
+void ClientConnection::_sendLoop()
 {
-    std::string sending;
-
     while (!std::get<OUT>(_queues)->empty()) {
-        sending = std::get<OUT>(_queues)->dequeue();
-        if (send(_fd, sending.c_str(), sending.length(), 0) == -1) {
-            throw std::runtime_error("Error sending to server");
+        Packet sending = std::get<OUT>(_queues)->dequeue();
+        uint32_t dataSize = sending.size;
+        size_t bytesSent = 0;
+
+        while (bytesSent < sizeof(dataSize)) {
+            int result = send(_fd, reinterpret_cast<char*>(&dataSize) + bytesSent, sizeof(dataSize) - bytesSent, 0);
+            if (result == -1)
+                throw std::runtime_error("Error sending data size to server");
+            bytesSent += result;
         }
-        std::cout << "-> : " << sending << std::endl;
+
+        bytesSent = 0;
+        while (bytesSent < dataSize) {
+            int result = send(_fd, sending.data.data() + bytesSent, dataSize - bytesSent, 0);
+            if (result == -1)
+                throw std::runtime_error("Error sending data to server");
+            bytesSent += result;
+        }
     }
 }
 
-void ServerConnection::_serverLoop()
+void ClientConnection::_loop()
 {
     while (_connected) {
         _receiveLoop();

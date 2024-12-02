@@ -8,10 +8,14 @@
 #ifndef STRINGPACKET_HPP_
     #define STRINGPACKET_HPP_
 
-struct {
-    int size;
-    char data[1024];
-} StringPacket;
+    #include <vector>
+    #include <string>
 
+    typedef struct {
+        int size;
+        std::vector<void *> data;
+    } Packet;
+
+    #define NULL_PACKET (Packet){0, {}}
 
 #endif /* !STRINGPACKET_HPP_ */

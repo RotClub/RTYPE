@@ -13,5 +13,7 @@ int main(void) {
     engine.Log(Engine::LogLevel::INFO, "Client started");
     engine.Log(Engine::LogLevel::INFO, "IP: " + client.getIp());
     engine.Log(Engine::LogLevel::INFO, "Port: " + std::to_string(client.getPort()));
+    client.getServerConnection().connectToServer();
+    client.getServerConnection().establishConnection();
     return 0;
 }
