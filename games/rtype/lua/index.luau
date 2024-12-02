@@ -1,3 +1,3 @@
-print("Hello World!")
+print("Starting R-Type")
 
 include("test.luau")
