@@ -7,7 +7,9 @@
 
 #include "Client.hpp"
 
-int main(void) {
+int main(void)
+{
+	initLittleWindow();
     Client &client = Client::InitiateInstance("127.0.0.1", 5000);
     Engine &engine = Engine::StartInstance(Types::VMState::CLIENT);
     engine.Log(Engine::LogLevel::INFO, "Client started");
