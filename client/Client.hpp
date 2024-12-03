@@ -9,7 +9,7 @@
     #define CLIENT_HPP_
 
     #include "../common/Engine.hpp"
-    #include "connection/ServerConnection.hpp"
+    #include "connection/ClientConnection.hpp"
 
     #include <string>
 
@@ -23,14 +23,16 @@
 
             std::string getIp() const;
             int getPort() const;
-            ClientConnection &getServerConnection();
+            ClientConnection &getClientConnectionTcp();
+            ClientConnection &getClientConnectionUdp();
         protected:
             Client(std::string ip, int port);
             static Client *_instance;
         private:
             std::string _ip;
             int _port;
-            ClientConnection _serverConnection;
+            ClientConnection _clientConnectionTcp;
+            ClientConnection _clientConnectionUdp;
             // window
             // loadingScreen
             // resourceManager

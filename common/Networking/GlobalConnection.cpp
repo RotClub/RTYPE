@@ -7,8 +7,10 @@
 
 #include "GlobalConnection.hpp"
 
-GlobalConnection::GlobalConnection()
+GlobalConnection::GlobalConnection(bool udp)
+    : _udp(udp)
 {
+    _createSocket();
     _queues = std::make_tuple(new SafeQueue<Packet>(), new SafeQueue<Packet>());
 }
 
@@ -23,8 +25,13 @@ Packet GlobalConnection::getLatestPacket()
     Packet pckt = std::get<IN>(_queues)->dequeue();
     if (pckt.size == 0)
         return NULL_PACKET;
+    return pckt;
 }
 
+bool GlobalConnection::isUdp() const
+{
+    return _udp;
+}
 
 int GlobalConnection::_selectFd() {
     int retval;
@@ -37,4 +44,16 @@ int GlobalConnection::_selectFd() {
         throw std::runtime_error("Error selecting socket");
     }
     return retval;
+}
+
+void GlobalConnection::_createSocket()
+{
+    if (_udp)
+        _fd = socket(AF_INET, SOCK_DGRAM, 0);
+    else
+        _fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (_fd == -1) {
+        throw std::runtime_error("Error creating socket");
+    }
+    _addr.sin_family = AF_INET;
 }

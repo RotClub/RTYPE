@@ -39,6 +39,11 @@ std::string PacketBuilder::readString()
     return std::string(data.begin(), data.end());
 }
 
+Packet PacketBuilder::build()
+{
+    return _packet;
+}
+
 void *PacketBuilder::_popFront()
 {
     void *ptr = _packet.data.front();

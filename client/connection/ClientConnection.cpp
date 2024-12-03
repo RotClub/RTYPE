@@ -7,7 +7,7 @@
 
 #include "ClientConnection.hpp"
 
-ClientConnection::ClientConnection(std::string ip, int port)
+ClientConnection::ClientConnection(std::string ip, int port, bool udp)
     : GlobalConnection(), _ip(ip), _port(port)
 {
 }
@@ -17,16 +17,8 @@ ClientConnection::~ClientConnection()
     disconnectFromServer();
 }
 
-void ClientConnection::connectToServer(bool udp)
+void ClientConnection::connectToServer()
 {
-    if (udp)
-        _fd = socket(AF_INET, SOCK_DGRAM, 0);
-    else
-        _fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_fd == -1) {
-        throw std::runtime_error("Error creating socket");
-    }
-    _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
     _addr.sin_addr.s_addr = inet_addr(_ip.c_str());
     if (connect(_fd, (struct sockaddr *)&_addr, sizeof(_addr)) == -1) {
@@ -75,10 +67,8 @@ Packet ClientConnection::_tryReceive()
             return NULL_PACKET;
         bytesRead += result;
     }
-
     std::vector<void *> buffer(dataSize);
     bytesRead = 0;
-
     while (bytesRead < dataSize) {
         int result = read(_fd, buffer.data() + bytesRead, dataSize - bytesRead);
         if (result == -1)
@@ -87,7 +77,6 @@ Packet ClientConnection::_tryReceive()
             return NULL_PACKET;
         bytesRead += result;
     }
-
     return (Packet){dataSize, buffer};
 }
 
@@ -102,11 +91,11 @@ void ClientConnection::_receiveLoop()
     sel = _selectFd();
     if (sel == 0)
         return;
-    _buffer = _tryReceive();
-    if (_buffer.size == 0)
+    _packet = _tryReceive();
+    if (_packet.size == 0)
         return;
-    std::get<IN>(_queues)->enqueue(_buffer);
-    _buffer = NULL_PACKET;
+    std::get<IN>(_queues)->enqueue(_packet);
+    _packet = NULL_PACKET;
 }
 
 void ClientConnection::_sendLoop()

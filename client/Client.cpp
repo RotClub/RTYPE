@@ -25,10 +25,8 @@ Client &Client::GetInstance()
 }
 
 Client::Client(std::string ip, int port)
+    : _ip(ip), _port(port), _clientConnectionTcp(ip, port, false), _clientConnectionUdp(ip, port, true)
 {
-    _ip = ip;
-    _port = port;
-    _serverConnection = new ClientConnection(ip, port);
 }
 
 std::string Client::getIp() const {
@@ -39,3 +37,12 @@ int Client::getPort() const {
     return _port;
 }
 
+ClientConnection &Client::getClientConnectionTcp()
+{
+    return _clientConnectionTcp;
+}
+
+ClientConnection &Client::getClientConnectionUdp()
+{
+    return _clientConnectionUdp;
+}

@@ -29,20 +29,22 @@
             virtual ~GlobalConnection();
 
             virtual Packet getLatestPacket();
+            virtual bool isUdp() const;
 
         protected:
-            GlobalConnection();
+            GlobalConnection(bool udp = false);
 
-        private:
             virtual int _selectFd();
+            virtual void _createSocket();
             virtual void _loop() = 0;
 
-            Packet _buffer;
+            Packet _packet;
             std::tuple<SafeQueue<Packet> *, SafeQueue<Packet> *> _queues;
             std::thread _thread;
             int _fd = -1;
             fd_set _readfds;
             struct sockaddr_in _addr;
+            bool _udp;
     };
 
 #endif /* !GLOBALCONNECTION_HPP_ */

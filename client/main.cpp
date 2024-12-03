@@ -9,11 +9,11 @@
 
 int main(void) {
     Client &client = Client::InitiateInstance("127.0.0.1", 5000);
-    Engine &engine = Engine::GetInstance();
+    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT);
     engine.Log(Engine::LogLevel::INFO, "Client started");
     engine.Log(Engine::LogLevel::INFO, "IP: " + client.getIp());
     engine.Log(Engine::LogLevel::INFO, "Port: " + std::to_string(client.getPort()));
-    client.getServerConnection().connectToServer();
-    client.getServerConnection().establishConnection();
+    client.getClientConnectionTcp().connectToServer();
+    client.getClientConnectionTcp().establishConnection();
     return 0;
 }
