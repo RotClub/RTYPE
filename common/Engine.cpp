@@ -156,6 +156,8 @@ static void loadLibrary(lua_State *L, const std::string &filePath)
 void Engine::loadLibraries()
 {
     loadLibrary(L, "hook.luau");
+    loadLibrary(L, "utils.luau");
+    luaL_sandbox(L);
 }
 
 std::string Engine::_getLogLevelString(const LogLevel level)

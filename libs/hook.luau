@@ -1,4 +1,5 @@
-hook = hook or {}
+hook = {}
+hook.hooks = {}
 
 function hook.Add(eventName: string, hookName: string, callback: (...any) -> any)
     if not eventName or not hookName or not callback then
@@ -6,10 +7,10 @@ function hook.Add(eventName: string, hookName: string, callback: (...any) -> any
     end
 
     if not hook[eventName] then
-        hook[eventName] = {}
+        hook.hooks[eventName] = {}
     end
 
-    hook[eventName][hookName] = callback
+    hook.hooks[eventName][hookName] = callback
 end
 
 function hook.Remove(eventName: string, hookName: string)
@@ -17,8 +18,8 @@ function hook.Remove(eventName: string, hookName: string)
         return
     end
 
-    if hook[eventName] then
-        hook[eventName][hookName] = nil
+    if hook.hooks[eventName] then
+        hook.hooks[eventName][hookName] = nil
     end
 end
 
@@ -27,8 +28,8 @@ function hook.Call(eventName: string, ...)
         return
     end
 
-    if hook[eventName] then
-        for _, callback in pairs(hook[eventName]) do
+    if hook.hooks[eventName] then
+        for _, callback in pairs(hook.hooks[eventName]) do
             callback(...)
         end
     end
