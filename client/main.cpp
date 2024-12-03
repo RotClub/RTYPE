@@ -6,6 +6,7 @@
 */
 
 #include "Client.hpp"
+#include "window/Window.hpp"
 
 int main(void)
 {
@@ -17,5 +18,6 @@ int main(void)
     engine.Log(Engine::LogLevel::INFO, "Port: " + std::to_string(client.getPort()));
     client.getClientConnectionTcp().connectToServer();
     client.getClientConnectionTcp().establishConnection();
+	Window window = Window();
     return 0;
 }
