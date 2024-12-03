@@ -152,10 +152,11 @@ static void loadLibrary(lua_State *L, const std::string &filePath)
     }
 }
 
-void Engine::loadLibraries()
+void Engine::loadLibraries() const
 {
     loadLibrary(L, "hook.luau");
     loadLibrary(L, "utils.luau");
+    loadLibrary(L, "json.luau");
     luaL_sandbox(L);
 }
 

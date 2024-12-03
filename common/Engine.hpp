@@ -55,7 +55,7 @@ class Engine {
         void callHook(const std::string &eventName, unsigned char numArgs);
 
         std::string GetLibraryFileContents(const std::string &filename);
-        void loadLibraries();
+        void loadLibraries() const;
 
         std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
