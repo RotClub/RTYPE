@@ -16,7 +16,6 @@ Engine::Engine(Types::VMState state)
     luaL_openlibs(L);
     luau_ExposeConstants(L, state);
     luau_ExposeFunctions(L);
-    // luaL_sandbox(L);
 }
 
 Engine::~Engine()
