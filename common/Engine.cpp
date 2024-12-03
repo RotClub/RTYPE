@@ -11,12 +11,12 @@
 #include <fstream>
 
 Engine::Engine(Types::VMState state)
-    : root(nullptr), L(luaL_newstate()), gamePath("games/rtype"), _state(state)
+    : root(nullptr), L(luaL_newstate()), gamePath("games/rtype"), libPath("libs"), _state(state)
 {
     luaL_openlibs(L);
     luau_ExposeConstants(L, state);
     luau_ExposeFunctions(L);
-    luaL_sandbox(L);
+    // luaL_sandbox(L);
 }
 
 Engine::~Engine()
@@ -42,6 +42,11 @@ Engine &Engine::GetInstance()
 
 void Engine::Log(const LogLevel level, const std::string &message)
 {
+    if (level == LogLevel::DEBUG) {
+    #ifndef RTYPE_DEBUG
+        return;
+    #endif
+    }
     if (logQueue.size() >= MAX_LOGS)
         logQueue.pop();
     const std::time_t t = std::time(nullptr);
@@ -75,6 +80,82 @@ bool Engine::hasPacket(const std::string &packetName) const
 bool Engine::isPacketReliable(const std::string &packetName) const
 {
     return _packetsRegistry.at(packetName);
+}
+
+// WARNING: This function assumes you have already pushed the arguments on the stack
+void Engine::callHook(const std::string &eventName, unsigned char numArgs)
+{
+    lua_getglobal(L, "hook");
+    lua_getfield(L, -1, "Call");
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 1);
+        return;
+    }
+
+    lua_pushstring(L, eventName.c_str());
+
+    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+        std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+}
+
+std::string Engine::GetLibraryFileContents(const std::string& filename)
+{
+    const std::filesystem::path filePath = libPath / filename;
+    if (!std::filesystem::exists(filePath)) {
+        Log(LogLevel::ERROR, "File " + filename + " does not exist");
+        return "";
+    }
+    if (filePath.string().find(libPath.string()) != 0) {
+        Log(LogLevel::ERROR, "File " + filename + " is outside the lib path");
+        return "";
+    }
+    std::ifstream stream(filePath.c_str(), std::ios::binary);
+    if (!stream.is_open()) {
+        Log(LogLevel::ERROR, "Failed to open file " + filename);
+        return "";
+    }
+    std::string contents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+    stream.close();
+    return contents;
+}
+
+static void loadLibrary(lua_State *L, const std::string &filePath)
+{
+    try {
+        const std::string &script = Engine::GetInstance().GetLibraryFileContents(filePath);
+
+        size_t bytecodeSize;
+        char *bytecode = luau_compile(script.c_str(), script.size(),  nullptr, &bytecodeSize);
+
+        if (!bytecode) {
+            throw std::runtime_error("Failed to compile the Lua script.");
+        }
+
+        const int loadResult = luau_load(L, filePath.c_str(), bytecode, bytecodeSize, 0);
+        free(bytecode);
+
+        if (loadResult != 0) {
+            throw std::runtime_error(lua_tostring(L, -1));
+        }
+
+        if (lua_pcall(L, 0, LUA_MULTRET, 0) != 0) {
+            throw std::runtime_error(lua_tostring(L, -1));
+        }
+
+        Engine::GetInstance().Log(Engine::LogLevel::DEBUG, std::format("Successfully loaded file: {}", filePath));
+    } catch (const std::exception& e) {
+        lua_pushfstring(L, "Exception: %s", e.what());
+        lua_error(L);
+    }
+}
+
+void Engine::loadLibraries()
+{
+    loadLibrary(L, "hook.luau");
 }
 
 std::string Engine::_getLogLevelString(const LogLevel level)

@@ -36,6 +36,7 @@ LUA_API int luau_Include(lua_State *L)
             lua_error(L);
         }
 
+        Engine::GetInstance().Log(Engine::LogLevel::DEBUG, std::format("Successfully loaded file: {}", filePath));
         return lua_gettop(L);
     } catch (const std::exception& e) {
         lua_pushfstring(L, "Exception: %s", e.what());
@@ -209,7 +210,7 @@ static void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *function
     lua_pushcfunction(L, [](lua_State *Lm) -> int {
         luaL_error(Lm, "attempt to modify a read-only table");
         return 0;
-    }, "name");
+    }, name);
     lua_settable(L, -3);
 
     lua_pushstring(L, "__metatable");
@@ -221,7 +222,7 @@ static void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *function
     lua_setglobal(L, name);
 }
 
-void luau_ExposeConstants(lua_State *L, Types::VMState state)
+void luau_ExposeConstants(lua_State *L, const Types::VMState state)
 {
     lua_pushinteger(L, state == Types::VMState::CLIENT);
     lua_setglobal(L, "CLIENT");

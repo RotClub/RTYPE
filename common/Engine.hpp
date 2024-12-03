@@ -50,6 +50,11 @@ class Engine {
         bool hasPacket(const std::string &packetName) const;
         bool isPacketReliable(const std::string &packetName) const;
 
+        void callHook(const std::string &eventName, unsigned char numArgs);
+
+        std::string GetLibraryFileContents(const std::string &filename);
+        void loadLibraries();
+
         std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
         void execute();
@@ -72,6 +77,7 @@ class Engine {
         static std::string _getLogLevelString(LogLevel level);
         lua_State *L;
         std::filesystem::path gamePath;
+        std::filesystem::path libPath;
         Types::VMState _state;
 };
 

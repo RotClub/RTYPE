@@ -12,6 +12,7 @@
     #include <iostream>
     #include <fstream>
     #include <sstream>
+    #include <format>
     #include "lua.h"
     #include "luaconf.h"
     #include "lualib.h"
@@ -48,5 +49,12 @@
     LUA_API int luau_NodeGetChildren(lua_State *L);
     LUA_API int luau_NodeGetChild(lua_State *L);
     /* NODE LIBRARY */
+
+
+    /* HOOK LIBRARY */
+    LUA_API int luau_HookAdd(lua_State *L);
+    LUA_API int luau_HookRemove(lua_State *L);
+    LUA_API int luau_HookCall(lua_State *L);
+    /* HOOK LIBRARY */
 
 #endif //LUA_HPP
