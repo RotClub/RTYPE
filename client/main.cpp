@@ -6,6 +6,7 @@
 */
 
 #include "Client.hpp"
+#include "window/Window.hpp"
 
 int main(void) {
     Client &client = Client::InitiateInstance("127.0.0.1", 5000);
@@ -15,5 +16,6 @@ int main(void) {
     engine.Log(Engine::LogLevel::INFO, "Port: " + std::to_string(client.getPort()));
     client.getClientConnectionTcp().connectToServer();
     client.getClientConnectionTcp().establishConnection();
+	Window window = Window();
     return 0;
 }
