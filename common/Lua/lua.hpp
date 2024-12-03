@@ -40,4 +40,11 @@
 
     /* NET LIBRARY */
 
+
+    /* HOOK LIBRARY */
+    LUA_API int luau_HookAdd(lua_State *L);
+    LUA_API int luau_HookRemove(lua_State *L);
+    LUA_API int luau_HookCall(lua_State *L);
+    /* HOOK LIBRARY */
+
 #endif //LUA_HPP
