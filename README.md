@@ -8,7 +8,7 @@ You can find it [here](https://github.com/RotClub/RTYPE)
 
 ## Documentation:
 
-[doc](https://rotclub.github.io/RTYPE/)
+[R-TYPE documentation](https://rotclub.github.io/RTYPE/)
 
 ## Contributors:
 
