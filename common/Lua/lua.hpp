@@ -12,6 +12,7 @@
     #include <iostream>
     #include <fstream>
     #include <sstream>
+    #include <format>
     #include "lua.h"
     #include "luaconf.h"
     #include "lualib.h"
