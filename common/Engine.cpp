@@ -16,7 +16,6 @@ Engine::Engine(Types::VMState state)
     luaL_openlibs(L);
     luau_ExposeConstants(L, state);
     luau_ExposeFunctions(L);
-    // luaL_sandbox(L);
 }
 
 Engine::~Engine()
@@ -156,6 +155,8 @@ static void loadLibrary(lua_State *L, const std::string &filePath)
 void Engine::loadLibraries()
 {
     loadLibrary(L, "hook.luau");
+    loadLibrary(L, "utils.luau");
+    luaL_sandbox(L);
 }
 
 std::string Engine::_getLogLevelString(const LogLevel level)
