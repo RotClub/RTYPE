@@ -2,24 +2,18 @@
 ** EPITECH PROJECT, 2024
 ** RTYPE
 ** File description:
-** CLIENT main
+** main
 */
 
-#include "raylib.h"
-#include "./window/Window.hpp"
-#include <iostream>
-
-void initLittleWindow(void)
-{
-	int width = 800;
-	int height = 450;
-	const char *title = "R-TYPE";
-	
-	Window window(width, height, title);
-	
-	window.loop();
-}
+#include "Client.hpp"
 
 int main(void) {
-	return 0;
+    Client &client = Client::InitiateInstance("127.0.0.1", 5000);
+    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT);
+    engine.Log(Engine::LogLevel::INFO, "Client started");
+    engine.Log(Engine::LogLevel::INFO, "IP: " + client.getIp());
+    engine.Log(Engine::LogLevel::INFO, "Port: " + std::to_string(client.getPort()));
+    client.getClientConnectionTcp().connectToServer();
+    client.getClientConnectionTcp().establishConnection();
+    return 0;
 }
