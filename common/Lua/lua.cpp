@@ -132,7 +132,7 @@ static void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *function
     lua_pushcfunction(L, [](lua_State *Lm) -> int {
         luaL_error(Lm, "attempt to modify a read-only table");
         return 0;
-    }, "name");
+    }, name);
     lua_settable(L, -3);
 
     lua_pushstring(L, "__metatable");
@@ -144,7 +144,7 @@ static void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *function
     lua_setglobal(L, name);
 }
 
-void luau_ExposeConstants(lua_State *L, Types::VMState state)
+void luau_ExposeConstants(lua_State *L, const Types::VMState state)
 {
     lua_pushinteger(L, state == Types::VMState::CLIENT);
     lua_setglobal(L, "CLIENT");
