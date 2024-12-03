@@ -1,7 +1,5 @@
 name: Common - Mirror to Epitech Repository
-on:
-  push:
-
+on: push
 env:
   DEST_REPO: git@github.com:EpitechPromo2027/B-CPP-500-TLS-5-2-rtype-theo.bary.git
   SRC_REPO: git@github.com:RotClub/RTYPE.git
