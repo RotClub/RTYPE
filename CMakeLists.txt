@@ -32,6 +32,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(LUAU_BUILD_TESTS OFF)
+set(JSON_BuildTests OFF CACHE INTERNAL "")
 find_package(Threads REQUIRED)
 add_subdirectory("./submodules/nlohmann-json")
 add_subdirectory("./submodules/luau")
@@ -40,7 +41,7 @@ add_subdirectory("./submodules/raylib-cpp")
 
 # Linking
 target_link_libraries(${PROJECT_NAME}_engine PUBLIC
-        ${NLOHMANN_JSON_TARGET_NAME}
+        nlohmann_json::nlohmann_json
         raylib
         raylib_cpp
         Luau.Compiler
