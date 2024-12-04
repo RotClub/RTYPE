@@ -9,29 +9,21 @@
 #define SERVER_HPP_
 
 #include <iostream>
-#include <thread>
-#include <vector>
-#include <string>
-#include <cstring>
-#include <arpa/inet.h>
-#include <unistd.h>
+#include "connection/ServerConnection.hpp"
 
 class Server {
     public:
         Server(int port);
         bool start();
         void stop();
-        void handleTCPClient(int clientSocket);
-        void handleUDP();
+        int getPort() const;
 
     protected:
     private:
         int _port;
-        int _tcpSocket;
-        int _udpSocket;
         bool _isRunning;
-        sockaddr_in serverAddr;
-        std::vector<std::thread> clientThreads;
+        ServerConnection _serverConnectionTcp;
+        ServerConnection _serverConnectionUdp;
 };
 
 #endif /* !SERVER_HPP_ */

@@ -7,6 +7,11 @@
 
 #include "Server.hpp"
 
-Server::Server(int port) : port(port), running(false) {}
+Server::Server(int port) : _port(port), _isRunning(false), _serverConnectionTcp(port), _serverConnectionUdp(port, true)
+{
+}
 
-
+int Server::getPort() const
+{
+    return _port;
+}
