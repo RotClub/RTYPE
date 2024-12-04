@@ -19,29 +19,28 @@
     #define KEYWORD "xMmM21B6dFdwJY39"
 
     class ServerConnection : public GlobalConnection {
-    public:
-        ServerConnection(int port, bool udp = false);
-        ~ServerConnection();
+        public:
+            ServerConnection(int port, bool udp = false);
+            ~ServerConnection();
 
-        void start();
-        void stop();
-        bool isRunning() const;
-        void broadcast(Packet pckt);
-        void handleClients();
+            void start();
+            void stop();
+            bool isRunning() const;
+            void broadcast(Packet pckt);
 
-    private:
-        void _acceptloop();
-        void _clientHandler(int clientSocket);
-        Packet _tryReceive(int clientSocket);
-        void _sendPacket(int clientSocket, Packet pckt);
+        private:
+            void _acceptloop();
+            void _clientHandler(int clientSocket);
+            Packet _tryReceive(int clientSocket);
+            void _sendPacket(int clientSocket, Packet pckt);
 
-        int _port;
-        bool _udp;
-        int _serverSocket;
-        std::atomic<bool> _running = false;
-        std::thread _acceptThread;
-        std::map<int, std::thread> _clientThreads;
-        std::mutex _clientMutex;
+            int _port;
+            bool _udp;
+            int _serverSocket;
+            std::atomic<bool> _running = false;
+            std::thread _acceptThread;
+            std::map<int, std::thread> _clientThreads;
+            std::mutex _clientMutex;
 };
 
 #endif /* !SERVERCONNECTION_HPP_ */
