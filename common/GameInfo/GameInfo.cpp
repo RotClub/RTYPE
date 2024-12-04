@@ -9,7 +9,7 @@ GameInfo::GameInfo(
     const std::string &description,
     const unsigned int max_players,
     const std::vector<const std::string> &authors,
-    const float version
+    const std::string &version
 ) : _name(name), _description(description), _max_players(max_players), _authors(authors), _version(version)
 {
 }

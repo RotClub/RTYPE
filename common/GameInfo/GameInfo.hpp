@@ -16,7 +16,7 @@ class GameInfo {
             const std::string &description,
             unsigned int max_players,
             const std::vector<const std::string>& authors,
-            float version
+            const std::string &version
         );
         explicit GameInfo(nlohmann::json &gameData);
         ~GameInfo() = default;
@@ -25,14 +25,14 @@ class GameInfo {
         [[nodiscard]] const std::string &getDescription() const { return _description; }
         [[nodiscard]] unsigned int getMaxPlayers() const { return _max_players; }
         [[nodiscard]] const std::vector<const std::string> &getAuthors() const { return _authors; }
-        [[nodiscard]] float getVersion() const { return _version; }
+        [[nodiscard]] const std::string &getVersion() const { return _version; }
 
     private:
         const std::string _name;
         const std::string _description;
         const unsigned int _max_players;
         std::vector<const std::string> _authors;
-        const float _version;
+        const std::string _version;
 };
 
 #endif //GAMEINFO_HPP

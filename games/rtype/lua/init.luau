@@ -1,3 +1,3 @@
 hook.Add("RType:InitServer", "testing", function()
-    print(json.encode(hook))
+    print("RType:InitServer called")
 end)

@@ -28,6 +28,7 @@ Engine::Engine(Types::VMState state, const std::string &gamePath)
     }
 
     luaL_openlibs(L);
+    luau_ExposeGameInfoTable(L, _gameInfo);
     luau_ExposeConstants(L, state);
     luau_ExposeFunctions(L);
 }
@@ -106,7 +107,7 @@ void Engine::displayGameInfo()
     for (const auto &author : _gameInfo->getAuthors()) {
         Log(LogLevel::INFO, "  - " + author);
     }
-    Log(LogLevel::INFO, "Version: " + std::to_string(_gameInfo->getVersion()));
+    Log(LogLevel::INFO, "Version: " + _gameInfo->getVersion());
 }
 
 // WARNING: This function assumes you have already pushed the arguments on the stack
