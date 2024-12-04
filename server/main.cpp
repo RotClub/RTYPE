@@ -10,8 +10,9 @@
 int main(int argc, char **argv)
 {
     try {
-        Engine &engine = Engine::StartInstance(Types::VMState::SERVER);
+        Engine &engine = Engine::StartInstance(Types::VMState::SERVER, "rtype");
         engine.Log(Engine::LogLevel::INFO, "Server starting...");
+        engine.displayGameInfo();
         engine.loadLibraries();
         if (engine.LoadLuaFile("index.luau"))
             engine.execute();

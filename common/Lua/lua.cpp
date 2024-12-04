@@ -222,6 +222,59 @@ static void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *function
     lua_setglobal(L, name);
 }
 
+void luau_ExposeGameInfoTable(lua_State *L, const GameInfo *info)
+{
+    lua_newtable(L);
+
+    // Populate the "game" table
+
+    // game.name
+    lua_pushstring(L, "name");
+    lua_pushstring(L, info->getName().c_str());
+    lua_settable(L, -3);
+
+    // game.version
+    lua_pushstring(L, "version");
+    lua_pushstring(L, info->getVersion().c_str());
+    lua_settable(L, -3);
+
+    // game.authors
+    lua_pushstring(L, "authors");
+    lua_createtable(L, 0, info->getAuthors().size());
+    for (size_t i = 0; i < info->getAuthors().size(); i++) {
+        lua_pushstring(L, info->getAuthors()[i].c_str());
+        lua_setfield(L, -2, std::to_string(i + 1).c_str());
+    }
+    lua_settable(L, -3);
+
+    // game.description
+    lua_pushstring(L, "description");
+    lua_pushstring(L, info->getDescription().c_str());
+    lua_settable(L, -3);
+
+    // game.max_players
+    lua_pushstring(L, "max_players");
+    lua_pushnumber(L, info->getMaxPlayers());
+    lua_settable(L, -3);
+
+    lua_newtable(L);
+
+    lua_pushstring(L, "__index");
+    lua_pushvalue(L, -3);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "__newindex");
+    lua_pushcfunction(L, [](lua_State* Lm) -> int {
+        luaL_error(Lm, "attempt to modify a read-only table");
+        return 0;
+    }, "game");
+    lua_settable(L, -3);
+
+    lua_setmetatable(L, -2);
+
+    lua_setglobal(L, "game");
+}
+
 void luau_ExposeConstants(lua_State *L, const Types::VMState state)
 {
     lua_pushinteger(L, state == Types::VMState::CLIENT);

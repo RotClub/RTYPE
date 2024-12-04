@@ -1,3 +1,3 @@
 hook.Add("RType:InitServer", "testing", function()
-    print("RType:Init")
+    print("RType:InitServer called")
 end)

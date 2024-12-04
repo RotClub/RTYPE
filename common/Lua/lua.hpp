@@ -20,9 +20,10 @@
     #include <queue>
     #include <filesystem>
     #include "Types.hpp"
+    #include "GameInfo/GameInfo.hpp"
 
     void luau_ExposeFunctions(lua_State *L);
-
+    void luau_ExposeGameInfoTable(lua_State *L, const GameInfo *info);
     void luau_ExposeConstants(lua_State *L, Types::VMState state);
 
     void luau_ExposeRootNode(lua_State *L);

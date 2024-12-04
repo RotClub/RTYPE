@@ -10,14 +10,18 @@
 
     #include "Nodes/Node.hpp"
     #include "lua.h"
+    #include "luaconf.h"
+    #include "lualib.h"
+    #include "luacode.h"
     #include "Lua/lua.hpp"
     #include <queue>
     #include <string>
     #include <filesystem>
     #include <map>
+    #include <GameInfo/GameInfo.hpp>
     #include "Types.hpp"
 
-    #define MAX_LOGS 50
+#define MAX_LOGS 50
 
     #define LUA_PATH "lua/"
 
@@ -27,7 +31,7 @@ class Engine {
         void operator=(const Engine &) = delete;
         ~Engine();
 
-        static Engine &StartInstance(Types::VMState state);
+        static Engine &StartInstance(Types::VMState state, const std::string &gamePath);
         static Engine &GetInstance();
 
         enum class LogLevel {
@@ -50,10 +54,12 @@ class Engine {
         bool hasPacket(const std::string &packetName) const;
         bool isPacketReliable(const std::string &packetName) const;
 
+        void displayGameInfo();
+
         void callHook(const std::string &eventName, unsigned char numArgs);
 
         std::string GetLibraryFileContents(const std::string &filename);
-        void loadLibraries();
+        void loadLibraries() const;
 
         std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
@@ -63,7 +69,7 @@ class Engine {
         std::queue<log_t> logQueue;
 
     private:
-        Engine(Types::VMState state);
+        Engine(Types::VMState state, const std::string &gamePath);
         static Engine *_instance;
 
         /* NET LIBRARY
@@ -76,9 +82,11 @@ class Engine {
 
         static std::string _getLogLevelString(LogLevel level);
         lua_State *L;
-        std::filesystem::path gamePath;
-        std::filesystem::path libPath;
+        std::filesystem::path _gamePath;
+        std::filesystem::path _libPath;
         Types::VMState _state;
+
+        const GameInfo *_gameInfo;
 };
 
 #endif /* !ENGINE_HPP_ */
