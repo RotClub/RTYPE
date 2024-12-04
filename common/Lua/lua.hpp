@@ -28,6 +28,10 @@
 
     void luau_ExposeRootNode(lua_State *L);
 
+    void luau_RegisterNodeMetatables(lua_State* L);
+
+    void luau_SetupNodeInheritance(lua_State* L);
+
     LUA_API int luau_Import(lua_State *L);
 
     /* NET LIBRARY */
@@ -49,6 +53,11 @@
     LUA_API int luau_NodeSetName(lua_State *L);
     LUA_API int luau_NodeGetChildren(lua_State *L);
     LUA_API int luau_NodeGetChild(lua_State *L);
+    LUA_API int luau_NodeCreate(lua_State *L);
+    LUA_API int luau_NodeAddChild(lua_State *L);
+    LUA_API int lua_gcNode(lua_State* L);
+    LUA_API int lua_gcNode2D(lua_State* L);
+    LUA_API int lua_gcSprite2D(lua_State* L);
     /* NODE LIBRARY */
 
 

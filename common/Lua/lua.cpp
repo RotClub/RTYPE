@@ -4,6 +4,9 @@
 
 #include "lua.hpp"
 
+#include <Nodes/Node2D/Node2D.hpp>
+#include <Nodes/Node2D/Sprite2D/Sprite2D.hpp>
+
 LUA_API int luau_Include(lua_State *L)
 {
     const char *filePath = lua_tostring(L, 1);
@@ -127,6 +130,58 @@ void luau_ExposeRootNode(lua_State *L)
     lua_setglobal(L, "root");
 }
 
+LUA_API int lua_gcNode(lua_State* L)
+{
+    Node* node = *(Node**)luaL_checkudata(L, 1, "NodeMetaTable");
+    delete node;
+    return 0;
+}
+
+LUA_API int lua_gcNode2D(lua_State* L)
+{
+    Node2D* node2D = *(Node2D**)luaL_checkudata(L, 1, "Node2DMetaTable");
+    delete node2D;
+    return 0;
+}
+
+LUA_API int lua_gcSprite2D(lua_State* L)
+{
+    Sprite2D* sprite2D = *(Sprite2D**)luaL_checkudata(L, 1, "Sprite2DMetaTable");
+    delete sprite2D;
+    return 0;
+}
+
+void luau_ExposeFunctionsAsMetatable(lua_State *L, const luaL_Reg *functions, const char *name, const char *parent) {
+    // Get or create the metatable
+    if (luaL_getmetatable(L, name) == LUA_TNIL) {
+        lua_pop(L, 1); // Pop nil
+        luaL_newmetatable(L, name);
+    }
+
+    // Add functions to the metatable
+    for (const luaL_Reg *func = functions; func->name; func++) {
+        lua_pushcfunction(L, func->func, name);
+        lua_setfield(L, -2, func->name);
+    }
+
+    // Set parent metatable for inheritance
+    if (parent) {
+        if (luaL_getmetatable(L, parent) != LUA_TNIL) {
+            lua_setfield(L, -2, "__index");
+        } else {
+            lua_pop(L, 1);
+            luaL_error(L, "Parent metatable '%s' not found", parent);
+        }
+    } else {
+        lua_pushvalue(L, -1);
+        lua_setfield(L, -2, "__index");
+    }
+
+    // Pop the metatable
+    lua_pop(L, 1);
+}
+
+
 LUA_API int luau_NodeGetName(lua_State *L)
 {
     Node* node = *(Node**)luaL_checkudata(L, 1, "NodeMetaTable");
@@ -175,21 +230,60 @@ LUA_API int luau_NodeGetChild(lua_State* L) {
     return 1;
 }
 
-LUA_API int luau_NodeCreate(lua_State *L)
-{
-    const char *name = luaL_checkstring(L, 1);
-    Node *node = new Node(name);
-    *(Node**)lua_newuserdata(L, sizeof(Node*)) = node;
-    luaL_getmetatable(L, "NodeMetaTable");
-    lua_setmetatable(L, -2);
-    return 1;
-}
-
 LUA_API int luau_NodeAddChild(lua_State *L)
 {
     Node* node = *(Node**)luaL_checkudata(L, 1, "NodeMetaTable");
-    Node* child = *(Node**)luaL_checkudata(L, 2, "NodeMetaTable");
-    node->children.push_back(*child);
+    const std::string type = luaL_checkstring(L, 2);
+    const char *name = luaL_checkstring(L, 3);
+    if (type == "Node") {
+        auto child = new Node(name);
+        *(Node**)lua_newuserdata(L, sizeof(Node*)) = child;
+        luaL_getmetatable(L, "NodeMetaTable");
+        lua_setmetatable(L, -2);
+        node->children.push_back(*child);
+    }
+    else if (type == "Node2D") {
+        auto *child = new Node2D(name);
+        *(Node2D**)lua_newuserdata(L, sizeof(Node2D*)) = child;
+        luaL_getmetatable(L, "Node2DMetaTable");
+        lua_setmetatable(L, -2);
+        node->children.push_back(*child);
+    }
+    else if (type == "Sprite2D") {
+        const char *texture = luaL_checkstring(L, 4);
+        auto *child = new Sprite2D(name, texture);
+        *(Sprite2D**)lua_newuserdata(L, sizeof(Sprite2D*)) = child;
+        luaL_getmetatable(L, "Sprite2DMetaTable");
+        lua_setmetatable(L, -2);
+        node->children.push_back(*child);
+    }
+    else {
+        luaL_error(L, "Invalid type provided.");
+    }
+    return 1;
+}
+
+LUA_API int luau_Node2DGetPosition(lua_State *L)
+{
+    Node2D* node = *(Node2D**)luaL_checkudata(L, 1, "Node2DMetaTable");
+    lua_pushnumber(L, node->position.x);
+    lua_pushnumber(L, node->position.y);
+    return 2;
+}
+
+LUA_API int luau_Node2DSetPosition(lua_State *L)
+{
+    Node2D* node = *(Node2D**)luaL_checkudata(L, 1, "Node2DMetaTable");
+    node->position.x = static_cast<float>(luaL_checknumber(L, 2));
+    node->position.y = static_cast<float>(luaL_checknumber(L, 3));
+    return 0;
+}
+
+LUA_API int luau_Sprite2DSetTexture(lua_State *L)
+{
+    Sprite2D* sprite = *(Sprite2D**)luaL_checkudata(L, 1, "Sprite2DMetaTable");
+    const char *texture = luaL_checkstring(L, 2);
+    sprite->SetTexture(texture);
     return 0;
 }
 
@@ -289,9 +383,25 @@ void luau_ExposeConstants(lua_State *L, const Types::VMState state)
     #endif
 }
 
-void luau_ExposeObjectMethods(lua_State *L)
+void luau_RegisterNodeMetatables(lua_State* L)
 {
+    // Add Node metatable
+    luaL_newmetatable(L, "NodeMetaTable");
+    lua_pushcfunction(L, lua_gcNode, "NodeMetaTable");
+    lua_setfield(L, -2, "__gc");
+    lua_pop(L, 1);
 
+    // Add Node2D metatable
+    luaL_newmetatable(L, "Node2DMetaTable");
+    lua_pushcfunction(L, lua_gcNode2D, "Node2DMetaTable");
+    lua_setfield(L, -2, "__gc");
+    lua_pop(L, 1);
+
+    // Add Sprite2D metatable
+    luaL_newmetatable(L, "Sprite2DMetaTable");
+    lua_pushcfunction(L, lua_gcSprite2D, "Sprite2DMetaTable");
+    lua_setfield(L, -2, "__gc");
+    lua_pop(L, 1);
 }
 
 void luau_ExposeFunctions(lua_State *L)
@@ -313,6 +423,26 @@ void luau_ExposeFunctions(lua_State *L)
     /* NET LIBRARY */
 
     /* NODE LIBRARY */
-    luau_ExposeRootNode(L);
+    luau_RegisterNodeMetatables(L);
+    constexpr luaL_Reg nodeLibrary[] = {
+        {"GetName", luau_NodeGetName},
+        {"SetName", luau_NodeSetName},
+        {"GetChildren", luau_NodeGetChildren},
+        {"GetChild", luau_NodeGetChild},
+        {"AddChild", luau_NodeAddChild},
+        {nullptr, nullptr}
+    };
+    luau_ExposeFunctionsAsMetatable(L, nodeLibrary, "NodeMetaTable", nullptr);
+    constexpr luaL_Reg node2DLibrary[] = {
+        {"GetPosition", luau_Node2DGetPosition},
+        {"SetPosition", luau_Node2DSetPosition},
+        {nullptr, nullptr}
+    };
+    luau_ExposeFunctionsAsMetatable(L, node2DLibrary, "Node2DMetaTable", "NodeMetaTable");
+    constexpr luaL_Reg sprite2DLibrary[] = {
+        {"SetTexture", luau_Sprite2DSetTexture},
+        {nullptr, nullptr}
+    };
+    luau_ExposeFunctionsAsMetatable(L, sprite2DLibrary, "Sprite2DMetaTable", "Node2DMetaTable");
     /* NODE LIBRARY */
 }
