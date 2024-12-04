@@ -7,10 +7,6 @@
 
 #include "Server.hpp"
 
-Server::Server()
-{
-}
+Server::Server(int port) : port(port), running(false) {}
 
-Server::~Server()
-{
-}
+
