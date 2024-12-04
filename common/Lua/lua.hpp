@@ -19,9 +19,10 @@
     #include "luacode.h"
     #include <queue>
     #include <filesystem>
+    #include "../GameInfo/GameInfo.hpp"
 
     void luau_ExposeFunctions(lua_State *L);
-
+    void luau_ExposeGameInfoTable(lua_State *L, const GameInfo *info);
     void luau_ExposeConstants(lua_State *L, Types::VMState state);
 
     LUA_API int luau_Import(lua_State *L);

@@ -9,11 +9,26 @@
 #include <iostream>
 #include <ctime>
 #include <fstream>
+#include "nlohmann/json.hpp"
 
-Engine::Engine(Types::VMState state)
-    : root(nullptr), L(luaL_newstate()), gamePath("games/rtype"), libPath("libs"), _state(state)
+Engine::Engine(Types::VMState state, const std::string &gamePath)
+    : root(nullptr), L(luaL_newstate()), _gamePath("games/" + gamePath), _libPath("libs"), _state(state)
 {
+    if (!L)
+        throw std::runtime_error("Failed to create Lua state");
+
+    std::ifstream manifestFile(_gamePath / "manifest.json");
+    nlohmann::json manifestData = nlohmann::json::parse(manifestFile);
+    manifestFile.close();
+
+    try {
+        _gameInfo = new GameInfo(manifestData);
+    } catch (const std::exception &e) {
+        throw std::runtime_error("Failed to load manifest.json: " + std::string(e.what()));
+    }
+
     luaL_openlibs(L);
+    luau_ExposeGameInfoTable(L, _gameInfo);
     luau_ExposeConstants(L, state);
     luau_ExposeFunctions(L);
 }
@@ -22,11 +37,12 @@ Engine::~Engine()
 {
     lua_close(L);
     ClearLogs();
+    delete _gameInfo;
 }
 
-Engine& Engine::StartInstance(Types::VMState state)
+Engine& Engine::StartInstance(Types::VMState state, const std::string &gamePath)
 {
-    _instance = new Engine(state);
+    _instance = new Engine(state, gamePath);
     return *_instance;
 }
 
@@ -81,6 +97,19 @@ bool Engine::isPacketReliable(const std::string &packetName) const
     return _packetsRegistry.at(packetName);
 }
 
+void Engine::displayGameInfo()
+{
+    Log(LogLevel::INFO, "Selected game info:");
+    Log(LogLevel::INFO, "Name: " + _gameInfo->getName());
+    Log(LogLevel::INFO, "Description: " + _gameInfo->getDescription());
+    Log(LogLevel::INFO, "Max players: " + std::to_string(_gameInfo->getMaxPlayers()));
+    Log(LogLevel::INFO, "Authors:");
+    for (const auto &author : _gameInfo->getAuthors()) {
+        Log(LogLevel::INFO, "  - " + author);
+    }
+    Log(LogLevel::INFO, "Version: " + _gameInfo->getVersion());
+}
+
 // WARNING: This function assumes you have already pushed the arguments on the stack
 void Engine::callHook(const std::string &eventName, unsigned char numArgs)
 {
@@ -103,12 +132,12 @@ void Engine::callHook(const std::string &eventName, unsigned char numArgs)
 
 std::string Engine::GetLibraryFileContents(const std::string& filename)
 {
-    const std::filesystem::path filePath = libPath / filename;
+    const std::filesystem::path filePath = _libPath / filename;
     if (!std::filesystem::exists(filePath)) {
         Log(LogLevel::ERROR, "File " + filename + " does not exist");
         return "";
     }
-    if (filePath.string().find(libPath.string()) != 0) {
+    if (filePath.string().find(_libPath.string()) != 0) {
         Log(LogLevel::ERROR, "File " + filename + " is outside the lib path");
         return "";
     }
@@ -177,12 +206,12 @@ std::string Engine::_getLogLevelString(const LogLevel level)
 
 std::string Engine::GetLuaFileContents(const std::string &filename)
 {
-    const std::filesystem::path filePath = gamePath / LUA_PATH / filename;
+    const std::filesystem::path filePath = _gamePath / LUA_PATH / filename;
     if (!std::filesystem::exists(filePath)) {
         Log(LogLevel::ERROR, "File " + filename + " does not exist");
         return "";
     }
-    if (filePath.string().find(gamePath.string()) != 0) {
+    if (filePath.string().find(_gamePath.string()) != 0) {
         Log(LogLevel::ERROR, "File " + filename + " is outside the game path");
         return "";
     }
