@@ -50,12 +50,12 @@ class Engine {
         void ClearLogs();
 
         void addPacket(const std::string &packetName, bool reliable);
-        bool hasPacket(const std::string &packetName) const;
-        bool isPacketReliable(const std::string &packetName) const;
+        [[nodiscard]] bool hasPacket(const std::string &packetName) const;
+        [[nodiscard]] bool isPacketReliable(const std::string &packetName) const;
 
         void displayGameInfo();
 
-        void callHook(const std::string &eventName, unsigned char numArgs);
+        void callHook(const std::string &eventName, ...);
 
         std::string GetLibraryFileContents(const std::string &filename);
         void loadLibraries() const;
@@ -63,6 +63,8 @@ class Engine {
         std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
         void execute();
+
+        [[nodiscard]] lua_State *getLuaState() const { return L; }
 
         Node *root;
         std::queue<log_t> logQueue;
