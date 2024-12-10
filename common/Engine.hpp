@@ -40,14 +40,6 @@ class Engine {
             ERROR
         };
 
-        enum class LuaType {
-            INT,
-            STRING,
-            FLOAT,
-            DOUBLE,
-            BOOLEAN
-        };
-
         typedef struct log_s {
             const LogLevel level;
             const std::string &timestamp;
