@@ -32,8 +32,9 @@
             void _receiveLoop();
             void _sendLoop();
             Packet _tryReceive();
-            void _createSocket();
-            void _handleClient(int clientFd);
+            void _createSocket() override;
+            int _selectFd() override;
+
 
             int _port;
             std::string _ip;
