@@ -21,7 +21,7 @@
 
     class ServerConnection : public GlobalConnection {
         public:
-            ServerConnection(int port, bool udp = false);
+            ServerConnection(int port);
             ~ServerConnection();
 
             void start();
@@ -38,8 +38,6 @@
 
             int _port;
             std::string _ip;
-            bool _udp;
-            int _max_sd;
             std::set<int> _clientSockets;
             std::atomic<bool> _running = false;
 };

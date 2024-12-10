@@ -7,8 +7,8 @@
 
 #include "ServerConnection.hpp"
 
-ServerConnection::ServerConnection(int port, bool udp)
-    : GlobalConnection(), _port(port), _udp(udp), _running(false)
+ServerConnection::ServerConnection(int port)
+    : GlobalConnection(), _port(port), _running(false)
 {
 }
 
