@@ -17,7 +17,7 @@ int main(int argc, char **argv)
         if (engine.LoadLuaFile("index.luau"))
             engine.execute();
         engine.Log(Engine::LogLevel::INFO, "Server started!");
-        engine.callHook("RType:InitServer", 0);
+        engine.callHook("RType:InitServer", nullptr);
     } catch (const std::exception &e) {
         std::cerr << "Could not start server: " << e.what() << std::endl;
         return 84;
