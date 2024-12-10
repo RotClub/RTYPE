@@ -11,6 +11,26 @@ Server::Server(int port) : _port(port), _isRunning(false), _serverConnectionTcp(
 {
 }
 
+bool Server::start()
+{
+    try {
+        _serverConnectionTcp.start();
+        _serverConnectionUdp.start();
+        _isRunning = true;
+        return true;
+    } catch (const std::exception &e) {
+        std::cerr << "[Server] Error starting server: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+void Server::stop()
+{
+    _serverConnectionTcp.stop();
+    _serverConnectionUdp.stop();
+    _isRunning = false;
+}
+
 int Server::getPort() const
 {
     return _port;

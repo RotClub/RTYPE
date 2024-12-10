@@ -15,6 +15,7 @@
     #include "../common/Networking/PacketBuilder.hpp"
     #include <map>
     #include <thread>
+    #include <set>
 
     #define KEYWORD "xMmM21B6dFdwJY39"
 
@@ -25,22 +26,21 @@
 
             void start();
             void stop();
-            bool isRunning() const;
-            void broadcast(Packet pckt);
 
         private:
-            void _acceptloop();
-            void _clientHandler(int clientSocket);
-            Packet _tryReceive(int clientSocket);
-            void _sendPacket(int clientSocket, Packet pckt);
+            void _loop() override;
+            void _receiveLoop();
+            void _sendLoop();
+            Packet _tryReceive();
+            void _createSocket();
+            void _handleClient(int clientFd);
 
             int _port;
+            std::string _ip;
             bool _udp;
-            int _serverSocket;
+            int _max_sd;
+            std::set<int> _clientSockets;
             std::atomic<bool> _running = false;
-            std::thread _acceptThread;
-            std::map<int, std::thread> _clientThreads;
-            std::mutex _clientMutex;
 };
 
 #endif /* !SERVERCONNECTION_HPP_ */
