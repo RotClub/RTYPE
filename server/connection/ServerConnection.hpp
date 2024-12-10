@@ -8,18 +8,21 @@
 #ifndef SERVERCONNECTION_HPP_
     #define SERVERCONNECTION_HPP_
 
-    #include "../common/Networking/GlobalConnection.hpp"
-    #include "../common/Networking/Defines.hpp"
-    #include "../common/Networking/SafeQueue.hpp"
-    #include "../common/Networking/Packet.hpp"
-    #include "../common/Networking/PacketBuilder.hpp"
+    #include "Networking/GlobalConnection.hpp"
+    #include "Networking/Defines.hpp"
+    #include "Networking/SafeQueue.hpp"
+    #include "Networking/Packet.hpp"
+    #include "Networking/PacketBuilder.hpp"
     #include <map>
     #include <thread>
     #include <set>
+    #include <sys/select.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
 
     #define KEYWORD "xMmM21B6dFdwJY39"
 
-    class ServerConnection : public GlobalConnection {
+    class ServerConnection {
         public:
             ServerConnection(int port);
             ~ServerConnection();
@@ -28,18 +31,23 @@
             void stop();
 
         private:
-            void _loop() override;
+            void _loop();
             void _receiveLoop();
             void _sendLoop();
             Packet _tryReceive();
-            void _createSocket() override;
-            int _selectFd() override;
+            void _createSocket();
+            int _selectFd();
 
 
             int _port;
             std::string _ip;
-            std::set<int> _clientSockets;
             std::atomic<bool> _running = false;
+            std::thread _thread;
+            fd_set _readfds;
+            fd_set _writefds;
+            int _tcpFd = -1;
+            int _udpFd = -1;
+            sockaddr_in _addr;
 };
 
 #endif /* !SERVERCONNECTION_HPP_ */

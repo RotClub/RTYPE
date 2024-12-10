@@ -8,7 +8,6 @@
 #include "ServerConnection.hpp"
 
 ServerConnection::ServerConnection(int port)
-    : GlobalConnection(), _port(port), _running(false)
 {
 }
 
@@ -32,14 +31,17 @@ void ServerConnection::stop()
     if (_thread.joinable()) {
         _thread.join();
     }
-    close(_fd);
-    _fd = -1;
+    close(_tcpFd);
+    close(_udpFd);
+    _tcpFd = -1;
+    _udpFd = -1;
 }
 
 void ServerConnection::_loop()
 {
     while (_running) {
         try {
+            _selectFd();
             _receiveLoop();
             _sendLoop();
         } catch (const std::exception &e) {
@@ -62,27 +64,26 @@ Packet ServerConnection::_tryReceive()
 
 void ServerConnection::_createSocket()
 {
-    if (_udp)
-        _fd = socket(AF_INET, SOCK_DGRAM, 0);
-    else
-        _fd = socket(AF_INET, SOCK_STREAM, 0);
+    _udpFd = socket(AF_INET, SOCK_DGRAM, 0);
+    _tcpFd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (_fd == -1) {
-        throw std::runtime_error("Error creating socket");
-    }
-
+    bzero(&_addr, sizeof(_addr));
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
     _addr.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(_fd, (struct sockaddr*)&_addr, sizeof(_addr)) < 0) {
-        throw std::runtime_error("Error binding socket");
+    if (_udpFd == -1 || _tcpFd == -1) {
+        throw std::runtime_error("Error creating socket");
     }
 
-    if (!_udp) {
-        if (listen(_fd, 0) < 0) {
-            throw std::runtime_error("Error listening on TCP socket");
-        }
+    if (bind(_tcpFd, (struct sockaddr*)&_addr, sizeof(_addr)) < 0) {
+        throw std::runtime_error("Error binding tcp socket");
+    }
+
+    listen(_tcpFd, 0);
+
+    if (bind(_udpFd, (struct sockaddr*)&_addr, sizeof(_addr)) < 0) {
+        throw std::runtime_error("Error binding udp socket");
     }
 }
 
