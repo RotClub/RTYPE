@@ -10,6 +10,7 @@
 
     #include "../common/Engine.hpp"
     #include "connection/ClientConnection.hpp"
+    #include "ResourceManager.hpp"
 
     #include <string>
 
@@ -25,6 +26,7 @@
             int getPort() const;
             ClientConnection &getClientConnectionTcp();
             ClientConnection &getClientConnectionUdp();
+            ResourceManager &getResourceManager();
         protected:
             Client(std::string ip, int port);
             static Client *_instance;
@@ -33,9 +35,9 @@
             int _port;
             ClientConnection _clientConnectionTcp;
             ClientConnection _clientConnectionUdp;
+            ResourceManager _resourceManager;
             // window
             // loadingScreen
-            // resourceManager
     };
 
 #endif /* !CLIENT_HPP_ */
