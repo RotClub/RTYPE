@@ -10,7 +10,7 @@
 int main(int argc, char **argv)
 {
     try {
-        Server srv(9475);
+        Server srv(25777);
         srv.start();
     } catch (const std::exception &e) {
         std::cerr << "Could not start server: " << e.what() << std::endl;
