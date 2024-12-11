@@ -9,7 +9,7 @@
 
 int main(int argc, char **argv)
 {
-    /*try {
+    try {
         Engine &engine = Engine::StartInstance(Types::VMState::SERVER, "rtype");
         engine.Log(Engine::LogLevel::INFO, "Server starting...");
         engine.displayGameInfo();
@@ -21,6 +21,6 @@ int main(int argc, char **argv)
     } catch (const std::exception &e) {
         std::cerr << "Could not start server: " << e.what() << std::endl;
         return 84;
-    }*/
+    }
     return 0;
 }

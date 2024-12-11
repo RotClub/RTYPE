@@ -76,27 +76,34 @@ void ServerConnection::_createSocket()
         throw std::runtime_error("Error creating socket");
     }
 
-    if (bind(_tcpFd, (struct sockaddr*)&_addr, sizeof(_addr)) < 0) {
+    if (bind(_tcpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) < 0) {
         throw std::runtime_error("Error binding tcp socket");
     }
 
     listen(_tcpFd, 0);
 
-    if (bind(_udpFd, (struct sockaddr*)&_addr, sizeof(_addr)) < 0) {
+    if (bind(_udpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) < 0) {
         throw std::runtime_error("Error binding udp socket");
     }
+}
+
+void ServerConnection::_setClientFds(fd_set *set)
+{
+}
+
+int ServerConnection::_getMaxFd(fd_set *set)
+{
 }
 
 int ServerConnection::_selectFd()
 {
     int retval;
-    timeval tv = {1, 0};
 
     FD_ZERO(&_readfds);
     FD_ZERO(&_writefds);
-    FD_SET(_fd, &_readfds);
-    FD_SET(_fd, &_writefds);
-    retval = select(_fd + 1, &_readfds, &_writefds, NULL, &tv);
+    FD_SET(_tcpFd, &_readfds);
+    FD_SET(_udpFd, &_readfds);
+    retval = select(_fd + 1, &_readfds, &_writefds, nullptr, nullptr);
     if (retval == -1) {
         throw std::runtime_error("Error selecting socket");
     }

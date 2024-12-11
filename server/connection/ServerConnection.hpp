@@ -36,8 +36,9 @@
             void _sendLoop();
             Packet _tryReceive();
             void _createSocket();
+            void _setClientFds(fd_set *set);
+            int _getMaxFd(fd_set *set);
             int _selectFd();
-
 
             int _port;
             std::string _ip;

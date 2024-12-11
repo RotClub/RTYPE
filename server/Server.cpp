@@ -7,27 +7,33 @@
 
 #include "Server.hpp"
 
-Server::Server(int port) : _port(port), _isRunning(false), _serverConnectionTcp(port), _serverConnectionUdp(port, true)
+#include <Engine.hpp>
+
+Server::Server(int port)
+    : _port(port), _isRunning(false), _serverConnection(port)
 {
+}
+
+Server::~Server()
+{
+    stop();
 }
 
 bool Server::start()
 {
     try {
-        _serverConnectionTcp.start();
-        _serverConnectionUdp.start();
+        _serverConnection.start();
         _isRunning = true;
         return true;
     } catch (const std::exception &e) {
-        std::cerr << "[Server] Error starting server: " << e.what() << std::endl;
+        Engine::GetInstance().Log(Engine::LogLevel::ERROR, "Error starting server: " + std::string(e.what()));
         return false;
     }
 }
 
 void Server::stop()
 {
-    _serverConnectionTcp.stop();
-    _serverConnectionUdp.stop();
+    _serverConnection.stop();
     _isRunning = false;
 }
 

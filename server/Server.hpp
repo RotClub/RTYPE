@@ -10,20 +10,22 @@
 
 #include <iostream>
 #include "connection/ServerConnection.hpp"
+#include "client/Client.hpp"
+#include <vector>
 
 class Server {
     public:
         Server(int port);
+        ~Server();
         bool start();
         void stop();
         int getPort() const;
 
-    protected:
     private:
         int _port;
         bool _isRunning;
-        ServerConnection _serverConnectionTcp;
-        ServerConnection _serverConnectionUdp;
+        ServerConnection _serverConnection;
+        std::vector<Client> _clientConnections;
 };
 
 #endif /* !SERVER_HPP_ */
