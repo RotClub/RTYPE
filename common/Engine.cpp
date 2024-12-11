@@ -9,6 +9,7 @@
 #include <iostream>
 #include <ctime>
 #include <fstream>
+
 #include "nlohmann/json.hpp"
 
 Engine::Engine(Types::VMState state, const std::string &gamePath)
@@ -110,8 +111,11 @@ void Engine::displayGameInfo()
     Log(LogLevel::INFO, "Version: " + _gameInfo->getVersion());
 }
 
-// WARNING: This function assumes you have already pushed the arguments on the stack
-void Engine::callHook(const std::string &eventName, unsigned char numArgs)
+// WARNING: This function requires the last argument to be nullptr
+// The arguments must be in pairs of type and value
+// Accepted types are: "int", "float", "double", "string", "boolean"
+// Example: callHook("RType:InitServer", "int", 42, nullptr);
+void Engine::callHook(const std::string &eventName, ...)
 {
     lua_getglobal(L, "hook");
     lua_getfield(L, -1, "Call");
@@ -122,7 +126,30 @@ void Engine::callHook(const std::string &eventName, unsigned char numArgs)
 
     lua_pushstring(L, eventName.c_str());
 
-    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+    va_list args;
+    va_start(args, eventName);
+    int argCount = 0;
+    while (true) {
+        const char *type = va_arg(args, const char *);
+        if (type == nullptr)
+            break;
+        if (strcmp(type, "int") == 0)
+            lua_pushinteger(L, va_arg(args, int));
+        else if (strcmp(type, "float") == 0)
+            lua_pushnumber(L, va_arg(args, float));
+        else if (strcmp(type, "double") == 0)
+            lua_pushnumber(L, va_arg(args, double));
+        else if (strcmp(type, "string") == 0)
+            lua_pushstring(L, va_arg(args, const char *));
+        else if (strcmp(type, "boolean") == 0)
+            lua_pushboolean(L, va_arg(args, int));
+        else
+            throw std::runtime_error("Invalid LuaType");
+        argCount++;
+    }
+    va_end(args);
+
+    if (lua_pcall(L, 1 + argCount, 0, 0) != LUA_OK) {
         std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;
         lua_pop(L, 1);
     }
@@ -246,5 +273,7 @@ void Engine::execute()
     luaL_sandboxthread(L);
     if (lua_pcall(L, 0, LUA_MULTRET, 0) != 0) {
         Log(LogLevel::ERROR, lua_tostring(L, -1));
+    } else {
+        Log(LogLevel::INFO, "Successfully initialized Luau environment");
     }
 }
