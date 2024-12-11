@@ -54,6 +54,7 @@ class Engine {
         [[nodiscard]] bool isPacketReliable(const std::string &packetName) const;
 
         void displayGameInfo();
+        [[nodiscard]] const GameInfo *getGameInfo() const { return _gameInfo; }
 
         void callHook(const std::string &eventName, ...);
 
