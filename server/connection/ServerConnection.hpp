@@ -45,7 +45,6 @@
             int _selectFd();
 
             int _port;
-            std::string _ip;
             std::atomic<bool> _running = false;
             std::thread _thread;
             fd_set _readfds;
