@@ -36,58 +36,72 @@ ResourceManager::ResourceManager()
 {
 }
 
-void ResourceManager::loadResource(const std::string &name, const std::string &path)
+Resource &ResourceManager::loadResource(const std::string &path)
 {
-    if (_resourceLinks.find(name) != _resourceLinks.end()) {
-        std::get<0>(_resourceLinks[name])++;
-        return;
-    }
+    if (_resourceLinks.find(path) != _resourceLinks.end())
+        return std::get<1>(_resourceLinks[path]);
     std::string extension = path.substr(path.find_last_of('.'));
     ResourceType type = resourceExtensionsMap.at(extension);
     Resource resource;
-    try
-    {
+    try {
         switch (type) {
             case ResourceType::IMAGE:
-                resource = raylib::Texture(path);
+                resource = std::make_shared<raylib::Texture>(path);
                 break;
             case ResourceType::FONT:
-                resource = raylib::Font(path);
+                resource = std::make_shared<raylib::Font>(path);
                 break;
             case ResourceType::SOUND:
-                resource = raylib::Sound(path);
+                resource = std::make_shared<raylib::Sound>(path);
                 break;
         }
     }
     catch (const std::exception& e)
     {
-        return;
+        throw std::runtime_error("Failed to load resource");
     }
-    _resourceLinks[name] = std::make_tuple(1, std::move(resource), type);
+    _resourceLinks[path] = std::make_tuple(1, resource, type);
+    return std::get<1>(_resourceLinks[path]);
 }
 
-void ResourceManager::unloadResource(const std::string &name)
+void ResourceManager::unloadResource(const std::string &path)
 {
-    if (_resourceLinks.find(name) == _resourceLinks.end())
+    if (_resourceLinks.find(path) == _resourceLinks.end())
         return;
-    int &resourceCount = std::get<0>(_resourceLinks[name]);
+    int &resourceCount = std::get<0>(_resourceLinks[path]);
     resourceCount--;
     if (resourceCount == 0) {
-        _resourceLinks.erase(name);
+        _resourceLinks.erase(path);
     }
 }
 
-Resource& ResourceManager::getResource(const std::string &name)
+Resource& ResourceManager::getResource(const std::string &path)
 {
-    if (_resourceLinks.find(name) == _resourceLinks.end())
+    if (_resourceLinks.find(path) == _resourceLinks.end())
         throw std::runtime_error("Resource not found");
-    return std::get<1>(_resourceLinks[name]);
+    return std::get<1>(_resourceLinks[path]);
 }
 
-raylib::Texture2D &ResourceManager::getTexture(const std::string &name)
+raylib::Texture &ResourceManager::getTexture(const std::string &path)
 {
-    Resource &res = getResource(name);
-    if (!std::holds_alternative<raylib::Texture2D>(res))
+    Resource &res = getResource(path);
+    if (!std::holds_alternative<std::shared_ptr<raylib::Texture>>(res))
         throw std::runtime_error("Resource is not a texture");
-    return std::get<raylib::Texture2D>(res);
+    return *std::get<std::shared_ptr<raylib::Texture>>(res);
+}
+
+raylib::Font &ResourceManager::getFont(const std::string &path)
+{
+    Resource &res = getResource(path);
+    if (!std::holds_alternative<std::shared_ptr<raylib::Font>>(res))
+        throw std::runtime_error("Resource is not a font");
+    return *std::get<std::shared_ptr<raylib::Font>>(res);
+}
+
+raylib::Sound &ResourceManager::getSound(const std::string &path)
+{
+    Resource &res = getResource(path);
+    if (!std::holds_alternative<std::shared_ptr<raylib::Sound>>(res))
+        throw std::runtime_error("Resource is not a sound");
+    return *std::get<std::shared_ptr<raylib::Sound>>(res);
 }

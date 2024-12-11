@@ -12,13 +12,14 @@
     #include <tuple>
     #include <string>
     #include <variant>
+    #include <memory>
 
     #include "../submodules/raylib-cpp/include/Texture.hpp"
     #include "../submodules/raylib-cpp/include/Image.hpp"
     #include "../submodules/raylib-cpp/include/Font.hpp"
     #include "../submodules/raylib-cpp/include/Sound.hpp"
 
-    typedef std::variant<raylib::Texture, raylib::Font, raylib::Sound> Resource;
+    typedef std::variant<std::shared_ptr<raylib::Texture>, std::shared_ptr<raylib::Font>, std::shared_ptr<raylib::Sound>> Resource;
 
     enum class ResourceType {
         IMAGE,
@@ -33,10 +34,12 @@
 
             static const std::map<std::string, ResourceType> resourceExtensionsMap;
 
-            void loadResource(const std::string &name, const std::string &path);
-            void unloadResource(const std::string &name);
-            Resource &getResource(const std::string &name);
-            raylib::Texture2D &getTexture(const std::string &name);
+            Resource &loadResource(const std::string &path);
+            void unloadResource(const std::string &path);
+            Resource &getResource(const std::string &path);
+            raylib::Texture &getTexture(const std::string &path);
+            raylib::Font &getFont(const std::string &path);
+            raylib::Sound &getSound(const std::string &path);
 
         private:
             std::map<std::string, std::tuple<int, Resource, ResourceType>> _resourceLinks;
