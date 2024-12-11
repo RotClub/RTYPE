@@ -15,7 +15,7 @@ class GameInfo {
             const std::string &name,
             const std::string &description,
             unsigned int max_players,
-            const std::vector<std::string>& authors,
+            const std::vector<std::string> &authors,
             const std::string &version
         );
         explicit GameInfo(nlohmann::json &gameData);
