@@ -43,6 +43,8 @@ void Server::start()
 
 void Server::loop()
 {
+    Engine &engine = Engine::GetInstance();
+    engine.callHook("RType:Tick", "int", engine.deltaTime(), nullptr);
 }
 
 void Server::stop()
