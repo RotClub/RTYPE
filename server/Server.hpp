@@ -17,7 +17,7 @@ class Server {
     public:
         Server(int port);
         ~Server();
-        bool start();
+        void start();
         void stop();
         int getPort() const;
 

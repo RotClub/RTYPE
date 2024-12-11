@@ -35,6 +35,7 @@
             void _loop();
             void _receiveLoop();
             void _sendLoop();
+            void _accept();
             Packet _tryReceive();
             void _createSocket();
             void _setClientFds(fd_set *set);

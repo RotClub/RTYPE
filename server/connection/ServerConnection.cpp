@@ -8,6 +8,7 @@
 #include "ServerConnection.hpp"
 
 ServerConnection::ServerConnection(int port)
+    : _port(port)
 {
 }
 
@@ -44,6 +45,7 @@ void ServerConnection::_loop()
             _selectFd();
             _receiveLoop();
             _sendLoop();
+            _accept();
         } catch (const std::exception &e) {
             std::cerr << "[ServerConnection] Error in loop: " << e.what() << std::endl;
         }
@@ -55,6 +57,10 @@ void ServerConnection::_receiveLoop()
 }
 
 void ServerConnection::_sendLoop()
+{
+}
+
+void ServerConnection::_accept()
 {
 }
 
