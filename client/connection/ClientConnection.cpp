@@ -8,7 +8,7 @@
 #include "ClientConnection.hpp"
 
 ClientConnection::ClientConnection(std::string ip, int port, bool udp)
-    : GlobalConnection(), _ip(ip), _port(port)
+    : GlobalConnection(udp), _ip(ip), _port(port)
 {
 }
 

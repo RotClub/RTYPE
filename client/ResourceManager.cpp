@@ -49,7 +49,7 @@ void ResourceManager::loadResource(const std::string &name, const std::string &p
     {
         switch (type) {
             case ResourceType::IMAGE:
-                resource = raylib::Image(path);
+                resource = raylib::Texture(path);
                 break;
             case ResourceType::FONT:
                 resource = raylib::Font(path);
@@ -70,9 +70,11 @@ void ResourceManager::unloadResource(const std::string &name)
 {
     if (_resourceLinks.find(name) == _resourceLinks.end())
         return;
-    std::get<0>(_resourceLinks[name])--;
-    if (std::get<0>(_resourceLinks[name]) == 0)
+    int &resourceCount = std::get<0>(_resourceLinks[name]);
+    resourceCount--;
+    if (resourceCount == 0) {
         _resourceLinks.erase(name);
+    }
 }
 
 Resource& ResourceManager::getResource(const std::string &name)
@@ -82,11 +84,10 @@ Resource& ResourceManager::getResource(const std::string &name)
     return std::get<1>(_resourceLinks[name]);
 }
 
-raylib::Image &ResourceManager::getImage(const std::string &name)
+raylib::Texture2D &ResourceManager::getTexture(const std::string &name)
 {
-    if (_resourceLinks.find(name) == _resourceLinks.end())
-        throw std::runtime_error("Resource not found");
-    if (std::get<2>(_resourceLinks[name]) != ResourceType::IMAGE)
-        throw std::runtime_error("Resource is not an image");
-    return std::get<raylib::Image>(std::get<1>(_resourceLinks[name]));
+    Resource &res = getResource(name);
+    if (!std::holds_alternative<raylib::Texture2D>(res))
+        throw std::runtime_error("Resource is not a texture");
+    return std::get<raylib::Texture2D>(res);
 }

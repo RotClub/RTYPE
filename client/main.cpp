@@ -6,18 +6,12 @@
 */
 
 #include "Client.hpp"
-#include "window/Window.hpp"
+#include "raylib-cpp.hpp"
 
 int main(void)
 {
-	initLittleWindow();
     Client &client = Client::InitiateInstance("127.0.0.1", 5000);
-    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT);
+    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT, "rtype");
     engine.Log(Engine::LogLevel::INFO, "Client started");
-    engine.Log(Engine::LogLevel::INFO, "IP: " + client.getIp());
-    engine.Log(Engine::LogLevel::INFO, "Port: " + std::to_string(client.getPort()));
-    client.getClientConnectionTcp().connectToServer();
-    client.getClientConnectionTcp().establishConnection();
-	Window window = Window();
     return 0;
 }

@@ -18,7 +18,7 @@
     #include "../submodules/raylib-cpp/include/Font.hpp"
     #include "../submodules/raylib-cpp/include/Sound.hpp"
 
-    typedef std::variant<raylib::Image, raylib::Texture2D, raylib::Font, raylib::Sound> Resource;
+    typedef std::variant<raylib::Texture, raylib::Font, raylib::Sound> Resource;
 
     enum class ResourceType {
         IMAGE,
@@ -36,7 +36,7 @@
             void loadResource(const std::string &name, const std::string &path);
             void unloadResource(const std::string &name);
             Resource &getResource(const std::string &name);
-            raylib::Image &getImage(const std::string &name);
+            raylib::Texture2D &getTexture(const std::string &name);
 
         private:
             std::map<std::string, std::tuple<int, Resource, ResourceType>> _resourceLinks;
