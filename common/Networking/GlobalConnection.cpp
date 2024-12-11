@@ -33,13 +33,16 @@ bool GlobalConnection::isUdp() const
     return _udp;
 }
 
-int GlobalConnection::_selectFd() {
+int GlobalConnection::_selectFd()
+{
     int retval;
     timeval tv = {1, 0};
 
     FD_ZERO(&_readfds);
+    FD_ZERO(&_writefds);
     FD_SET(_fd, &_readfds);
-    retval = select(_fd + 1, &_readfds, NULL, NULL, &tv);
+    FD_SET(_fd, &_writefds);
+    retval = select(_fd + 1, &_readfds, &_writefds, NULL, &tv);
     if (retval == -1) {
         throw std::runtime_error("Error selecting socket");
     }

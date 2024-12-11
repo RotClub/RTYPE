@@ -43,7 +43,8 @@
             std::thread _thread;
             int _fd = -1;
             fd_set _readfds;
-            struct sockaddr_in _addr;
+            fd_set _writefds;
+            sockaddr_in _addr;
             bool _udp;
     };
 
