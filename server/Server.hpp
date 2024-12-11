@@ -25,7 +25,6 @@ class Server {
         int _port;
         bool _isRunning;
         ServerConnection _serverConnection;
-        std::vector<Client> _clientConnections;
 };
 
 #endif /* !SERVER_HPP_ */

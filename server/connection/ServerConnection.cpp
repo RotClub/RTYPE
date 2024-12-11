@@ -89,21 +89,34 @@ void ServerConnection::_createSocket()
 
 void ServerConnection::_setClientFds(fd_set *set)
 {
+    FD_ZERO(set);
+
+    for (const auto &client : _clientConnections) {
+        FD_SET(client.getTcpFd(), set);
+    }
 }
 
-int ServerConnection::_getMaxFd(fd_set *set)
+int ServerConnection::_getMaxFd()
 {
+    int max = _tcpFd;
+
+    for (const auto &client : _clientConnections) {
+        if (client.getTcpFd() > max) {
+            max = client.getTcpFd();
+        }
+    }
+    return max;
 }
 
 int ServerConnection::_selectFd()
 {
     int retval;
 
-    FD_ZERO(&_readfds);
-    FD_ZERO(&_writefds);
+    _setClientFds(&_readfds);
+    _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
     FD_SET(_udpFd, &_readfds);
-    retval = select(_fd + 1, &_readfds, &_writefds, nullptr, nullptr);
+    retval = select(_getMaxFd() + 1, &_readfds, &_writefds, nullptr, nullptr);
     if (retval == -1) {
         throw std::runtime_error("Error selecting socket");
     }

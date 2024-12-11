@@ -16,7 +16,8 @@
     #include <map>
     #include <thread>
     #include <set>
-    #include <sys/select.h>
+#include <client/Client.hpp>
+#include <sys/select.h>
     #include <netinet/in.h>
     #include <sys/socket.h>
 
@@ -37,7 +38,7 @@
             Packet _tryReceive();
             void _createSocket();
             void _setClientFds(fd_set *set);
-            int _getMaxFd(fd_set *set);
+            int _getMaxFd();
             int _selectFd();
 
             int _port;
@@ -48,6 +49,7 @@
             fd_set _writefds;
             int _tcpFd = -1;
             int _udpFd = -1;
+            std::vector<Client> _clientConnections;
             sockaddr_in _addr;
 };
 
