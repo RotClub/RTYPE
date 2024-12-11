@@ -21,7 +21,8 @@
     #include <netinet/in.h>
     #include <sys/socket.h>
 
-    #define KEYWORD "xMmM21B6dFdwJY39"
+    #define CLIENT_KEYWORD "xMmM21B6dFdwJY39"
+    #define SERVER_KEYWORD "hXhHebiL57op0F1C"
 
     class ServerConnection {
         public:
@@ -34,9 +35,10 @@
         private:
             void _loop();
             void _receiveLoop();
+            void _authFlow(Client *client);
             void _sendLoop();
             void _accept();
-            Packet _tryReceive();
+            Packet *_tryReceiveTCP(Client *client);
             void _createSocket();
             void _setClientFds(fd_set *set);
             int _getMaxFd();
@@ -50,7 +52,7 @@
             fd_set _writefds;
             int _tcpFd = -1;
             int _udpFd = -1;
-            std::vector<Client> _clientConnections;
+            std::vector<Client *> _clientConnections;
             sockaddr_in _addr;
 };
 

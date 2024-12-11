@@ -44,7 +44,7 @@
             int _fd = -1;
             fd_set _readfds;
             fd_set _writefds;
-            struct sockaddr_in _addr;
+            sockaddr_in _addr;
             bool _udp;
     };
 

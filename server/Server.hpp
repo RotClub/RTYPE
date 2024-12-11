@@ -18,6 +18,7 @@ class Server {
         Server(int port);
         ~Server();
         void start();
+        void loop();
         void stop();
         int getPort() const;
 

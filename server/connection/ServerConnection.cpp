@@ -7,6 +7,8 @@
 
 #include "ServerConnection.hpp"
 
+#include <Engine.hpp>
+
 ServerConnection::ServerConnection(int port)
     : _port(port)
 {
@@ -43,9 +45,14 @@ void ServerConnection::_loop()
     while (_running) {
         try {
             _selectFd();
+            _accept();
             _receiveLoop();
             _sendLoop();
-            _accept();
+            for (auto &client : _clientConnections) {
+                if (client->getStep() != Client::ConnectionStep::COMPLETE) {
+                    _authFlow(client);
+                }
+            }
         } catch (const std::exception &e) {
             std::cerr << "[ServerConnection] Error in loop: " << e.what() << std::endl;
         }
@@ -54,18 +61,50 @@ void ServerConnection::_loop()
 
 void ServerConnection::_receiveLoop()
 {
+    for (auto &client : _clientConnections) {
+        if (FD_ISSET(client->getTcpFd(), &_readfds)) {
+            client->addTcpPacketInput(_tryReceiveTCP(client));
+        }
+    }
+}
+
+void ServerConnection::_authFlow(Client *client)
+{
+    PacketBuilder builder;
+    Packet *packet = builder.writeString(Engine::GetInstance().getGameInfo()->getName()).build();
+
+    client->addTcpPacketOutput(packet);
+    client->setStep(Client::ConnectionStep::COMPLETE);
 }
 
 void ServerConnection::_sendLoop()
 {
+    for (auto &client : _clientConnections) {
+        if (FD_ISSET(client->getTcpFd(), &_writefds) && client->hasTcpPacketOutput()) {
+            Packet *packet = client->popTcpPacketOutput();
+            size_t len = sizeof(packet);
+            ssize_t ret = write(client->getTcpFd(), &len, sizeof(size_t));
+            ssize_t ret2 = write(client->getTcpFd(), packet, len);
+        }
+    }
 }
 
 void ServerConnection::_accept()
 {
+    if (FD_ISSET(_tcpFd, &_readfds)) {
+        _clientConnections.emplace_back(new Client(_tcpFd));
+    }
 }
 
-Packet ServerConnection::_tryReceive()
+Packet *ServerConnection::_tryReceiveTCP(Client *client)
 {
+    int packetSize = 0;
+    auto *packet = new Packet;
+
+    ssize_t ret = read(client->getTcpFd(), &packetSize, sizeof(int));
+    ssize_t ret2 = read(client->getTcpFd(), &packet, packetSize);
+
+    return packet;
 }
 
 void ServerConnection::_createSocket()
@@ -98,7 +137,7 @@ void ServerConnection::_setClientFds(fd_set *set)
     FD_ZERO(set);
 
     for (const auto &client : _clientConnections) {
-        FD_SET(client.getTcpFd(), set);
+        FD_SET(client->getTcpFd(), set);
     }
 }
 
@@ -107,8 +146,8 @@ int ServerConnection::_getMaxFd()
     int max = _tcpFd;
 
     for (const auto &client : _clientConnections) {
-        if (client.getTcpFd() > max) {
-            max = client.getTcpFd();
+        if (client->getTcpFd() > max) {
+            max = client->getTcpFd();
         }
     }
     return max;

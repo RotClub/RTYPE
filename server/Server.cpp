@@ -22,7 +22,6 @@ Server::~Server()
 void Server::start()
 {
     try {
-        _serverConnection.start();
         Engine &engine = Engine::StartInstance(Types::VMState::SERVER, "rtype");
         engine.Log(Engine::LogLevel::INFO, "Server starting...");
         engine.displayGameInfo();
@@ -31,11 +30,19 @@ void Server::start()
             engine.execute();
         engine.Log(Engine::LogLevel::INFO, "Server started!");
         engine.callHook("RType:InitServer", nullptr);
+        _serverConnection.start();
         _isRunning = true;
+        while (_isRunning) {
+            loop();
+        }
     } catch (const std::exception &e) {
         Engine::GetInstance().Log(Engine::LogLevel::ERROR, "Error starting server: " + std::string(e.what()));
-        throw e;
+        throw;
     }
+}
+
+void Server::loop()
+{
 }
 
 void Server::stop()
