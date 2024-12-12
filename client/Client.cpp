@@ -27,8 +27,7 @@ Client &Client::GetInstance()
 
 Client::Client(std::string ip, int port)
     : _ip(ip), _port(port),
-    _clientConnectionTcp(ip, port, false), _clientConnectionUdp(ip, port, true),
-    _resourceManager(), _game(*this)
+    _clientConnectionTcp(ip, port, false), _clientConnectionUdp(ip, port, true)
 {
 }
 
@@ -54,9 +53,4 @@ ClientConnection &Client::getClientConnectionTcp()
 ClientConnection &Client::getClientConnectionUdp()
 {
     return _clientConnectionUdp;
-}
-
-ResourceManager &Client::getResourceManager()
-{
-    return _resourceManager;
 }

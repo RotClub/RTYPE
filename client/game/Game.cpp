@@ -8,35 +8,52 @@
 #include "Game.hpp"
 #include "../Client.hpp"
 
-Game::Game(Client &client)
-    : _client(client)
+Game::Game()
 {
 }
 
 void Game::run()
 {
-    _window = raylib::Window(1920, 1080, "RType");
-    _window.SetTargetFPS(60);
-    _window.SetSize(1920, 1080);
-    _window.SetPosition(0, 0);
+    _window = raylib::Window();
+    const std::string gameName = Engine::GetInstance().getGameInfo()->getName();
+    _window.Init(800, 600, gameName);
+    _window.SetPosition(GetScreenWidth() / 2, GetScreenHeight() / 2);
     _window.SetExitKey(KeyboardKey::KEY_NULL);
+    if (_window.IsReady() == false)
+        throw std::runtime_error("Window is not ready");
+    Engine::GetInstance().clientStarted = true;
     _loadResources();
-    while (!_window.ShouldClose()) {
+    while (!_shouldClose) {
         int dt = Engine::GetInstance().deltaTime();
         _window.BeginDrawing();
         _update(dt);
         _window.EndDrawing();
+        if (_window.ShouldClose())
+            _shouldClose = true;
     }
 }
 
 void Game::_update(int dt)
 {
-    _window.ClearBackground(raylib::Color::White());
-    raylib::Text("Hello, World!").Draw(raylib::Vector2(10, 10));
-    raylib::Text("Delta Time: " + std::to_string(dt)).Draw(raylib::Vector2(10, 30));
+    Node *rootNode = Engine::GetInstance().root;
+    _window.ClearBackground(raylib::Color::Black());
+    _updateNodes(*rootNode);
+}
+
+void Game::_updateNodes(Node &node)
+{
+    if (&node == nullptr)
+        return;
+    node.Draw();
+    if (node.GetChildren().size() == 0)
+        return;
+    for (auto child : node.GetChildren()) {
+        _updateNodes(*child);
+    }
 }
 
 void Game::_loadResources()
 {
-    ResourceManager &resourceManager = _client.getResourceManager();
+    ResourceManager &resourceManager = Engine::GetInstance().getResourceManager();
+    resourceManager.loadAllPendingResources();
 }

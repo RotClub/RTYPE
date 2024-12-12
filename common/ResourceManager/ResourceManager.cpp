@@ -6,6 +6,7 @@
 */
 
 #include "ResourceManager.hpp"
+#include "Engine.hpp"
 
 const std::map<std::string, ResourceType> ResourceManager::resourceExtensionsMap = {
     {".png", ResourceType::IMAGE},
@@ -30,6 +31,15 @@ const std::map<std::string, ResourceType> ResourceManager::resourceExtensionsMap
     {".xm", ResourceType::SOUND},
     {".mod", ResourceType::SOUND},
     {".qoa", ResourceType::SOUND},
+    {".txt", ResourceType::TEXT},
+    {".json", ResourceType::TEXT},
+    {".xml", ResourceType::TEXT},
+    {".csv", ResourceType::TEXT},
+    {".yaml", ResourceType::TEXT},
+    {".yml", ResourceType::TEXT},
+    {".ini", ResourceType::TEXT},
+    {".cfg", ResourceType::TEXT},
+    {".conf", ResourceType::TEXT},
 };
 
 ResourceManager::ResourceManager()
@@ -42,6 +52,12 @@ ResourceManager::~ResourceManager()
 
 Resource &ResourceManager::loadResource(const std::string &path)
 {
+    if (Engine::GetInstance().getState() == Types::VMState::SERVER)
+        throw std::runtime_error("Cannot load resources on server");
+    if (Engine::GetInstance().clientStarted == false) {
+        addPendingResource(path);
+        return const_cast<Resource&>(nullResourceRef);
+    }
     if (_resourceLinks.find(path) != _resourceLinks.end())
         return std::get<1>(_resourceLinks[path]);
     std::string extension = path.substr(path.find_last_of('.'));
@@ -77,6 +93,19 @@ void ResourceManager::unloadResource(const std::string &path)
     if (resourceCount == 0) {
         _resourceLinks.erase(path);
     }
+}
+
+void ResourceManager::addPendingResource(const std::string &path)
+{
+    _resourceToLoad.push_back(path);
+}
+
+void ResourceManager::loadAllPendingResources()
+{
+    for (const auto &path : _resourceToLoad) {
+        loadResource(path);
+    }
+    _resourceToLoad.clear();
 }
 
 Resource& ResourceManager::getResource(const std::string &path)

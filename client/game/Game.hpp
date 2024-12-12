@@ -9,25 +9,25 @@
     #define GAME_HPP_
 
     #include "../../common/Engine.hpp"
-    #include "../ResourceManager.hpp"
 
     #include <raylib-cpp.hpp>
 
-class Client; // Forward declaration
+class Client;
 
 class Game {
     public:
-        Game(Client &client);
+        Game();
         ~Game();
 
         void run();
 
     private:
         void _update(int dt);
+        void _updateNodes(Node &node);
         void _loadResources();
 
         raylib::Window _window;
-        Client &_client;
+        bool _shouldClose = false;
 };
 
 #endif /* !GAME_HPP_ */

@@ -10,7 +10,6 @@
 
     #include "../common/Engine.hpp"
     #include "connection/ClientConnection.hpp"
-    #include "ResourceManager.hpp"
     #include "game/Game.hpp"
 
     #include <string>
@@ -37,7 +36,6 @@
             int _port;
             ClientConnection _clientConnectionTcp;
             ClientConnection _clientConnectionUdp;
-            ResourceManager _resourceManager;
             Game _game;
             // loadingScreen
     };

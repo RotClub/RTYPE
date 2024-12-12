@@ -19,9 +19,13 @@ class Node {
         ~Node();
 
         const Node &GetChild(const std::string &name) const;
-        const std::vector<Node> &GetChildren() const;
+        const std::vector<Node *> &GetChildren() const;
 
-        std::vector<Node> children;
+        void AddChild(Node &child) { children.push_back(&child); }
+
+        virtual void Draw();
+
+        std::vector<Node *> children;
         std::string name;
 };
 

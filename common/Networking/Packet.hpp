@@ -11,6 +11,11 @@
     #include <vector>
     #include <string>
 
+    // typedef union {
+    //     std::string str;
+    //     int integer;
+    // } PacketData;
+
     typedef struct {
         int size;
         std::vector<void *> data;

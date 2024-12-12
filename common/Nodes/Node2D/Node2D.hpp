@@ -9,6 +9,7 @@
     #define NODE2D_HPP_
 
     #include "../Node.hpp"
+    #include <raylib-cpp.hpp>
 
 class Node2D : public Node {
     public:
