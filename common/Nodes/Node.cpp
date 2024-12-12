@@ -31,6 +31,16 @@ const std::vector<Node *> &Node::GetChildren() const
     return children;
 }
 
+void Node::addChild(Node &child)
+{
+    children.push_back(&child);
+    child._parent = this;
+}
+
+void Node::Update()
+{
+}
+
 void Node::Draw()
 {
 }

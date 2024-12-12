@@ -44,6 +44,7 @@ void Game::_updateNodes(Node &node)
 {
     if (&node == nullptr)
         return;
+    node.Update();
     node.Draw();
     if (node.GetChildren().size() == 0)
         return;

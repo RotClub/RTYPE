@@ -7,7 +7,7 @@
 
 #include "Sprite2D.hpp"
 
-Sprite2D::Sprite2D(const std::string &name, const std::string &texture)
+Sprite2D::Sprite2D(const std::string &name = "sprite2d", const std::string &texture = "")
     : Node2D(name)
 {
     SetTexture(texture);
@@ -30,5 +30,5 @@ void Sprite2D::Draw()
     if (Engine::GetInstance().getState() == Types::VMState::SERVER)
         return;
     raylib::Texture &tex = Engine::GetInstance().getResourceManager().getTexture(_texture);
-    tex.Draw(position.x, position.y, raylib::Color::White());
+    tex.Draw(getGlobalPosition().x, getGlobalPosition().y);
 }

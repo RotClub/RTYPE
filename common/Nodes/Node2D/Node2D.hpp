@@ -17,6 +17,17 @@ class Node2D : public Node {
         ~Node2D();
 
         Types::Vector2 position;
+
+        Types::Vector2 getGlobalPosition() const { return _globalPosition; }
+
+        void addChild(Node &child) override;
+
+        void Update() override;
+
+    private:
+        Types::Vector2 _globalPosition;
+
+        void _updateGlobalPosition();
 };
 
 #endif /* !NODE2D_HPP_ */
