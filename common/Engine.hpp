@@ -88,7 +88,7 @@ class Engine {
         std::filesystem::path _gamePath;
         std::filesystem::path _libPath;
         Types::VMState _state;
-        std::chrono::time_point<std::chrono::high_resolution_clock> _deltaLast;
+        std::chrono::high_resolution_clock::time_point _deltaLast;
         const GameInfo *_gameInfo;
 };
 

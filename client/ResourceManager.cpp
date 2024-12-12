@@ -36,6 +36,10 @@ ResourceManager::ResourceManager()
 {
 }
 
+ResourceManager::~ResourceManager()
+{
+}
+
 Resource &ResourceManager::loadResource(const std::string &path)
 {
     if (_resourceLinks.find(path) != _resourceLinks.end())

@@ -6,6 +6,7 @@
 */
 
 #include "Client.hpp"
+#include "game/Game.hpp"
 
 Client *Client::_instance = nullptr;
 
@@ -27,11 +28,17 @@ Client &Client::GetInstance()
 Client::Client(std::string ip, int port)
     : _ip(ip), _port(port),
     _clientConnectionTcp(ip, port, false), _clientConnectionUdp(ip, port, true),
-    _resourceManager()
+    _resourceManager(), _game(*this)
 {
 }
 
-std::string Client::getIp() const {
+void Client::startGame()
+{
+    _game.run();
+}
+
+std::string Client::getIp() const
+{
     return _ip;
 }
 
