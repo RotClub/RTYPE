@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>R-TYPE</title>
-        <meta name="robots" content="noindex">
+        <title>Libraries - R-TYPE</title>
 
 
         <!-- Custom HTML head -->
@@ -13,32 +12,32 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon.svg">
-        <link rel="shortcut icon" href="favicon.png">
-        <link rel="stylesheet" href="css/variables.css">
-        <link rel="stylesheet" href="css/general.css">
-        <link rel="stylesheet" href="css/chrome.css">
-        <link rel="stylesheet" href="css/print.css" media="print">
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="fonts/fonts.css">
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="highlight.css">
-        <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
 
         <!-- Provide site root to javascript -->
         <script>
-            var path_to_root = "";
+            var path_to_root = "../";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc.js"></script>
+        <script src="../toc.js"></script>
     </head>
     <body>
     <div id="body-container">
@@ -90,7 +89,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -124,7 +123,7 @@
                     <h1 class="menu-title">R-TYPE</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
 
@@ -153,41 +152,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p><strong>R-TYPE</strong> is a 2D side-scrolling shoot 'em up game. The player controls a spaceship that can move horizontally and vertically. The game is divided into several levels, each with a boss at the end. The player must defeat the boss to progress to the next level. The player can collect power-ups to upgrade their ship's weapons and shields. The player must avoid or destroy enemy ships and projectiles to survive.</p>
-<h2 id="what-we-made"><a class="header" href="#what-we-made">What we made</a></h2>
-<p>In the context of EPITECH, we had to implement this project with some added features.</p>
-<ul>
-<li>Fully fledged engine with a Node System</li>
-<li>Socket system with TCP and UDP</li>
-<li>LUAU Virtual Machine</li>
-</ul>
-<p>The engine in itself makes 2 executables, a <code>server</code> and a <code>client</code>, the server on launch selects a game from a bunch of available games (either via launch arguments or selection if multiple games are available)</p>
-<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="games-filesystem"><a class="header" href="#games-filesystem">Games Filesystem</a></h1>
-<p>Each game is put in the <code>games/</code> folder. The directory architecture is strict and must be followed as such:</p>
-<p><em>Files/Folders in <strong>bold</strong> are required for the project to be valid.</em></p>
-<ul>
-<li><strong>manifest.json</strong></li>
-<li>assets/</li>
-<li><strong>lua/</strong>
-<ul>
-<li><strong>index.lua</strong> <em>entrypoint for every game</em></li>
-</ul>
-</li>
-</ul>
-<h2 id="manifestjson"><a class="header" href="#manifestjson">manifest.json</a></h2>
-<p>The manifest file is used for the server to know the presence of a valid game and retrieve basic information to send to the players on join attempts.</p>
-<pre><code class="language-json">{
-    "name": "string",
-    "description": "string",
-    "max_players": 4,
-    "authors": ["string", "string"],
-    "version": 1.0
-}
-</code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="luau"><a class="header" href="#luau">LUAU</a></h1>
-<p>The engine uses <a href="https://luau.org/">LUAU</a> for game scripting.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="libraries"><a class="header" href="#libraries">Libraries</a></h1>
+                        <h1 id="libraries"><a class="header" href="#libraries">Libraries</a></h1>
 <p>The engine makes use of multiple libraries to get the job done, some of those come from native LUAU.</p>
 <p>They can be found in the LUAU documentation:</p>
 <ul>
@@ -206,9 +171,9 @@
 <h2 id="custom-libraries"><a class="header" href="#custom-libraries">Custom libraries</a></h2>
 <p>We also implemented our own set of libraries to make controlling the engine easier.</p>
 <ul>
-<li><a href="game/libs.html#hook-library">hook</a> - Assign logic that needs to be triggered on specific events.</li>
-<li><a href="game/libs.html#json-library">json</a> - JSON Parser and Serializer.</li>
-<li><a href="game/libs.html#utils-library">utils</a> - Set of functions that accomplish all sorts of stuff.</li>
+<li><a href="#hook-library">hook</a> - Assign logic that needs to be triggered on specific events.</li>
+<li><a href="#json-library">json</a> - JSON Parser and Serializer.</li>
+<li><a href="#utils-library">utils</a> - Set of functions that accomplish all sorts of stuff.</li>
 </ul>
 <hr />
 <h2 id="hook-library"><a class="header" href="#hook-library">Hook library</a></h2>
@@ -258,6 +223,9 @@ end)
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../game/luau.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
 
                         <div style="clear: both"></div>
@@ -266,6 +234,9 @@ end)
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../game/luau.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
             </nav>
 
@@ -279,21 +250,16 @@ end)
         </script>
 
 
-        <script src="elasticlunr.min.js"></script>
-        <script src="mark.min.js"></script>
-        <script src="searcher.js"></script>
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
 
-        <script src="clipboard.min.js"></script>
-        <script src="highlight.js"></script>
-        <script src="book.js"></script>
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
 
         <!-- Custom JS scripts -->
 
-        <script>
-        window.addEventListener('load', function() {
-            window.setTimeout(window.print, 100);
-        });
-        </script>
 
     </div>
     </body>
