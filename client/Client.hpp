@@ -10,6 +10,7 @@
 
     #include "../common/Engine.hpp"
     #include "connection/ClientConnection.hpp"
+    #include "game/Game.hpp"
 
     #include <string>
 
@@ -21,10 +22,12 @@
             static Client &InitiateInstance(std::string ip, int port);
             static Client &GetInstance();
 
+            void startGame();
             std::string getIp() const;
             int getPort() const;
             ClientConnection &getClientConnectionTcp();
             ClientConnection &getClientConnectionUdp();
+            ResourceManager &getResourceManager();
         protected:
             Client(std::string ip, int port);
             static Client *_instance;
@@ -33,9 +36,8 @@
             int _port;
             ClientConnection _clientConnectionTcp;
             ClientConnection _clientConnectionUdp;
-            // window
+            Game _game;
             // loadingScreen
-            // resourceManager
     };
 
 #endif /* !CLIENT_HPP_ */

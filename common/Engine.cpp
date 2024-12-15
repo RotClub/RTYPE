@@ -9,11 +9,31 @@
 #include <iostream>
 #include <ctime>
 #include <fstream>
+#include <unistd.h>
+#include <chrono>
 
-Engine::Engine(Types::VMState state)
-    : root(nullptr), L(luaL_newstate()), gamePath("games/rtype"), libPath("libs"), _state(state)
+#include "nlohmann/json.hpp"
+
+Engine::Engine(Types::VMState state, const std::string &gamePath)
+    : root(nullptr), L(luaL_newstate()), _gamePath("games/" + gamePath), _libPath("libs"), _state(state)
 {
+    if (!L)
+        throw std::runtime_error("Failed to create Lua state");
+
+    _deltaLast = std::chrono::high_resolution_clock::now();
+
+    std::ifstream manifestFile(_gamePath / "manifest.json");
+    nlohmann::json manifestData = nlohmann::json::parse(manifestFile);
+    manifestFile.close();
+
+    try {
+        _gameInfo = new GameInfo(manifestData);
+    } catch (const std::exception &e) {
+        throw std::runtime_error("Failed to load manifest.json: " + std::string(e.what()));
+    }
+
     luaL_openlibs(L);
+    luau_ExposeGameInfoTable(L, _gameInfo);
     luau_ExposeConstants(L, state);
     luau_ExposeFunctions(L);
 }
@@ -22,11 +42,12 @@ Engine::~Engine()
 {
     lua_close(L);
     ClearLogs();
+    delete _gameInfo;
 }
 
-Engine& Engine::StartInstance(Types::VMState state)
+Engine& Engine::StartInstance(Types::VMState state, const std::string &gamePath)
 {
-    _instance = new Engine(state);
+    _instance = new Engine(state, gamePath);
     return *_instance;
 }
 
@@ -81,8 +102,24 @@ bool Engine::isPacketReliable(const std::string &packetName) const
     return _packetsRegistry.at(packetName);
 }
 
-// WARNING: This function assumes you have already pushed the arguments on the stack
-void Engine::callHook(const std::string &eventName, unsigned char numArgs)
+void Engine::displayGameInfo()
+{
+    Log(LogLevel::INFO, "Selected game info:");
+    Log(LogLevel::INFO, "Name: " + _gameInfo->getName());
+    Log(LogLevel::INFO, "Description: " + _gameInfo->getDescription());
+    Log(LogLevel::INFO, "Max players: " + std::to_string(_gameInfo->getMaxPlayers()));
+    Log(LogLevel::INFO, "Authors:");
+    for (const auto &author : _gameInfo->getAuthors()) {
+        Log(LogLevel::INFO, "  - " + author);
+    }
+    Log(LogLevel::INFO, "Version: " + _gameInfo->getVersion());
+}
+
+// WARNING: This function requires the last argument to be nullptr
+// The arguments must be in pairs of type and value
+// Accepted types are: "int", "float", "double", "string", "boolean"
+// Example: callHook("RType:InitServer", "int", 42, nullptr);
+void Engine::callHook(const std::string &eventName, ...)
 {
     lua_getglobal(L, "hook");
     lua_getfield(L, -1, "Call");
@@ -93,7 +130,30 @@ void Engine::callHook(const std::string &eventName, unsigned char numArgs)
 
     lua_pushstring(L, eventName.c_str());
 
-    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+    va_list args;
+    va_start(args, eventName);
+    int argCount = 0;
+    while (true) {
+        const char *type = va_arg(args, const char *);
+        if (type == nullptr)
+            break;
+        if (strcmp(type, "int") == 0)
+            lua_pushinteger(L, va_arg(args, int));
+        else if (strcmp(type, "float") == 0)
+            lua_pushnumber(L, va_arg(args, float));
+        else if (strcmp(type, "double") == 0)
+            lua_pushnumber(L, va_arg(args, double));
+        else if (strcmp(type, "string") == 0)
+            lua_pushstring(L, va_arg(args, const char *));
+        else if (strcmp(type, "boolean") == 0)
+            lua_pushboolean(L, va_arg(args, int));
+        else
+            throw std::runtime_error("Invalid LuaType");
+        argCount++;
+    }
+    va_end(args);
+
+    if (lua_pcall(L, 1 + argCount, 0, 0) != LUA_OK) {
         std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;
         lua_pop(L, 1);
     }
@@ -103,12 +163,12 @@ void Engine::callHook(const std::string &eventName, unsigned char numArgs)
 
 std::string Engine::GetLibraryFileContents(const std::string& filename)
 {
-    const std::filesystem::path filePath = libPath / filename;
+    const std::filesystem::path filePath = _libPath / filename;
     if (!std::filesystem::exists(filePath)) {
         Log(LogLevel::ERROR, "File " + filename + " does not exist");
         return "";
     }
-    if (filePath.string().find(libPath.string()) != 0) {
+    if (filePath.string().find(_libPath.string()) != 0) {
         Log(LogLevel::ERROR, "File " + filename + " is outside the lib path");
         return "";
     }
@@ -152,10 +212,11 @@ static void loadLibrary(lua_State *L, const std::string &filePath)
     }
 }
 
-void Engine::loadLibraries()
+void Engine::loadLibraries() const
 {
     loadLibrary(L, "hook.luau");
     loadLibrary(L, "utils.luau");
+    loadLibrary(L, "json.luau");
     luaL_sandbox(L);
 }
 
@@ -174,14 +235,23 @@ std::string Engine::_getLogLevelString(const LogLevel level)
     return "UNKNOWN";
 }
 
+int Engine::deltaTime()
+{
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    auto elapsed = currentTime - _deltaLast;
+
+    _deltaLast = currentTime;
+    return elapsed.count();
+}
+
 std::string Engine::GetLuaFileContents(const std::string &filename)
 {
-    const std::filesystem::path filePath = gamePath / LUA_PATH / filename;
+    const std::filesystem::path filePath = _gamePath / LUA_PATH / filename;
     if (!std::filesystem::exists(filePath)) {
         Log(LogLevel::ERROR, "File " + filename + " does not exist");
         return "";
     }
-    if (filePath.string().find(gamePath.string()) != 0) {
+    if (filePath.string().find(_gamePath.string()) != 0) {
         Log(LogLevel::ERROR, "File " + filename + " is outside the game path");
         return "";
     }
@@ -216,5 +286,7 @@ void Engine::execute()
     luaL_sandboxthread(L);
     if (lua_pcall(L, 0, LUA_MULTRET, 0) != 0) {
         Log(LogLevel::ERROR, lua_tostring(L, -1));
+    } else {
+        Log(LogLevel::INFO, "Successfully initialized Luau environment");
     }
 }

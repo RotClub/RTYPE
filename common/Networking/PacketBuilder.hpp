@@ -15,7 +15,7 @@
     class PacketBuilder {
         public:
             PacketBuilder();
-            PacketBuilder(Packet pckt);
+            PacketBuilder(Packet *packet);
             ~PacketBuilder() = default;
 
             PacketBuilder &writeInt(int nb);
@@ -24,10 +24,10 @@
             int readInt();
             std::string readString();
 
-            Packet build();
+            Packet *build();
 
         private:
-            Packet _packet;
+            Packet *_packet;
 
             void *_popFront();
     };

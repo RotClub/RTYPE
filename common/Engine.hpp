@@ -14,12 +14,14 @@
     #include "lualib.h"
     #include "luacode.h"
     #include "Lua/lua.hpp"
+    #include "ResourceManager/ResourceManager.hpp"
     #include <queue>
     #include <string>
     #include <filesystem>
     #include <map>
+    #include <GameInfo/GameInfo.hpp>
 
-    #define MAX_LOGS 50
+#define MAX_LOGS 50
 
     #define LUA_PATH "lua/"
 
@@ -29,7 +31,7 @@ class Engine {
         void operator=(const Engine &) = delete;
         ~Engine();
 
-        static Engine &StartInstance(Types::VMState state);
+        static Engine &StartInstance(Types::VMState state, const std::string &gamePath);
         static Engine &GetInstance();
 
         enum class LogLevel {
@@ -47,25 +49,38 @@ class Engine {
 
         void Log(LogLevel level, const std::string &message);
         void ClearLogs();
+        int deltaTime();
 
         void addPacket(const std::string &packetName, bool reliable);
-        bool hasPacket(const std::string &packetName) const;
-        bool isPacketReliable(const std::string &packetName) const;
+        [[nodiscard]] bool hasPacket(const std::string &packetName) const;
+        [[nodiscard]] bool isPacketReliable(const std::string &packetName) const;
 
-        void callHook(const std::string &eventName, unsigned char numArgs);
+        [[nodiscard]] const std::filesystem::path &getGamePath() const { return _gamePath; }
+
+        Types::VMState getState() const { return _state; }
+
+        void displayGameInfo();
+        [[nodiscard]] const GameInfo *getGameInfo() const { return _gameInfo; }
+
+        [[nodiscard]] ResourceManager &getResourceManager() { return _resourceManager; }
+
+        void callHook(const std::string &eventName, ...);
 
         std::string GetLibraryFileContents(const std::string &filename);
-        void loadLibraries();
+        void loadLibraries() const;
 
         std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
         void execute();
 
+        [[nodiscard]] lua_State *getLuaState() const { return L; }
+
         Node *root;
         std::queue<log_t> logQueue;
+        bool clientStarted = false;
 
     private:
-        Engine(Types::VMState state);
+        Engine(Types::VMState state, const std::string &gamePath);
         static Engine *_instance;
 
         /* NET LIBRARY
@@ -78,9 +93,12 @@ class Engine {
 
         static std::string _getLogLevelString(LogLevel level);
         lua_State *L;
-        std::filesystem::path gamePath;
-        std::filesystem::path libPath;
+        std::filesystem::path _gamePath;
+        std::filesystem::path _libPath;
         Types::VMState _state;
+        std::chrono::high_resolution_clock::time_point _deltaLast;
+        const GameInfo *_gameInfo;
+        ResourceManager _resourceManager;
 };
 
 #endif /* !ENGINE_HPP_ */

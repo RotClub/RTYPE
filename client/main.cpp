@@ -6,14 +6,24 @@
 */
 
 #include "Client.hpp"
+#include "raylib-cpp.hpp"
 
-int main(void) {
-    Client &client = Client::InitiateInstance("127.0.0.1", 5000);
-    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT);
+#include "Nodes/Node2D/Sprite2D/Sprite2D.hpp"
+
+int main(void)
+{
+    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT, "rtype");
+    Client &client = Client::InitiateInstance("127.0.0.1", 25777);
+
     engine.Log(Engine::LogLevel::INFO, "Client started");
-    engine.Log(Engine::LogLevel::INFO, "IP: " + client.getIp());
-    engine.Log(Engine::LogLevel::INFO, "Port: " + std::to_string(client.getPort()));
-    client.getClientConnectionTcp().connectToServer();
-    client.getClientConnectionTcp().establishConnection();
+    Node rootNode = Node("root");
+    Engine::GetInstance().root = &rootNode;
+    Sprite2D sprite = Sprite2D("sprite", "assets/a.png");
+    sprite.position = {30, 100};
+    Sprite2D subSprite = Sprite2D("subSprite", "assets/b.png");
+    subSprite.position = {350, 50};
+    rootNode.addChild(sprite);
+    sprite.addChild(subSprite);
+    client.startGame();
     return 0;
 }

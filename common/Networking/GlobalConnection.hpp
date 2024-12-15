@@ -28,7 +28,7 @@
         public:
             virtual ~GlobalConnection();
 
-            virtual Packet getLatestPacket();
+            virtual Packet *getLatestPacket();
             virtual bool isUdp() const;
 
         protected:
@@ -38,12 +38,13 @@
             virtual void _createSocket();
             virtual void _loop() = 0;
 
-            Packet _packet;
-            std::tuple<SafeQueue<Packet> *, SafeQueue<Packet> *> _queues;
+            Packet *_packet;
+            std::tuple<SafeQueue<Packet*>, SafeQueue<Packet*>> _queues;
             std::thread _thread;
             int _fd = -1;
             fd_set _readfds;
-            struct sockaddr_in _addr;
+            fd_set _writefds;
+            sockaddr_in _addr;
             bool _udp;
     };
 
