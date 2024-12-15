@@ -10,7 +10,7 @@
 
     #include "../common/Engine.hpp"
     #include "connection/ClientConnection.hpp"
-    #include "ResourceManager.hpp"
+    #include "game/Game.hpp"
 
     #include <string>
 
@@ -22,6 +22,7 @@
             static Client &InitiateInstance(std::string ip, int port);
             static Client &GetInstance();
 
+            void startGame();
             std::string getIp() const;
             int getPort() const;
             ClientConnection &getClientConnectionTcp();
@@ -35,8 +36,7 @@
             int _port;
             ClientConnection _clientConnectionTcp;
             ClientConnection _clientConnectionUdp;
-            ResourceManager _resourceManager;
-            // window
+            Game _game;
             // loadingScreen
     };
 

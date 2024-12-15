@@ -19,10 +19,20 @@ class Node {
         ~Node();
 
         const Node &GetChild(const std::string &name) const;
-        const std::vector<Node> &GetChildren() const;
+        const std::vector<Node *> &GetChildren() const;
 
-        std::vector<Node> children;
+        Node* getParent() { return _parent; }
+
+        virtual void addChild(Node &child);
+
+        virtual void Update();
+        virtual void Draw();
+
+        std::vector<Node *> children;
         std::string name;
+
+    private:
+        Node *_parent = nullptr;
 };
 
 #endif /* !NODE_HPP_ */

@@ -11,20 +11,17 @@ GlobalConnection::GlobalConnection(bool udp)
     : _udp(udp)
 {
     _createSocket();
-    _queues = std::make_tuple(new SafeQueue<Packet>(), new SafeQueue<Packet>());
 }
 
 GlobalConnection::~GlobalConnection()
 {
-    delete std::get<IN>(_queues);
-    delete std::get<OUT>(_queues);
 }
 
-Packet GlobalConnection::getLatestPacket()
+Packet *GlobalConnection::getLatestPacket()
 {
-    Packet pckt = std::get<IN>(_queues)->dequeue();
-    if (pckt.size == 0)
-        return NULL_PACKET;
+    Packet *pckt = std::get<IN>(_queues).dequeue();
+    if (pckt == nullptr)
+        return nullptr;
     return pckt;
 }
 
@@ -36,13 +33,12 @@ bool GlobalConnection::isUdp() const
 int GlobalConnection::_selectFd()
 {
     int retval;
-    timeval tv = {1, 0};
 
     FD_ZERO(&_readfds);
     FD_ZERO(&_writefds);
     FD_SET(_fd, &_readfds);
     FD_SET(_fd, &_writefds);
-    retval = select(_fd + 1, &_readfds, &_writefds, NULL, &tv);
+    retval = select(_fd + 1, &_readfds, &_writefds, nullptr, nullptr);
     if (retval == -1) {
         throw std::runtime_error("Error selecting socket");
     }

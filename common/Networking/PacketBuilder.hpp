@@ -15,7 +15,7 @@
     class PacketBuilder {
         public:
             PacketBuilder();
-            PacketBuilder(Packet packet);
+            PacketBuilder(Packet *packet);
             ~PacketBuilder() = default;
 
             PacketBuilder &writeInt(int nb);
