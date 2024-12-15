@@ -34,6 +34,9 @@ void ServerConnection::stop()
     if (_thread.joinable()) {
         _thread.join();
     }
+    for (const auto *client : _clientConnections) {
+        delete client;
+    }
     close(_tcpFd);
     close(_udpFd);
     _tcpFd = -1;

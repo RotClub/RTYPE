@@ -49,6 +49,7 @@ class Engine {
 
         void Log(LogLevel level, const std::string &message);
         void ClearLogs();
+        int deltaTime();
 
         void addPacket(const std::string &packetName, bool reliable);
         [[nodiscard]] bool hasPacket(const std::string &packetName) const;
@@ -88,7 +89,7 @@ class Engine {
         std::filesystem::path _gamePath;
         std::filesystem::path _libPath;
         Types::VMState _state;
-
+        std::chrono::time_point<std::chrono::high_resolution_clock> _deltaLast;
         const GameInfo *_gameInfo;
 };
 

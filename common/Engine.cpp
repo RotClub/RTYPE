@@ -9,6 +9,7 @@
 #include <iostream>
 #include <ctime>
 #include <fstream>
+#include <unistd.h>
 
 #include "nlohmann/json.hpp"
 
@@ -17,6 +18,8 @@ Engine::Engine(Types::VMState state, const std::string &gamePath)
 {
     if (!L)
         throw std::runtime_error("Failed to create Lua state");
+
+    _deltaLast = std::chrono::steady_clock::now();
 
     std::ifstream manifestFile(_gamePath / "manifest.json");
     nlohmann::json manifestData = nlohmann::json::parse(manifestFile);
@@ -229,6 +232,15 @@ std::string Engine::_getLogLevelString(const LogLevel level)
             return "ERROR";
     }
     return "UNKNOWN";
+}
+
+int Engine::deltaTime()
+{
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    auto elapsed = currentTime - _deltaLast;
+
+    _deltaLast = currentTime;
+    return elapsed.count();
 }
 
 std::string Engine::GetLuaFileContents(const std::string &filename)
