@@ -47,12 +47,6 @@ void ClientConnection::disconnectFromServer()
 
 bool ClientConnection::establishConnection()
 {
-    // std::string keyword = KEYWORD;
-    // Packet *pckt = PacketBuilder().writeString(keyword).build();
-    // sendToServer(pckt);
-    // Packet *response = getLatestPacket();
-    // if (response->size == 0)
-    //     return false;
     return true;
 }
 
