@@ -36,6 +36,8 @@ LUA_API int luau_Include(lua_State *L)
             lua_error(L);
         }
 
+        lua_remove(L, 1);
+
         Engine::GetInstance().Log(Engine::LogLevel::DEBUG, std::format("Successfully loaded file: {}", filePath));
         return lua_gettop(L);
     } catch (const std::exception& e) {
