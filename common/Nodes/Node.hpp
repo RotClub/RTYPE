@@ -21,6 +21,7 @@ class Node {
 
         std::vector<Node> children;
         std::string name;
+        std::string metatable;
 };
 
 #endif /* !NODE_HPP_ */

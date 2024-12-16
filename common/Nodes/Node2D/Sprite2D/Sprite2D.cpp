@@ -10,6 +10,7 @@
 Sprite2D::Sprite2D(const std::string &name, const std::string &texture)
     : texture(texture), Node2D(name)
 {
+    this->metatable = "Sprite2DMetaTable";
 }
 
 Sprite2D::~Sprite2D()

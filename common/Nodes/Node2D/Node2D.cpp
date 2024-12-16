@@ -10,6 +10,7 @@
 Node2D::Node2D(const std::string &name)
     : position(Types::Vector2::Zero()), Node(name)
 {
+    this->metatable = "Node2DMetaTable";
 }
 
 Node2D::~Node2D()

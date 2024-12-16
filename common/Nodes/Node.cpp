@@ -8,7 +8,7 @@
 #include "Node.hpp"
 
 Node::Node(const std::string &name)
-    : children(std::vector<Node>()), name(name)
+    : children(std::vector<Node>()), name(name), metatable("NodeMetaTable")
 {
 }
 
