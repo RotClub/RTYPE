@@ -20,6 +20,9 @@
     #include <filesystem>
     #include <map>
     #include <GameInfo/GameInfo.hpp>
+    #include "spdlog/spdlog.h"
+    #include "spdlog/sinks/stdout_color_sinks.h"
+    #include "spdlog/sinks/daily_file_sink.h"
 
 #define MAX_LOGS 50
 
@@ -47,8 +50,6 @@ class Engine {
             const std::string &message;
         } log_t;
 
-        void Log(LogLevel level, const std::string &message);
-        void ClearLogs();
         int deltaTime();
 
         void addPacket(const std::string &packetName, bool reliable);
@@ -76,7 +77,6 @@ class Engine {
         [[nodiscard]] lua_State *getLuaState() const { return L; }
 
         Node *root;
-        std::queue<log_t> logQueue;
         bool clientStarted = false;
 
     private:
