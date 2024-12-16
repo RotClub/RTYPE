@@ -19,8 +19,12 @@
     #include "../submodules/raylib-cpp/include/Font.hpp"
     #include "../submodules/raylib-cpp/include/Sound.hpp"
 
-    typedef std::variant<std::shared_ptr<raylib::Texture>, std::shared_ptr<raylib::Font>,
-        std::shared_ptr<raylib::Sound>, std::shared_ptr<std::string>> Resource;
+    using Resource = std::variant<
+        std::shared_ptr<raylib::Texture>,
+        std::shared_ptr<raylib::Font>,
+        std::shared_ptr<raylib::Sound>,
+        std::shared_ptr<std::string>
+    >;
 
     enum class ResourceType {
         IMAGE,

@@ -11,10 +11,10 @@
     #include <vector>
     #include <string>
 
-    typedef struct {
+    using Packet = struct packet_s {
         int size;
         std::vector<void *> data;
-    } Packet;
+    };
 
     #define NULL_PACKET (Packet){0, {}}
 
