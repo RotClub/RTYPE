@@ -8,13 +8,13 @@
 #ifndef STRINGPACKET_HPP_
     #define STRINGPACKET_HPP_
 
+    #include <any>
     #include <vector>
-    #include <string>
 
-    typedef struct {
+    using Packet = struct packet_s {
         int size;
-        std::vector<void *> data;
-    } Packet;
+        std::vector<std::any> data;
+    };
 
     #define NULL_PACKET (Packet){0, {}}
 

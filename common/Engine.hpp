@@ -41,11 +41,11 @@ class Engine {
             ERROR
         };
 
-        typedef struct log_s {
+        using log_t = struct log_s {
             const LogLevel level;
             const std::string &timestamp;
             const std::string &message;
-        } log_t;
+        };
 
         void Log(LogLevel level, const std::string &message);
         void ClearLogs();
