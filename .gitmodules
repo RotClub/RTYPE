@@ -13,3 +13,6 @@
 [submodule "submodules/rlImGui"]
 	path = submodules/rlImGui
 	url = https://github.com/raylib-extras/rlImGui
+[submodule "submodules/spdlog"]
+	path = submodules/spdlog
+	url = https://github.com/gabime/spdlog.git

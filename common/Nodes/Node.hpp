@@ -15,7 +15,7 @@
 
 class Node {
     public:
-        Node(const std::string &name);
+        explicit Node(const std::string &name = "node");
         ~Node();
 
         const Node &GetChild(const std::string &name) const;
