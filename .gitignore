@@ -6,3 +6,4 @@ r-type_engine.so
 r-type_server
 .cache
 build
+logs

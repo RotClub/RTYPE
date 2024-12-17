@@ -23,12 +23,12 @@ void Server::start()
 {
     try {
         Engine &engine = Engine::StartInstance(Types::VMState::SERVER, "rtype");
-        engine.Log(Engine::LogLevel::INFO, "Server starting...");
+        spdlog::info("Server starting...");
         engine.displayGameInfo();
         engine.loadLibraries();
         if (engine.LoadLuaFile("index.luau"))
             engine.execute();
-        engine.Log(Engine::LogLevel::INFO, "Server started!");
+        spdlog::info("Server started!");
         engine.callHook("RType:InitServer", nullptr);
         _serverConnection.start();
         _isRunning = true;
@@ -36,7 +36,7 @@ void Server::start()
             loop();
         }
     } catch (const std::exception &e) {
-        Engine::GetInstance().Log(Engine::LogLevel::ERROR, "Error starting server: " + std::string(e.what()));
+        spdlog::error("Error starting server: " + std::string(e.what()));
         throw;
     }
 }

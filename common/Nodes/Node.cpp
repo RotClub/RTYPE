@@ -8,7 +8,7 @@
 #include "Node.hpp"
 #include <raylib-cpp.hpp>
 
-Node::Node(const std::string &name = "node")
+Node::Node(const std::string &name)
     : children(), name(name)
 {
 }

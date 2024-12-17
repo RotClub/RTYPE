@@ -42,6 +42,8 @@ const std::map<std::string, ResourceType> ResourceManager::resourceExtensionsMap
     {".conf", ResourceType::TEXT},
 };
 
+const Resource &ResourceManager::nullResourceRef = std::make_shared<std::string>("null");
+
 ResourceManager::ResourceManager()
 {
 }

@@ -49,7 +49,7 @@
             raylib::Font &getFont(const std::string &path);
             raylib::Sound &getSound(const std::string &path);
 
-            const Resource &nullResourceRef = std::make_shared<std::string>("null");
+            static const Resource &nullResourceRef;
 
         private:
             std::vector<std::string> _resourceToLoad;
