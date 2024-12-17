@@ -30,6 +30,7 @@ class Node {
 
         std::vector<Node *> children;
         std::string name;
+        std::string metatable;
 
     private:
         Node *_parent = nullptr;

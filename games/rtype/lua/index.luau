@@ -1,3 +1,3 @@
-local test = include("init.luau")
+include("init.luau")
+include("metatable_test.luau")
 
-print(test)
