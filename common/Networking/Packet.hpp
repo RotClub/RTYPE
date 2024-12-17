@@ -9,13 +9,22 @@
     #define STRINGPACKET_HPP_
 
     #include <any>
+    #include <cstddef>
     #include <vector>
 
-    using Packet = struct packet_s {
-        int size;
-        std::vector<std::any> data;
+    enum class PacketCmd {
+        NONE,
+        CONNECT,
+        DISCONNECT,
+        NET
     };
 
-    #define NULL_PACKET (Packet){0, {}}
+    using Packet = struct packet_s {
+        size_t n;
+        PacketCmd cmd;
+        void *data;
+    };
+
+    #define NULL_PACKET (Packet){0, PacketCmd::NONE, NULL}
 
 #endif /* !STRINGPACKET_HPP_ */

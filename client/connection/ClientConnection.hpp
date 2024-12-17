@@ -9,10 +9,7 @@
     #define SERVERCONNECTION_HPP_
 
     #include "../common/Networking/GlobalConnection.hpp"
-    #include "../common/Networking/Defines.hpp"
-    #include "../common/Networking/SafeQueue.hpp"
     #include "../common/Networking/Packet.hpp"
-    #include "../common/Networking/PacketBuilder.hpp"
 
     #define KEYWORD "xMmM21B6dFdwJY39"
 
@@ -30,7 +27,7 @@
         void _loop();
         void _receiveLoop();
         void _sendLoop();
-        Packet *_tryReceive();
+        Packet _tryReceive();
 
         std::string _ip;
         int _port;
