@@ -51,7 +51,7 @@ Packet *PacketBuilder::build()
     return _packet;
 }
 
-void *PacketBuilder::_popFront()
+void* PacketBuilder::_popFront()
 {
     void *ptr = _packet->data.front();
     _packet->data.erase(_packet->data.begin());

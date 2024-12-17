@@ -11,6 +11,7 @@
 Node::Node(const std::string &name)
     : children(std::vector<Node*>()), name(name)
 {
+    this->metatable = "NodeMetaTable";
 }
 
 Node::~Node()

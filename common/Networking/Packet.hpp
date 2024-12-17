@@ -13,7 +13,7 @@
 
     using Packet = struct packet_s {
         int size;
-        std::vector<std::any> data;
+        std::vector<void *> data;
     };
 
     #define NULL_PACKET (Packet){0, {}}
