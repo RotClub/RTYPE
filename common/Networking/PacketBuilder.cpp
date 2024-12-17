@@ -1,4 +1,5 @@
 #include "PacketBuilder.hpp"
+#include <stdexcept>
 
 PacketBuilder::PacketBuilder()
 {
@@ -7,11 +8,13 @@ PacketBuilder::PacketBuilder()
     _packet->data = NULL_PACKET.data;
 }
 
-PacketBuilder::PacketBuilder(Packet packet)
+PacketBuilder::PacketBuilder(Packet *packet)
 {
-    _packet = new Packet;
-    _packet->data = packet.data;
-    _packet->size = packet.size;
+    if (packet == nullptr)
+        throw std::runtime_error("Packet is null");
+    _packet = packet;
+    _packet->data = packet->data;
+    _packet->size = packet->size;
 }
 
 PacketBuilder &PacketBuilder::writeInt(int nb)

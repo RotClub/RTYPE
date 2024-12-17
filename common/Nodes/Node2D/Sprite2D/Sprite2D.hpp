@@ -9,6 +9,7 @@
     #define SPRITE2D_HPP_
 
     #include "../Node2D.hpp"
+    #include "Engine.hpp"
 
 class Sprite2D : public Node2D {
     public:
@@ -17,7 +18,10 @@ class Sprite2D : public Node2D {
 
         Sprite2D &SetTexture(const std::string &texture);
 
-        std::string texture;
+        void Draw() override;
+
+    private:
+        std::string _texture;
 };
 
 #endif /* !SPRITE2D_HPP_ */

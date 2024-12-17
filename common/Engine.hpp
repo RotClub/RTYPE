@@ -14,6 +14,7 @@
     #include "lualib.h"
     #include "luacode.h"
     #include "Lua/lua.hpp"
+    #include "ResourceManager/ResourceManager.hpp"
     #include <queue>
     #include <string>
     #include <filesystem>
@@ -41,11 +42,11 @@ class Engine {
             ERROR
         };
 
-        typedef struct log_s {
+        using log_t = struct log_s {
             const LogLevel level;
             const std::string &timestamp;
             const std::string &message;
-        } log_t;
+        };
 
         void Log(LogLevel level, const std::string &message);
         void ClearLogs();
@@ -55,8 +56,14 @@ class Engine {
         [[nodiscard]] bool hasPacket(const std::string &packetName) const;
         [[nodiscard]] bool isPacketReliable(const std::string &packetName) const;
 
+        [[nodiscard]] const std::filesystem::path &getGamePath() const { return _gamePath; }
+
+        Types::VMState getState() const { return _state; }
+
         void displayGameInfo();
         [[nodiscard]] const GameInfo *getGameInfo() const { return _gameInfo; }
+
+        [[nodiscard]] ResourceManager &getResourceManager() { return _resourceManager; }
 
         void callHook(const std::string &eventName, ...);
 
@@ -71,6 +78,7 @@ class Engine {
 
         Node *root;
         std::queue<log_t> logQueue;
+        bool clientStarted = false;
 
     private:
         Engine(Types::VMState state, const std::string &gamePath);
@@ -89,8 +97,9 @@ class Engine {
         std::filesystem::path _gamePath;
         std::filesystem::path _libPath;
         Types::VMState _state;
-        std::chrono::time_point<std::chrono::high_resolution_clock> _deltaLast;
+        std::chrono::high_resolution_clock::time_point _deltaLast;
         const GameInfo *_gameInfo;
+        ResourceManager _resourceManager;
 };
 
 #endif /* !ENGINE_HPP_ */
