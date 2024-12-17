@@ -8,6 +8,7 @@
 
 - [Building](./engine/building.md)
 - [Server](./engine/server.md)
+- [Client](./engine/client.md)
 
 ---
 
