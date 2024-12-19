@@ -8,6 +8,11 @@
 #include "ClientConnection.hpp"
 
 #include "Engine.hpp"
+#include "Networking/Packet.hpp"
+#include "spdlog/common.h"
+#include "spdlog/spdlog.h"
+#include <cstddef>
+#include <unistd.h>
 
 ClientConnection::ClientConnection(std::string ip, int port, bool udp)
     : GlobalConnection(udp), _ip(ip), _port(port)
@@ -50,22 +55,20 @@ bool ClientConnection::establishConnection()
     return true;
 }
 
-Packet *ClientConnection::_tryReceive()
+Packet ClientConnection::_tryReceive()
 {
-    Packet *pckt = new Packet;
+    Packet pckt = NULL_PACKET;
     int dataSize = 0;
 
-    ssize_t ret = read(_fd, &dataSize, sizeof(int));
-    if (ret == -1)
-        throw std::runtime_error("Error reading data size from server");
-    if (ret == 0 || dataSize == 0)
-        return nullptr;
-    Engine::GetInstance().Log(Engine::LogLevel::INFO, "Data size: " + std::to_string(dataSize));
-    ssize_t ret2 = read(_fd, &pckt, dataSize);
-    if (ret2 == -1)
-        throw std::runtime_error("Error reading data from server");
-    if (ret2 == 0)
-        return nullptr;
+    if (read(_fd, &dataSize, sizeof(size_t)) <= 0) {
+        return NULL_PACKET;
+    }
+    pckt.n = dataSize;
+    pckt.cmd = PacketCmd::NONE;
+    pckt.data = malloc(dataSize);
+    if (read(_fd, &pckt, sizeof(PacketCmd) + dataSize) <= 0) {
+        return NULL_PACKET;
+    }
     return pckt;
 }
 
@@ -76,7 +79,8 @@ void ClientConnection::sendToServer(Packet *pckt)
 
 void ClientConnection::_receiveLoop()
 {
-    _packet = _tryReceive();
+    Packet receivedPacket = _tryReceive();
+    _packet = &receivedPacket;
     if (!_packet)
         return;
     std::get<IN>(_queues).enqueue(_packet);
@@ -87,10 +91,8 @@ void ClientConnection::_sendLoop()
 {
     while (!std::get<OUT>(_queues).empty()) {
         Packet *sending = std::get<OUT>(_queues).dequeue();
-        size_t dataSize = sizeof(sending);
-
-        write(_fd, &dataSize, sizeof(size_t));
-        write(_fd, sending->data.data(), dataSize);
+        write(_fd, sending, sending->n);
+        free(sending->data);
     }
 }
 

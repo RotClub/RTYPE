@@ -8,6 +8,7 @@
 #include "ServerConnection.hpp"
 
 #include <Engine.hpp>
+#include <cstddef>
 
 ServerConnection::ServerConnection(int port)
     : _port(port)
@@ -85,9 +86,8 @@ void ServerConnection::_sendLoop()
     for (auto &client : _clientConnections) {
         if (FD_ISSET(client->getTcpFd(), &_writefds) && client->hasTcpPacketOutput()) {
             Packet *packet = client->popTcpPacketOutput();
-            size_t len = sizeof(packet);
-            ssize_t ret = write(client->getTcpFd(), &len, sizeof(size_t));
-            ssize_t ret2 = write(client->getTcpFd(), packet, len);
+            size_t len = packet->n;
+            write(client->getTcpFd(), packet, len);
         }
     }
 }
@@ -104,8 +104,19 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
     int packetSize = 0;
     auto *packet = new Packet;
 
-    ssize_t ret = read(client->getTcpFd(), &packetSize, sizeof(int));
-    ssize_t ret2 = read(client->getTcpFd(), &packet, packetSize);
+    ssize_t ret = read(client->getTcpFd(), &packetSize, sizeof(size_t));
+    if (ret <= 0) {
+        delete packet;
+        return nullptr;
+    }
+    packet->n = packetSize;
+    packet->cmd = PacketCmd::NONE;
+    packet->data = malloc(packetSize);
+    ret = read(client->getTcpFd(), packet, sizeof(PacketCmd) + packetSize);
+    if (ret <= 0) {
+        delete packet;
+        return nullptr;
+    }
 
     return packet;
 }

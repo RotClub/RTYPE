@@ -1,59 +1,84 @@
+/*
+** EPITECH PROJECT, 2024
+** RTYPE [WSL: Ubuntu-20.04]
+** File description:
+** PacketBuilder
+*/
+
 #include "PacketBuilder.hpp"
+#include "Networking/Packet.hpp"
+#include <any>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 PacketBuilder::PacketBuilder()
 {
-    _packet = new Packet;
-    _packet->size = NULL_PACKET.size;
-    _packet->data = NULL_PACKET.data;
+    _packet = NULL_PACKET;
 }
 
 PacketBuilder::PacketBuilder(Packet *packet)
 {
-    if (packet == nullptr)
-        throw std::runtime_error("Packet is null");
-    _packet = packet;
-    _packet->data = packet->data;
-    _packet->size = packet->size;
+    _packet = *packet;
+}
+
+PacketBuilder PacketBuilder::setCmd(PacketCmd cmd)
+{
+    _packet.cmd = cmd;
+    return *this;
 }
 
 PacketBuilder &PacketBuilder::writeInt(int nb)
 {
-    int &data = nb;
-    void *ptr = &data; // for testing
-    _packet->data.push_back(ptr);
-    _packet->size += sizeof(int);
+    _packet.n += sizeof(int);
+    void *rt = realloc(_packet.data, _packet.n);
+    if (rt == NULL)
+        throw std::runtime_error("Error reallocating memory");
+    _packet.data = rt;
+    std::memcpy(static_cast<char*>(_packet.data) + _packet.n - sizeof(int), &nb, sizeof(int));
     return *this;
 }
 
-PacketBuilder &PacketBuilder::writeString(std::string str)
+PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
-    std::vector<char> data(str.begin(), str.end());
-    void *ptr = data.data();
-    _packet->data.push_back(ptr);
-    _packet->size += data.size();
+    const char *cstr = str.c_str();
+    _packet.n += sizeof(char) * str.length() + 1;
+    void *rt = realloc(_packet.data, _packet.n);
+    if (rt == NULL)
+        throw std::runtime_error("Error reallocating memory");
+    _packet.data = rt;
+    size_t len = sizeof(char) * str.length() + 1;
+    std::memcpy(static_cast<char*>(_packet.data) + _packet.n - len, cstr, len);
     return *this;
 }
 
 int PacketBuilder::readInt()
 {
-    return *(int *)_popFront();
+    int nb = 0;
+    std::memcpy(&nb, _packet.data, sizeof(int));
+    _packet.data = static_cast<char*>(_packet.data) + sizeof(int);
+    _packet.n -= sizeof(int);
+    return nb;
 }
 
 std::string PacketBuilder::readString()
 {
-    std::vector<char> data((char *)_popFront(), (char *)_popFront() + _packet->size);
-    return std::string(data.begin(), data.end());
+    std::string str(static_cast<char*>(_packet.data));
+    _packet.data = static_cast<char*>(_packet.data) + sizeof(char) * str.length() + 1;
+    _packet.n -= sizeof(char) * str.length() + 1;
+    return str;
 }
 
 Packet *PacketBuilder::build()
 {
-    return _packet;
+    return &_packet;
 }
 
-void* PacketBuilder::_popFront()
+void PacketBuilder::destroyPacket()
 {
-    void *ptr = _packet->data.front();
-    _packet->data.erase(_packet->data.begin());
-    return ptr;
+    free(_packet.data);
+    _packet = NULL_PACKET;
 }

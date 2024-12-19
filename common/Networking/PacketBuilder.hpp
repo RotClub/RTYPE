@@ -10,7 +10,10 @@
 
     #include "Packet.hpp"
 
+    #include <array>
+    #include <queue>
     #include <string>
+    #include <vector>
 
     class PacketBuilder {
         public:
@@ -18,18 +21,21 @@
             PacketBuilder(Packet *packet);
             ~PacketBuilder() = default;
 
+            PacketBuilder setCmd(PacketCmd cmd);
+
             PacketBuilder &writeInt(int nb);
-            PacketBuilder &writeString(std::string str);
+            PacketBuilder &writeString(const std::string &str);
 
             int readInt();
             std::string readString();
 
             Packet *build();
 
-        private:
-            Packet *_packet;
+            void destroyPacket();
 
-            void *_popFront();
+        private:
+            Packet _packet;
+
     };
 
 #endif /* !PACKETUTILS_HPP_ */
