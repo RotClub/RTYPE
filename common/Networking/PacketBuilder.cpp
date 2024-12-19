@@ -42,7 +42,7 @@ PacketBuilder &PacketBuilder::writeInt(int nb)
     return *this;
 }
 
-PacketBuilder &PacketBuilder::writeString(const std::string str)
+PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
     const char *cstr = str.c_str();
     _packet.n += sizeof(char) * str.length() + 1;

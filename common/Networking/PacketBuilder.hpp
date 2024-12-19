@@ -24,7 +24,7 @@
             PacketBuilder setCmd(PacketCmd cmd);
 
             PacketBuilder &writeInt(int nb);
-            PacketBuilder &writeString(const std::string str);
+            PacketBuilder &writeString(const std::string &str);
 
             int readInt();
             std::string readString();
