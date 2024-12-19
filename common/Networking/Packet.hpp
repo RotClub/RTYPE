@@ -16,7 +16,8 @@
         NONE,
         CONNECT,
         DISCONNECT,
-        NET
+        NET,
+        NEW_MESSAGE,
     };
 
     using Packet = struct packet_s {
