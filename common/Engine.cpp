@@ -15,7 +15,7 @@
 #include "nlohmann/json.hpp"
 
 Engine::Engine(Types::VMState state, const std::string &gamePath)
-    : root(nullptr), L(luaL_newstate()), _gamePath("games/" + gamePath), _libPath("libs"), _state(state)
+    : root(new Node("root")), L(luaL_newstate()), _gamePath("games/" + gamePath), _libPath("libs"), _state(state)
 {
     if (!L)
         throw std::runtime_error("Failed to create Lua state");
@@ -62,6 +62,8 @@ Engine::~Engine()
 Engine& Engine::StartInstance(Types::VMState state, const std::string &gamePath)
 {
     _instance = new Engine(state, gamePath);
+    if (_instance->L != nullptr)
+        luau_ExposeRootNode(_instance->L);
     return *_instance;
 }
 

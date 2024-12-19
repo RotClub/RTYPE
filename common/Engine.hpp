@@ -23,6 +23,7 @@
     #include "spdlog/spdlog.h"
     #include "spdlog/sinks/stdout_color_sinks.h"
     #include "spdlog/sinks/daily_file_sink.h"
+    #include "Types.hpp"
 
 #define MAX_LOGS 50
 
