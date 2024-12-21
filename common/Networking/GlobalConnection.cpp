@@ -20,7 +20,7 @@ GlobalConnection::~GlobalConnection()
 Packet *GlobalConnection::getLatestPacket()
 {
     Packet *pckt = std::get<IN>(_queues).dequeue();
-    if (pckt == nullptr)
+    if (pckt->n == 0)
         return nullptr;
     return pckt;
 }

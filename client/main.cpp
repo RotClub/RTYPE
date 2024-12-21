@@ -42,7 +42,7 @@ int main(void)
     bool stop = false;
     while (!stop) {
         Packet *packet = client.getClientConnectionTcp().getLatestPacket();
-        if (packet) {
+        if (packet != nullptr) {
             PacketBuilder fromBuilder(packet);
             int a = fromBuilder.readInt();
             std::string b = fromBuilder.readString();
