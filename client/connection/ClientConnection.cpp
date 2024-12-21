@@ -61,9 +61,6 @@ Packet ClientConnection::_tryReceive()
     Packet pckt = NULL_PACKET;
     int dataSize = 0;
 
-    if (FD_ISSET(_fd, &_readfds) == 0) {
-        return NULL_PACKET;
-    }
     if (read(_fd, &dataSize, sizeof(size_t)) <= 0) {
         return NULL_PACKET;
     }
@@ -83,6 +80,9 @@ void ClientConnection::sendToServer(Packet *pckt)
 
 void ClientConnection::_receiveLoop()
 {
+    if (FD_ISSET(_fd, &_readfds) == 0) {
+        return;
+    }
     Packet receivedPacket = _tryReceive();
     _packet = &receivedPacket;
     if (!_packet)
