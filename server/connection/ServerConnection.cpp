@@ -84,7 +84,6 @@ void ServerConnection::_receiveLoop()
             try {
                 Packet *packet = _tryReceiveTCP(client);
                 client->addTcpPacketInput(packet);
-                spdlog::info("Packet received from client");
             } catch (const std::exception &e) {
                 client->disconnect();
             }
@@ -124,16 +123,14 @@ void ServerConnection::_accept()
 
 Packet *ServerConnection::_tryReceiveTCP(Client *client)
 {
-    Packet *packet = new NULL_PACKET;
-    int dataSize = 0;
+    Packet *packet = new Packet;
 
-    if (read(client->getTcpFd(), &dataSize, sizeof(size_t)) <= 0) {
+    std::memset(packet, 0, sizeof(Packet));
+    if (read(client->getTcpFd(), packet, sizeof(Packet)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
-    packet->n = dataSize;
-    packet->cmd = PacketCmd::NONE;
-    packet->data = malloc(dataSize);
-    if (read(client->getTcpFd(), &packet, sizeof(PacketCmd) + dataSize) <= 0) {
+    packet->data = std::malloc(packet->n);
+    if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
         throw std::runtime_error("Disconnect");
     }
     return packet;
@@ -144,10 +141,13 @@ void ServerConnection::_createSocket()
     _udpFd = socket(AF_INET, SOCK_DGRAM, 0);
     _tcpFd = socket(AF_INET, SOCK_STREAM, 0);
 
-    bzero(&_addr, sizeof(_addr));
+    std::memset(&_addr, 0, sizeof(_addr));
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
     _addr.sin_addr.s_addr = INADDR_ANY;
+    int optval = 1;
+    setsockopt(_tcpFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    setsockopt(_udpFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
     if (_udpFd == -1 || _tcpFd == -1) {
         throw std::runtime_error("Error creating socket");
@@ -178,6 +178,8 @@ int ServerConnection::_getMaxFd()
     int max = 0;
 
     for (const auto &client : _clientConnections) {
+        if (client->shouldDisconnect())
+            continue;
         max = std::max(max, client->getTcpFd());
     }
     return max;

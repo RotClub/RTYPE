@@ -45,6 +45,16 @@ void Server::loop()
 {
     Engine &engine = Engine::GetInstance();
     engine.callHook("RType:Tick", "int", engine.deltaTime(), nullptr);
+
+    for (auto &client : _serverConnection.getClientConnections()) {
+        if (client->hasTcpPacketInput()) {
+            Packet *packet = client->popTcpPacketInput();
+            PacketBuilder builder(packet);
+            spdlog::info(builder.readInt());
+            spdlog::info(builder.readInt());
+            spdlog::info(builder.readString());
+        }
+    }
 }
 
 void Server::stop()

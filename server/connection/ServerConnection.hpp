@@ -29,6 +29,8 @@
             ServerConnection(int port);
             ~ServerConnection();
 
+            std::vector<Client *> &getClientConnections() { return _clientConnections; }
+
             void start();
             void stop();
 

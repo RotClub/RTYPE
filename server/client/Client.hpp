@@ -33,6 +33,7 @@ class Client {
         void addTcpPacketOutput(Packet *packet);
         Packet *popTcpPacketOutput();
         bool hasTcpPacketOutput();
+        bool hasTcpPacketInput();
 
         void disconnect() { _shouldDisconnect = true; }
         [[nodiscard]] bool shouldDisconnect() const { return _shouldDisconnect; }

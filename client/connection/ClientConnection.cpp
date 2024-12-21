@@ -98,7 +98,8 @@ void ClientConnection::_sendLoop()
     }
     while (!std::get<OUT>(_queues).empty()) {
         Packet *sending = std::get<OUT>(_queues).dequeue();
-        write(_fd, sending, sending->n);
+        write(_fd, sending, sizeof(*sending));
+        write(_fd, sending->data, sending->n);
         free(sending->data);
     }
 }

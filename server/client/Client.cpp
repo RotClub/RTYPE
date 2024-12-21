@@ -46,3 +46,8 @@ bool Client::hasTcpPacketOutput()
 {
     return !std::get<OUT>(_tcpQueues).empty();
 }
+
+bool Client::hasTcpPacketInput()
+{
+    return !std::get<IN>(_tcpQueues).empty();
+}
