@@ -39,7 +39,7 @@
             void _sendLoop();
             void _accept();
             void _disconnectClients();
-            Packet _tryReceiveTCP(Client *client);
+            Packet *_tryReceiveTCP(Client *client);
             void _createSocket();
             void _setClientFds(fd_set *set);
             int _getMaxFd();
@@ -47,7 +47,7 @@
 
             int _port;
             std::atomic<bool> _running = false;
-            std::thread _thread;
+            std::thread _networkThread;
             fd_set _readfds;
             fd_set _writefds;
             int _tcpFd = -1;

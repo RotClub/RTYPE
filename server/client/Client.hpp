@@ -28,10 +28,10 @@ class Client {
 
         void setStep(const ConnectionStep step) { _step = step; }
 
-        void addTcpPacketInput(Packet packet);
-        Packet popTcpPacketInput();
-        void addTcpPacketOutput(Packet packet);
-        Packet popTcpPacketOutput();
+        void addTcpPacketInput(Packet *packet);
+        Packet *popTcpPacketInput();
+        void addTcpPacketOutput(Packet *packet);
+        Packet *popTcpPacketOutput();
         bool hasTcpPacketOutput();
 
         void disconnect() { _shouldDisconnect = true; }
@@ -41,8 +41,8 @@ class Client {
         int _tcpFd;
         sockaddr_in _address;
         ConnectionStep _step;
-        std::tuple<SafeQueue<Packet>, SafeQueue<Packet>> _tcpQueues;
-        std::tuple<SafeQueue<Packet>, SafeQueue<Packet>> _udpQueues;
+        std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _tcpQueues;
+        std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _udpQueues;
         bool _shouldDisconnect;
 };
 
