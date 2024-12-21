@@ -190,8 +190,8 @@ int ServerConnection::_selectFd()
     _setClientFds(&_readfds);
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
-    FD_SET(_udpFd, &_readfds);
-    int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
+    // FD_SET(_udpFd, &_readfds);
+    int maxFd = std::max(_getMaxFd(), _tcpFd);
     retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, nullptr);
     return retval;
 }
