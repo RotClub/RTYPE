@@ -12,6 +12,7 @@
 #include "spdlog/common.h"
 #include "spdlog/spdlog.h"
 #include <cstddef>
+#include <sys/select.h>
 #include <unistd.h>
 
 ClientConnection::ClientConnection(std::string ip, int port, bool udp)
@@ -60,6 +61,9 @@ Packet ClientConnection::_tryReceive()
     Packet pckt = NULL_PACKET;
     int dataSize = 0;
 
+    if (FD_ISSET(_fd, &_readfds) == 0) {
+        return NULL_PACKET;
+    }
     if (read(_fd, &dataSize, sizeof(size_t)) <= 0) {
         return NULL_PACKET;
     }
@@ -89,6 +93,9 @@ void ClientConnection::_receiveLoop()
 
 void ClientConnection::_sendLoop()
 {
+    if (FD_ISSET(_fd, &_writefds) == 0) {
+        return;
+    }
     while (!std::get<OUT>(_queues).empty()) {
         Packet *sending = std::get<OUT>(_queues).dequeue();
         write(_fd, sending, sending->n);
