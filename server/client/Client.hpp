@@ -34,12 +34,16 @@ class Client {
         Packet *popTcpPacketOutput();
         bool hasTcpPacketOutput();
 
+        void disconnect() { _shouldDisconnect = true; }
+        [[nodiscard]] bool shouldDisconnect() const { return _shouldDisconnect; }
+
     private:
         int _tcpFd;
         sockaddr_in _address;
         ConnectionStep _step;
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _tcpQueues;
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _udpQueues;
+        bool _shouldDisconnect;
 };
 
 #endif //CLIENT_HPP

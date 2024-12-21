@@ -25,15 +25,15 @@ void ServerConnection::start()
     if (_running) return;
     _running = true;
     _createSocket();
-    _thread = std::thread(&ServerConnection::_loop, this);
+    _networkThread = std::thread(&ServerConnection::_loop, this);
 }
 
 void ServerConnection::stop()
 {
     if (!_running) return;
     _running = false;
-    if (_thread.joinable()) {
-        _thread.join();
+    if (_networkThread.joinable()) {
+        _networkThread.join();
     }
     for (const auto *client : _clientConnections) {
         delete client;
@@ -48,46 +48,69 @@ void ServerConnection::_loop()
 {
     while (_running) {
         try {
-            _selectFd();
+            if (_selectFd() == -1)
+                spdlog::error(std::strerror(errno));
             _accept();
             _receiveLoop();
+            _disconnectClients();
             _sendLoop();
-            for (auto &client : _clientConnections) {
-                if (client->getStep() != Client::ConnectionStep::COMPLETE) {
-                    _authFlow(client);
-                }
-            }
+            // for (auto &client : _clientConnections) {
+            //     if (client->getStep() != Client::ConnectionStep::COMPLETE) {
+            //         _authFlow(client);
+            //     }
+            // }
         } catch (const std::exception &e) {
-            std::cerr << "[ServerConnection] Error in loop: " << e.what() << std::endl;
+            spdlog::error("Error in loop: {}", e.what());
         }
     }
+}
+
+void ServerConnection::_disconnectClients()
+{
+    _clientConnections.erase(std::ranges::remove_if(_clientConnections, [](Client *client) {
+        if (client->shouldDisconnect()) {
+            spdlog::debug("Client (fd {}) disconnected", client->getTcpFd());
+            delete client;
+            return true;
+        }
+        return false;
+    }).begin(), _clientConnections.end());
 }
 
 void ServerConnection::_receiveLoop()
 {
     for (auto &client : _clientConnections) {
-        if (FD_ISSET(client->getTcpFd(), &_readfds)) {
-            client->addTcpPacketInput(_tryReceiveTCP(client));
+        if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
+            try {
+                Packet *packet = _tryReceiveTCP(client);
+                client->addTcpPacketInput(packet);
+                spdlog::info("Packet received from client");
+            } catch (const std::exception &e) {
+                client->disconnect();
+            }
         }
     }
 }
 
 void ServerConnection::_authFlow(Client *client)
 {
-    PacketBuilder builder;
-    Packet *packet = builder.writeString(Engine::GetInstance().getGameInfo()->getName()).build();
-
-    client->addTcpPacketOutput(packet);
-    client->setStep(Client::ConnectionStep::COMPLETE);
+    // PacketBuilder builder;
+    // Packet *packet = builder.writeString(Engine::GetInstance().getGameInfo()->getName()).build();
+    //
+    // client->addTcpPacketOutput(packet);
+    // client->setStep(Client::ConnectionStep::COMPLETE);
 }
 
 void ServerConnection::_sendLoop()
 {
     for (auto &client : _clientConnections) {
-        if (FD_ISSET(client->getTcpFd(), &_writefds) && client->hasTcpPacketOutput()) {
-            Packet *packet = client->popTcpPacketOutput();
-            size_t len = packet->n;
-            write(client->getTcpFd(), packet, len);
+        if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_writefds) && client->hasTcpPacketOutput()) {
+            while (client->hasTcpPacketOutput()) {
+                Packet *packet = client->popTcpPacketOutput();
+                size_t len = packet->n;
+                write(client->getTcpFd(), &packet, len);
+                std::free(packet->data);
+            }
         }
     }
 }
@@ -101,23 +124,18 @@ void ServerConnection::_accept()
 
 Packet *ServerConnection::_tryReceiveTCP(Client *client)
 {
-    int packetSize = 0;
-    auto *packet = new Packet;
+    Packet *packet = new NULL_PACKET;
+    int dataSize = 0;
 
-    ssize_t ret = read(client->getTcpFd(), &packetSize, sizeof(size_t));
-    if (ret <= 0) {
-        delete packet;
-        return nullptr;
+    if (read(client->getTcpFd(), &dataSize, sizeof(size_t)) <= 0) {
+        throw std::runtime_error("Disconnect");
     }
-    packet->n = packetSize;
+    packet->n = dataSize;
     packet->cmd = PacketCmd::NONE;
-    packet->data = malloc(packetSize);
-    ret = read(client->getTcpFd(), packet, sizeof(PacketCmd) + packetSize);
-    if (ret <= 0) {
-        delete packet;
-        return nullptr;
+    packet->data = malloc(dataSize);
+    if (read(client->getTcpFd(), &packet, sizeof(PacketCmd) + dataSize) <= 0) {
+        throw std::runtime_error("Disconnect");
     }
-
     return packet;
 }
 
@@ -157,12 +175,10 @@ void ServerConnection::_setClientFds(fd_set *set)
 
 int ServerConnection::_getMaxFd()
 {
-    int max = _tcpFd;
+    int max = 0;
 
     for (const auto &client : _clientConnections) {
-        if (client->getTcpFd() > max) {
-            max = client->getTcpFd();
-        }
+        max = std::max(max, client->getTcpFd());
     }
     return max;
 }
@@ -174,10 +190,8 @@ int ServerConnection::_selectFd()
     _setClientFds(&_readfds);
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
-    FD_SET(_udpFd, &_readfds);
-    retval = select(_getMaxFd() + 1, &_readfds, &_writefds, nullptr, nullptr);
-    if (retval == -1) {
-        throw std::runtime_error("Error selecting socket");
-    }
+    // FD_SET(_udpFd, &_readfds);
+    int maxFd = std::max(_getMaxFd(), _tcpFd);
+    retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, nullptr);
     return retval;
 }

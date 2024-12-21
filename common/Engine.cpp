@@ -34,17 +34,39 @@ Engine::Engine(Types::VMState state, const std::string &gamePath)
 
     std::vector<spdlog::sink_ptr> sinks;
     sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-    sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/" + _gameInfo->getName(), 23, 59));
+    switch (state)
+    {
+        case Types::VMState::SERVER:
+            sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/" + _gameInfo->getName() + "/server", 23, 59));
+            break;
+        case Types::VMState::CLIENT:
+            sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/" + _gameInfo->getName() + "/client", 23, 59));
+            break;
+    }
     auto engineLogger = std::make_shared<spdlog::logger>("EngineLogger", begin(sinks), end(sinks));
     spdlog::set_default_logger(engineLogger);
-    spdlog::flush_on(spdlog::level::info);
+    switch (state)
+    {
+        case Types::VMState::SERVER:
+            #ifdef RTYPE_DEBUG
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] <%t> %v");
+            #else
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] %v");
+            #endif
+            break;
+        case Types::VMState::CLIENT:
+            #ifdef RTYPE_DEBUG
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] <%t> %v");
+            #else
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] %v");
+            #endif
+            break;
+    }
     spdlog::flush_every(std::chrono::seconds(5));
     #ifdef RTYPE_DEBUG
-    spdlog::set_level(spdlog::level::debug);
-    spdlog::set_pattern("[%Y-%m-%d %T.%e] [%^%-5l%$] <%t> %v");
+        spdlog::set_level(spdlog::level::debug);
     #else
-    spdlog::set_level(spdlog::level::info);
-    spdlog::set_pattern("[%Y-%m-%d %T.%e] [%^%-5l%$] %v");
+        spdlog::set_level(spdlog::level::info);
     #endif
 
     luaL_openlibs(L);

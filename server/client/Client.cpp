@@ -22,22 +22,22 @@ Client::~Client()
 {
 }
 
-void Client::addTcpPacketInput(Packet* packet)
+void Client::addTcpPacketInput(Packet *packet)
 {
     std::get<IN>(_tcpQueues).enqueue(packet);
 }
 
-Packet* Client::popTcpPacketInput()
+Packet *Client::popTcpPacketInput()
 {
     return std::get<IN>(_tcpQueues).dequeue();
 }
 
-void Client::addTcpPacketOutput(Packet* packet)
+void Client::addTcpPacketOutput(Packet *packet)
 {
     std::get<OUT>(_tcpQueues).enqueue(packet);
 }
 
-Packet* Client::popTcpPacketOutput()
+Packet *Client::popTcpPacketOutput()
 {
     return std::get<OUT>(_tcpQueues).dequeue();
 }
