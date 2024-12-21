@@ -38,7 +38,8 @@
             void _authFlow(Client *client);
             void _sendLoop();
             void _accept();
-            Packet *_tryReceiveTCP(Client *client);
+            void _disconnectClients();
+            Packet _tryReceiveTCP(Client *client);
             void _createSocket();
             void _setClientFds(fd_set *set);
             int _getMaxFd();

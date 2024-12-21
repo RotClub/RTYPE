@@ -1,3 +1,3 @@
 include("init.luau")
-include("metatable_test.luau")
+-- include("metatable_test.luau")
 
