@@ -23,11 +23,13 @@
         bool establishConnection();
         void sendToServer(Packet *pckt);
 
+        bool isConnected() const { return _connected; }
+
     private:
         void _loop();
         void _receiveLoop();
         void _sendLoop();
-        Packet _tryReceive();
+        Packet *_tryReceive();
 
         std::string _ip;
         int _port;

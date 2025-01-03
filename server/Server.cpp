@@ -53,6 +53,14 @@ void Server::loop()
             spdlog::info(builder.readInt());
             spdlog::info(builder.readInt());
             spdlog::info(builder.readString());
+
+            PacketBuilder toBuilder;
+            Packet *toPacket = toBuilder
+                .writeInt(123)
+                .writeString("Hello from server!")
+                .build();
+            spdlog::info("Packet size: {}", toPacket->n);
+            client->addTcpPacketOutput(toPacket);
         }
     }
 }

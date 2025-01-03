@@ -7,12 +7,9 @@
 
 #include "Client.hpp"
 #include "Networking/PacketBuilder.hpp"
-#include "raylib-cpp.hpp"
 
-#include "Nodes/Node2D/Sprite2D/Sprite2D.hpp"
 #include "spdlog/spdlog.h"
-#include <fstream>
-#include <ostream>
+#include <cstdlib>
 
 int main(void)
 {
@@ -40,7 +37,7 @@ int main(void)
     client.getClientConnectionTcp().sendToServer(toPacket);
 
     bool stop = false;
-    while (!stop) {
+    while (!stop && client.getClientConnectionTcp().isConnected()) {
         Packet *packet = client.getClientConnectionTcp().getLatestPacket();
         if (packet != nullptr) {
             PacketBuilder fromBuilder(packet);
@@ -48,6 +45,8 @@ int main(void)
             std::string b = fromBuilder.readString();
             spdlog::debug("Received: {} {}", a, b);
             stop = true;
+            free(packet->data);
+            free(packet);
         }
     }
 }
