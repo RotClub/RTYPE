@@ -10,10 +10,8 @@
 
     #include "Packet.hpp"
 
-    #include <array>
-    #include <queue>
+    #include <cstddef>
     #include <string>
-    #include <vector>
 
     class PacketBuilder {
         public:
@@ -31,10 +29,10 @@
 
             Packet *build();
 
-            void destroyPacket();
-
         private:
-            Packet _packet;
+            size_t _n;
+            PacketCmd _cmd;
+            void *_data;
 
     };
 
