@@ -1,9 +1,12 @@
 RFC: RTYPE
 
 1. Introduction
-    This document describes the RTYPE networking protocol, designed for a multiplayer game.
-    The system comprises a server and clients, with the server (r-type_server) managing the game state and clients (r-type_client) rendering the game world.
-    The protocol facilitates communication between the server and clients over TCP and UDP sockets for efficient data transfer.
+    This document describes the RTYPE networking protocol, designed for a
+    multiplayer game. The system comprises a server and clients, with the
+    server (r-type_server) managing the game state and clients (r-type_client)
+    rendering the game world. The protocol facilitates communication between
+    the server and clients over TCP and UDP sockets for efficient data
+    transfer.
 
 2. Terminology
     - Server: The central game server that manages the game state.
@@ -11,12 +14,17 @@ RFC: RTYPE
     - TCP: Transmission Control Protocol, a connection-oriented protocol.
     - UDP: User Datagram Protocol, a connectionless protocol.
     - Socket: A communication endpoint for sending and receiving data.
+    - IP Address: A unique identifier for a device on a network.
 
 3. Protocol Overview
-    The RTYPE protocol is designed to be lightweight and efficient for real-time multiplayer games.
-    It operates over TCP and UDP sockets, with TCP used for reliable data transfer and UDP for real-time data.
-    The protocol is designed to handle multiple concurrent connections.
+    The RTYPE protocol is designed to be lightweight and efficient for
+    real-time multiplayer games. It operates over TCP and UDP sockets, with TCP
+    used for reliable data transfer and UDP for real-time data. The protocol is
+    designed to handle multiple concurrent connections.
 
 3.1. Server-Client Connection Establishment
-    Clients establish a TCP connection to the server using the server's IP address and port number.
-    The server listens for incoming connections and accepts new clients.
+    Clients establish a TCP connection to the server using the server's IP
+    address and port number. The server listens for incoming connections and
+    accepts new clients.
+
+3.2 
