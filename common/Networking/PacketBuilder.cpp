@@ -15,15 +15,13 @@
 
 PacketBuilder::PacketBuilder()
 {
-    _packet = nullptr;
     _n = 0;
     _cmd = PacketCmd::NONE;
-    _data = new char[0];
+    _data = nullptr;
 }
 
 PacketBuilder::PacketBuilder(Packet *packet)
 {
-    _packet = packet;
     _n = packet->n;
     _cmd = packet->cmd;
     _data = packet->data;
@@ -37,6 +35,8 @@ PacketBuilder PacketBuilder::setCmd(PacketCmd cmd)
 
 PacketBuilder &PacketBuilder::writeInt(int nb)
 {
+    if (_data == nullptr)
+        _data = new char[0];
     _n += sizeof(int);
     void *rt = realloc(_data, _n);
     if (rt == NULL)
@@ -48,6 +48,8 @@ PacketBuilder &PacketBuilder::writeInt(int nb)
 
 PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
+    if (_data == nullptr)
+        _data = new char[0];
     const char *cstr = str.c_str();
     _n += sizeof(char) * str.length() + 1;
     void *rt = realloc(_data, _n);
@@ -78,11 +80,12 @@ std::string PacketBuilder::readString()
 
 Packet *PacketBuilder::build()
 {
-    if (_packet != nullptr)
-        throw std::runtime_error("Packet already built");
     Packet *packet = new Packet;
     packet->n = _n;
     packet->cmd = _cmd;
     packet->data = _data;
+    _n = 0;
+    _cmd = PacketCmd::NONE;
+    _data = nullptr;
     return packet;
 }

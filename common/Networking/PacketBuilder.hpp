@@ -30,8 +30,6 @@
             Packet *build();
 
         private:
-            Packet *_packet;
-
             size_t _n;
             PacketCmd _cmd;
             void *_data;
