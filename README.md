@@ -9,6 +9,7 @@ You can find it [here](https://github.com/RotClub/RTYPE)
 ## Documentation:
 
 [R-TYPE documentation](https://rotclub.github.io/RTYPE/)
+[R-TYPE RFC](https://github.com/RotClub/RTYPE/tree/main/docs/rfc.txt)
 
 ## Contributors:
 
