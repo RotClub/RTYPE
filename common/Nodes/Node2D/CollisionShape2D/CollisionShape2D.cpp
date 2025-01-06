@@ -4,8 +4,9 @@
 
 #include "CollisionShape2D.hpp"
 
-CollisionShape2D::CollisionShape2D()
-    : shape(nullptr), collision_enabled(true) {
+
+CollisionShape2D::CollisionShape2D(const std::string &name)
+    : shape(nullptr), collision_enabled(true), Node2D(name) {
     this->metatable = "CollisionShape2DMetaTable";
 }
 

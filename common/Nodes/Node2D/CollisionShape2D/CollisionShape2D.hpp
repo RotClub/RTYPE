@@ -9,12 +9,11 @@
 #include "Nodes/Shape2D/Shape2D.hpp"
 
 class CollisionShape2D : public Node2D {
-private:
-    Shape2D* shape;
+	Shape2D* shape;
     bool collision_enabled;
 
 public:
-    CollisionShape2D();
+	explicit CollisionShape2D(const std::string &name = "collisionshape2d");
 
     void setShape(Shape2D* new_shape);
 

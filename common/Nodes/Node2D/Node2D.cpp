@@ -8,13 +8,9 @@
 #include "Node2D.hpp"
 
 Node2D::Node2D(const std::string &name)
-    : position(Types::Vector2::Zero()), Node(name)
+    : Node(name), position(Types::Vector2::Zero())
 {
     this->metatable = "Node2DMetaTable";
-}
-
-Node2D::~Node2D()
-{
 }
 
 void Node2D::addChild(Node &child)
