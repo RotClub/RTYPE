@@ -27,4 +27,9 @@ RFC: RTYPE
     address and port number. The server listens for incoming connections and
     accepts new clients.
 
-3.2 
+3.2 Data Transfer
+    Once the connection is established, the server and client can exchange
+    data. The server sends game state updates to the clients over UDP for
+    real-time rendering. Clients can send input commands to the server over UDP
+    to control their game characters. TCP is used for reliable data transfer,
+    such as player login/logout messages.
