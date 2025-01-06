@@ -22,12 +22,26 @@ RFC: RTYPE
     used for reliable data transfer and UDP for real-time data. The protocol is
     designed to handle multiple concurrent connections.
 
-3.1. Server-Client Connection Establishment
+3.1 Protocol Specification
+    Every communication exchange between the server and clients will occur in
+    this order:
+        - Integer: represents the size of the packet.
+        - Packet:
+            - Integer: represents the size of the data.
+            - Data: the actual data being sent.
+            - Integer: represents the type of the packet:
+                - NONE = 0 (No action will be taken, this packet is ignored)
+                - CONNECT = 1 (A new client is connecting to the server)
+                - DISCONNECT = 2 (A client is disconnecting from the server)
+                - NET = 3 (Message will be handled by the lua virtual machine)
+                - NEW_MESSAGES = 4 (Create a new channel for the NET messages)
+
+3.2. Server-Client Connection Establishment
     Clients establish a TCP connection to the server using the server's IP
     address and port number. The server listens for incoming connections and
     accepts new clients.
 
-3.2 Data Transfer
+3.3 Data Transfer
     Once the connection is established, the server and client can exchange
     data. The server sends game state updates to the clients over UDP for
     real-time rendering. Clients can send input commands to the server over UDP
