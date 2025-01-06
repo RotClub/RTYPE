@@ -25,20 +25,28 @@ class Client {
         [[nodiscard]] int getTcpFd() const { return _tcpFd; }
         [[nodiscard]] sockaddr_in getAddress() const { return _address; }
         [[nodiscard]] ConnectionStep getStep() const { return _step; }
+        [[nodiscard]] const std::string &getUuid() const { return *uuid; }
 
         void setStep(const ConnectionStep step) { _step = step; }
 
         void addTcpPacketInput(Packet *packet);
+        void addUdpPacketInput(Packet *packet);
         Packet *popTcpPacketInput();
+        Packet *popUdpPacketInput();
         void addTcpPacketOutput(Packet *packet);
+        void addUdpPacketOutput(Packet *packet);
         Packet *popTcpPacketOutput();
+        Packet *popUdpPacketOutput();
         bool hasTcpPacketOutput();
+        bool hasUdpPacketOutput();
         bool hasTcpPacketInput();
+        bool hasUdpPacketInput();
 
         void disconnect() { _shouldDisconnect = true; }
         [[nodiscard]] bool shouldDisconnect() const { return _shouldDisconnect; }
 
     private:
+        const std::string *uuid;
         int _tcpFd;
         sockaddr_in _address;
         ConnectionStep _step;

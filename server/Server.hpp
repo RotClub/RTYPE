@@ -21,6 +21,9 @@ class Server {
         void loop();
         void stop();
         int getPort() const;
+        void broadcastNewPackets();
+        void broadcastLuaPackets();
+        void sendToClients();
 
     private:
         int _port;

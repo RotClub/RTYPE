@@ -98,13 +98,14 @@ Engine &Engine::GetInstance()
     return *_instance;
 }
 
-void Engine::addPacket(const std::string &packetName, const bool reliable)
+void Engine::addPacketRegistryEntry(const std::string &packetName, const bool reliable)
 {
     _packetsRegistry[packetName] = reliable;
-    // TODO: Network packet creation to all clients if SERVER. if CLIENT, just create the packet
+    if (_state == Types::VMState::SERVER)
+        _newPacketsInRegistry.push(packetName);
 }
 
-bool Engine::hasPacket(const std::string &packetName) const
+bool Engine::hasPacketRegistryEntry(const std::string &packetName) const
 {
     return _packetsRegistry.contains(packetName);
 }
@@ -230,21 +231,6 @@ void Engine::loadLibraries() const
     loadLibrary(L, "utils.luau");
     loadLibrary(L, "json.luau");
     luaL_sandbox(L);
-}
-
-std::string Engine::_getLogLevelString(const LogLevel level)
-{
-    switch (level) {
-        case LogLevel::DEBUG:
-            return "DEBUG";
-        case LogLevel::INFO:
-            return "INFO";
-        case LogLevel::WARNING:
-            return "WARNING";
-        case LogLevel::ERROR:
-            return "ERROR";
-    }
-    return "UNKNOWN";
 }
 
 int Engine::deltaTime()

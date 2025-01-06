@@ -57,12 +57,12 @@ LUA_API int luau_Include(lua_State *L)
             lua_pushstring(L, "Invalid packet name provided.");
             lua_error(L);
         }
-        if (Engine::GetInstance().hasPacket(packetName)) {
+        if (Engine::GetInstance().hasPacketRegistryEntry(packetName)) {
             lua_pushstring(L, "Packet already exists.");
             lua_error(L);
         }
         const bool reliable = lua_toboolean(L, 2);
-        Engine::GetInstance().addPacket(packetName, reliable);
+        Engine::GetInstance().addPacketRegistryEntry(packetName, reliable);
         return lua_gettop(L);
     }
 
@@ -73,31 +73,52 @@ LUA_API int luau_Include(lua_State *L)
             lua_pushstring(L, "Invalid packet name provided.");
             lua_error(L);
         }
-        if (!Engine::GetInstance().hasPacket(packetName)) {
+        if (!Engine::GetInstance().hasPacketRegistryEntry(packetName)) {
             lua_pushstring(L, std::format("Packet \"{}\" has not been initialized. Try calling net.CreatePacket first.", packetName).c_str());
             lua_error(L);
         }
-        // TODO: add the real deal here.
+        PacketBuilder &builder = Engine::GetInstance().getPacketBuilder();
+        builder.destroyPacket();
+        builder.setCmd(PacketCmd::NET).writeString(packetName);
+        Engine::GetInstance().getLastStartedPacket() = packetName;
+
         return lua_gettop(L);
     }
 
     LUA_API int luau_NetSendToServer(lua_State *L)
     {
-        const char *packetName = lua_tostring(L, 1);
-        std::cout << "Sending packet to server: " << packetName << std::endl;
+        if (Engine::GetInstance().getState() != Types::VMState::CLIENT) {
+            lua_pushstring(L, "This function can only be called on the client.");
+            lua_error(L);
+        }
+        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
         return lua_gettop(L);
     }
 
     LUA_API int luau_NetSendToClient(lua_State *L)
     {
-        const char *packetName = lua_tostring(L, 1);
-        std::cout << "Sending packet to client: " << packetName << std::endl;
+        const char *clientUUID = lua_tostring(L, 1);
+
+        if (Engine::GetInstance().getState() != Types::VMState::SERVER) {
+            lua_pushstring(L, "This function can only be called on the server.");
+            lua_error(L);
+        }
+        if (!clientUUID) {
+            lua_pushstring(L, "Invalid client UUID provided.");
+            lua_error(L);
+        }
+        Engine::GetInstance().getSendToClientMap()[clientUUID].emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
         return lua_gettop(L);
     }
+
     LUA_API int luau_NetBroadcast(lua_State *L)
     {
-        const char *packetName = lua_tostring(L, 1);
-        std::cout << "Broadcasting packet: " << packetName << std::endl;
+        if (Engine::GetInstance().getState() != Types::VMState::SERVER) {
+            lua_pushstring(L, "This function can only be called on the server.");
+            lua_error(L);
+        }
+
+        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
         return lua_gettop(L);
     }
 
