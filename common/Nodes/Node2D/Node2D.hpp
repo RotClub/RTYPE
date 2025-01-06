@@ -14,6 +14,7 @@
 class Node2D : public Node {
     public:
         explicit Node2D(const std::string &name = "node2d");
+
         ~Node2D();
 
         Types::Vector2 position;

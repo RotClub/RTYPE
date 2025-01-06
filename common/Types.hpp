@@ -51,6 +51,30 @@ namespace Types {
             }
     };
 
+    class Rect2 {
+		public:
+			Vector2 origin;
+			Vector2 size;
+
+            bool intersects(const Rect2 &other) const
+            {
+                float this_left = origin.x;
+			    float this_right = this_left + size.x;
+			    float this_top = origin.y;
+			    float this_bottom = this_right + size.y;
+
+			    float other_left = other.origin.x;
+			    float other_right = other_left + other.size.x;
+			    float other_top = other.origin.y;
+			    float other_bottom = other_right + other.size.y;
+
+			    bool horizontal_overlap = this_left < other_right && this_right > other_left;
+			    bool vertical_overlap = this_top < other_bottom && this_bottom > other_top;
+
+			    return horizontal_overlap && vertical_overlap;
+            }
+    };
+
     enum class VMState {
         CLIENT,
         SERVER
