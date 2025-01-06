@@ -11,8 +11,8 @@
     #include "../common/Engine.hpp"
     #include "connection/ClientConnection.hpp"
     #include "game/Game.hpp"
-
     #include <string>
+    #include <unordered_map>
 
     class Client {
         public:
@@ -27,7 +27,8 @@
             static void handleLuaPacket(Packet *packet);
             static void handleNewMessagePacket(Packet *packet);
 
-            std::map<PacketCmd, std::function<void(Packet *)>> packetHandlers = {
+            std::unordered_map<PacketCmd, std::function<void(Packet *)>> packetHandlers = {
+                {PacketCmd::NONE, std::function<void(Packet *)>()},
                 {PacketCmd::CONNECT, handleConnectPacket},
                 {PacketCmd::DISCONNECT, handleDisconnectPacket},
                 {PacketCmd::NEW_MESSAGE, handleNewMessagePacket},
