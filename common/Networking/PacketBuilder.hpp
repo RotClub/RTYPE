@@ -10,7 +10,7 @@
 
     #include "Packet.hpp"
 
-#include <cstddef>
+    #include <cstddef>
     #include <string>
 
     class PacketBuilder {
