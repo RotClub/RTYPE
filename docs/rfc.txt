@@ -34,7 +34,7 @@ RFC: RTYPE
                 - CONNECT = 1 (A new client is connecting to the server)
                 - DISCONNECT = 2 (A client is disconnecting from the server)
                 - NET = 3 (Message will be handled by the lua virtual machine)
-                - NEW_MESSAGES = 4 (Create a new channel for the NET messages)
+                - NEW_MESSAGE = 4 (Create a new channel for the NET messages)
 
 3.2. Server-Client Connection Establishment
     Clients establish a TCP connection to the server using the server's IP
@@ -47,3 +47,14 @@ RFC: RTYPE
     real-time rendering. Clients can send input commands to the server over UDP
     to control their game characters. TCP is used for reliable data transfer,
     such as player login/logout messages.
+
+4. Packet commands Specification
+    4.1 NONE
+
+    4.2 CONNECT
+
+    4.3 DISCONNECT
+
+    4.4 NET
+
+    4.5 NEW_MESSAGE
