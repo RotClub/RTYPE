@@ -54,6 +54,11 @@ bool ClientConnection::establishConnection()
     return true;
 }
 
+bool ClientConnection::hasPendingPacket()
+{
+    return !std::get<IN>(_queues).empty();
+}
+
 Packet *ClientConnection::_tryReceive()
 {
     Packet *packet = new Packet;

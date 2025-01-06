@@ -49,4 +49,5 @@ int main(void)
             free(packet);
         }
     }
+    client.getClientConnectionTcp().disconnectFromServer();
 }

@@ -3,6 +3,7 @@
 //
 
 #include "Client.hpp"
+#include "spdlog/spdlog.h"
 #include <cstring>
 #include <stdexcept>
 #include <Networking/Defines.hpp>
@@ -36,6 +37,7 @@ Client::Client(const int srvTcpFd)
     if (_tcpFd == -1) {
         throw std::runtime_error("Error accepting client");
     }
+    spdlog::debug("Client connected with UUID: {}", *uuid);
 }
 
 Client::~Client()

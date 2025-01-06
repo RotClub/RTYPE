@@ -7,6 +7,7 @@
 
 #include "Client.hpp"
 #include "game/Game.hpp"
+#include <cstdlib>
 
 Client *Client::_instance = nullptr;
 
@@ -53,4 +54,58 @@ ClientConnection &Client::getClientConnectionTcp()
 ClientConnection &Client::getClientConnectionUdp()
 {
     return _clientConnectionUdp;
+}
+
+void Client::broadcastLuaPackets()
+{
+    while (!Engine::GetInstance().getBroadcastQueue().empty()) {
+        std::pair<std::string, Packet *> newPacket = Engine::GetInstance().getBroadcastQueue().front();
+            if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
+                getClientConnectionTcp().sendToServer(newPacket.second);
+            } else {
+                getClientConnectionUdp().sendToServer(newPacket.second);
+            }
+        Engine::GetInstance().getBroadcastQueue().pop();
+    }
+}
+
+void Client::processIncomingPackets()
+{
+    Client &client = Client::GetInstance();
+    while (client.getClientConnectionTcp().hasPendingPacket()) {
+        Packet *packet = client.getClientConnectionTcp().getLatestPacket();
+        if (packet == nullptr)
+            return;
+        client.packetHandlers[packet->cmd](packet);
+        free(packet->data);
+        free(packet);
+    }
+    while (client.getClientConnectionUdp().hasPendingPacket()) {
+        Packet *packet = client.getClientConnectionUdp().getLatestPacket();
+        if (packet == nullptr)
+            return;
+        client.packetHandlers[packet->cmd](packet);
+        free(packet->data);
+        free(packet);
+    }
+}
+
+void Client::handleConnectPacket(Packet *packet)
+{
+    spdlog::info("Connected to server");
+}
+
+void Client::handleDisconnectPacket(Packet *packet)
+{
+    spdlog::info("Disconnected from server");
+}
+
+void Client::handleLuaPacket(Packet *packet)
+{
+    spdlog::info("Received Lua packet");
+}
+
+void Client::handleNewMessagePacket(Packet *packet)
+{
+    spdlog::info("Received new message packet");
 }

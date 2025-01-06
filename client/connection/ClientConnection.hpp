@@ -22,6 +22,7 @@
         void disconnectFromServer();
         bool establishConnection();
         void sendToServer(Packet *pckt);
+        bool hasPendingPacket();
 
         bool isConnected() const { return _connected; }
 
