@@ -28,6 +28,7 @@
             std::string readString();
 
             Packet *build();
+            void destroyPacket();
 
         private:
             size_t _n;

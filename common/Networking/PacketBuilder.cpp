@@ -89,3 +89,12 @@ Packet *PacketBuilder::build()
     _data = nullptr;
     return packet;
 }
+
+void PacketBuilder::destroyPacket()
+{
+    if (_data != nullptr)
+        free(_data);
+    _n = 0;
+    _cmd = PacketCmd::NONE;
+    _data = nullptr;
+}
