@@ -26,7 +26,7 @@ namespace Types {
                 return Vector2(0, 0);
             }
 
-            Vector2 operator+(const Vector2 &other)
+            Vector2 operator+(const Vector2 &other) const
             {
                 return Vector2(x + other.x, y + other.y);
             }
@@ -38,7 +38,7 @@ namespace Types {
                 return *this;
             }
 
-            Vector2 operator+(const float &other)
+            Vector2 operator+(const float &other) const
             {
                 return Vector2(x + other, y + other);
             }
@@ -47,6 +47,30 @@ namespace Types {
             {
                 x += other;
                 y += other;
+                return *this;
+            }
+
+            Vector2 operator*(const Vector2 &other) const
+            {
+                return Vector2(x * other.x, y * other.y);
+            }
+
+            Vector2 operator*=(const Vector2 &other)
+            {
+                x *= other.x;
+                y *= other.y;
+                return *this;
+            }
+
+            Vector2 operator*(const float &other) const
+            {
+                return Vector2(x * other, y * other);
+            }
+
+            Vector2 operator*=(const float &other)
+            {
+                x *= other;
+                y *= other;
                 return *this;
             }
     };

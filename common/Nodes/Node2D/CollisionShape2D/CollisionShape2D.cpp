@@ -5,7 +5,9 @@
 #include "CollisionShape2D.hpp"
 
 CollisionShape2D::CollisionShape2D()
-    : shape(nullptr), collision_enabled(true) {}
+    : shape(nullptr), collision_enabled(true) {
+    this->metatable = "CollisionShape2DMetaTable";
+}
 
 void CollisionShape2D::setShape(Shape2D* new_shape) {
     shape = new_shape;

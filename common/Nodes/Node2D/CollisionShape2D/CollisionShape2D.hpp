@@ -11,8 +11,6 @@
 class CollisionShape2D : public Node2D {
 private:
     Shape2D* shape;
-    float rotation;
-	Types::Vector2 scale;
     bool collision_enabled;
 
 public:
@@ -21,12 +19,6 @@ public:
     void setShape(Shape2D* new_shape);
 
     Shape2D* getShape() const;
-
-	void setRotation(const float &angle);
-
-	float getRotation() const;
-
-	Types::Vector2 getScale() const;
 
 	Types::Rect2 getBoundingBox() const;
 
