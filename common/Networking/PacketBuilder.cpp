@@ -7,78 +7,82 @@
 
 #include "PacketBuilder.hpp"
 #include "Networking/Packet.hpp"
-#include <any>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 PacketBuilder::PacketBuilder()
 {
-    _packet = NULL_PACKET;
+    _packet = nullptr;
+    _n = 0;
+    _cmd = PacketCmd::NONE;
+    _data = new char[0];
 }
 
 PacketBuilder::PacketBuilder(Packet *packet)
 {
-    _packet = *packet;
+    _packet = packet;
+    _n = packet->n;
+    _cmd = packet->cmd;
+    _data = packet->data;
 }
 
 PacketBuilder PacketBuilder::setCmd(PacketCmd cmd)
 {
-    _packet.cmd = cmd;
+    _cmd = cmd;
     return *this;
 }
 
 PacketBuilder &PacketBuilder::writeInt(int nb)
 {
-    _packet.n += sizeof(int);
-    void *rt = realloc(_packet.data, _packet.n);
+    _n += sizeof(int);
+    void *rt = realloc(_data, _n);
     if (rt == NULL)
         throw std::runtime_error("Error reallocating memory");
-    _packet.data = rt;
-    std::memcpy(static_cast<char*>(_packet.data) + _packet.n - sizeof(int), &nb, sizeof(int));
+    _data = rt;
+    std::memcpy(static_cast<char*>(_data) + _n - sizeof(int), &nb, sizeof(int));
     return *this;
 }
 
 PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
     const char *cstr = str.c_str();
-    _packet.n += sizeof(char) * str.length() + 1;
-    void *rt = realloc(_packet.data, _packet.n);
+    _n += sizeof(char) * str.length() + 1;
+    void *rt = realloc(_data, _n);
     if (rt == NULL)
         throw std::runtime_error("Error reallocating memory");
-    _packet.data = rt;
+    _data = rt;
     size_t len = sizeof(char) * str.length() + 1;
-    std::memcpy(static_cast<char*>(_packet.data) + _packet.n - len, cstr, len);
+    std::memcpy(static_cast<char*>(_data) + _n - len, cstr, len);
     return *this;
 }
 
 int PacketBuilder::readInt()
 {
     int nb = 0;
-    std::memcpy(&nb, _packet.data, sizeof(int));
-    _packet.data = static_cast<char*>(_packet.data) + sizeof(int);
-    _packet.n -= sizeof(int);
+    std::memcpy(&nb, _data, sizeof(int));
+    _data = static_cast<char*>(_data) + sizeof(int);
+    _n -= sizeof(int);
     return nb;
 }
 
 std::string PacketBuilder::readString()
 {
-    std::string str(static_cast<char*>(_packet.data));
-    _packet.data = static_cast<char*>(_packet.data) + sizeof(char) * str.length() + 1;
-    _packet.n -= sizeof(char) * str.length() + 1;
+    std::string str(static_cast<char*>(_data));
+    _data = static_cast<char*>(_data) + sizeof(char) * str.length() + 1;
+    _n -= sizeof(char) * str.length() + 1;
     return str;
 }
 
 Packet *PacketBuilder::build()
 {
-    return &_packet;
-}
-
-void PacketBuilder::destroyPacket()
-{
-    free(_packet.data);
-    _packet = NULL_PACKET;
+    if (_packet != nullptr)
+        throw std::runtime_error("Packet already built");
+    Packet *packet = new Packet;
+    packet->n = _n;
+    packet->cmd = _cmd;
+    packet->data = _data;
+    return packet;
 }
