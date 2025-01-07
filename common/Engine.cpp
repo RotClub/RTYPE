@@ -11,6 +11,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <chrono>
+#include "Lua/lua.hpp"
 
 #include "nlohmann/json.hpp"
 
@@ -174,6 +175,29 @@ void Engine::callHook(const std::string &eventName, ...)
     lua_pop(L, 1);
 }
 
+void Engine::netCallback(const std::string& packetName, Packet* packet)
+{
+    _builder.loadFromPacket(packet);
+    lua_getglobal(L, "net");
+    lua_getfield(L, -1, "Call");
+
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 1);
+        return;
+    }
+
+    lua_pushstring(L, packetName.c_str());
+    lua_pushnil(L);
+    lua_pushnil(L);
+
+    if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
+        std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+}
+
 std::string Engine::GetLibraryFileContents(const std::string& filename)
 {
     const std::filesystem::path filePath = _libPath / filename;
@@ -230,6 +254,22 @@ void Engine::loadLibraries() const
     loadLibrary(L, "hook.luau");
     loadLibrary(L, "utils.luau");
     loadLibrary(L, "json.luau");
+    loadLibrary(L, "net.luau");
+
+    /* NET LIBRARY */
+    constexpr luaL_Reg netLibrary[] = {
+        {"CreatePacket", luau_NetCreatePacket},
+        {"Start", luau_NetStart},
+        {"SendToServer", luau_NetSendToServer},
+        {"SendToClient", luau_NetSendToClient},
+        {"Broadcast", luau_NetBroadcast},
+        {"WriteString", luau_NetWriteString},
+        {"ReadString", luau_NetReadString},
+        {nullptr, nullptr}
+    };
+    luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
+    /* NET LIBRARY */
+
     luaL_sandbox(L);
 }
 

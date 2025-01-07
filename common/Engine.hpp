@@ -73,6 +73,8 @@ class Engine {
         PacketBuilder &getPacketBuilder() { return _builder; }
         std::string &getLastStartedPacket() { return _lastStartedPacket; }
 
+        void netCallback(const std::string &packetName, Packet *packet);
+
         Node *root;
         bool clientStarted = false;
 

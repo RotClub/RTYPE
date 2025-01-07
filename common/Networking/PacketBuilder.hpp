@@ -19,6 +19,8 @@
             PacketBuilder(Packet *packet);
             ~PacketBuilder() = default;
 
+            void loadFromPacket(Packet *packet);
+
             PacketBuilder setCmd(PacketCmd cmd);
 
             PacketBuilder &writeInt(int nb);

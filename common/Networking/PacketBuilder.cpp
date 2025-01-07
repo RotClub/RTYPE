@@ -27,6 +27,13 @@ PacketBuilder::PacketBuilder(Packet *packet)
     _data = packet->data;
 }
 
+void PacketBuilder::loadFromPacket(Packet* packet)
+{
+    _cmd = packet->cmd;
+    _data = packet->data;
+    _n = packet->n;
+}
+
 PacketBuilder PacketBuilder::setCmd(PacketCmd cmd)
 {
     _cmd = cmd;

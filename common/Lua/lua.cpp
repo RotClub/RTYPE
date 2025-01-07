@@ -532,7 +532,7 @@ LUA_API int luau_Include(lua_State *L)
         lua_setglobal(L, name);
     }
 
-    static void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *functions, const char *name)
+    void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *functions, const char *name)
     {
         lua_newtable(L);
         luaL_register(L, name, functions);
@@ -643,20 +643,6 @@ LUA_API int luau_Include(lua_State *L)
     void luau_ExposeFunctions(lua_State *L)
     {
         luau_ExposeGlobalFunction(L, luau_Include, "include");
-
-        /* NET LIBRARY */
-        constexpr luaL_Reg netLibrary[] = {
-            {"CreatePacket", luau_NetCreatePacket},
-            {"Start", luau_NetStart},
-            {"SendToServer", luau_NetSendToServer},
-            {"SendToClient", luau_NetSendToClient},
-            {"Broadcast", luau_NetBroadcast},
-            {"WriteString", luau_NetWriteString},
-            {"ReadString", luau_NetReadString},
-            {nullptr, nullptr}
-        };
-        luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
-        /* NET LIBRARY */
 
         /* NODE LIBRARY */
         constexpr luaL_Reg nodeLibrary[] = {

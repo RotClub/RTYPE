@@ -7,8 +7,6 @@
 
 #include "Server.hpp"
 
-#include <Engine.hpp>
-
 Server::Server(int port)
     : _port(port), _isRunning(false), _serverConnection(port)
 {
@@ -53,11 +51,11 @@ void Server::loop()
             // TODO: handle multiple incoming packets per tick for both TCP and UDP, implement with a limit of packets per tick.
             if (client->hasTcpPacketInput()) {
                 Packet *packet = client->popTcpPacketInput();
-                // TODO: interpret packet in server, should make a table of function pointers to call depending on the packet cmd.
+                PACKET_HANDLERS.at(packet->cmd)(packet);
             }
             if (client->hasUdpPacketInput()) {
                 Packet *packet = client->popUdpPacketInput();
-                // TODO: interpret packet in server, should make a table of function pointers to call depending on the packet cmd.
+                PACKET_HANDLERS.at(packet->cmd)(packet);
             }
         }
     }
@@ -95,6 +93,29 @@ void Server::sendToClients()
             }
         }
     }
+}
+
+void Server::handleNonePacket(Packet* packet)
+{
+}
+
+void Server::handleConnectPacket(Packet* packet)
+{
+}
+
+void Server::handleDisconnectPacket(Packet* packet)
+{
+}
+
+void Server::handleNewMessagePacket(Packet* packet)
+{
+}
+
+void Server::handleLuaPacket(Packet* packet)
+{
+    PacketBuilder builder(packet);
+    std::string packetName = builder.readString();
+    Engine::GetInstance().netCallback(packetName, packet);
 }
 
 void Server::broadcastNewPackets()
