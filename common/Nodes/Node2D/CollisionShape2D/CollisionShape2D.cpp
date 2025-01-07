@@ -31,9 +31,13 @@ bool CollisionShape2D::collidesWith(const CollisionShape2D& other) {
         return false;
     }
 
-	if (!shape->getBoundingBox().intersects(other.shape->getBoundingBox())) {
+	if (!this->getBoundingBox().intersects(other.getBoundingBox())) {
 		return false;
 	}
 
     return shape->intersects(*other.getShape());
+}
+
+Types::Rect2 CollisionShape2D::getBoundingBox() const {
+	return shape->getBoundingBox();
 }
