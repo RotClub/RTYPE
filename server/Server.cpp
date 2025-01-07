@@ -105,28 +105,36 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
     switch (client->getStep())
     {
         case Client::ConnectionStep::UNVERIFIED:
-            builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
-            client->addTcpPacketOutput(builder.build());
-            client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
-            break;
+            {
+                builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
+                client->addTcpPacketOutput(builder.build());
+                client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
+                break;
+            }
         case Client::ConnectionStep::AUTH_CODE_SENT:
-            builder.loadFromPacket(packet);
-            std::string clientChallengeCode = builder.readString();
-            if (clientChallengeCode == CLIENT_CHALLENGE) {
-                builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
-                client->addTcpPacketOutput(builder.build());
-                client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
-            } else {
-                client->disconnect();
+            {
+                builder.loadFromPacket(packet);
+                std::string clientChallengeCode = builder.readString();
+                if (clientChallengeCode == CLIENT_CHALLENGE) {
+                    builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
+                    client->addTcpPacketOutput(builder.build());
+                    client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
+                } else {
+                    client->disconnect();
+                }
+                break;
             }
-            break;
         case Client::ConnectionStep::AUTH_CODE_VERIFIED:
-            for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
-                builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
-                client->addTcpPacketOutput(builder.build());
+            {
+                for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
+                    builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
+                    client->addTcpPacketOutput(builder.build());
+                }
+                client->setStep(Client::ConnectionStep::COMPLETE);
+                break;
             }
-            client->setStep(Client::ConnectionStep::COMPLETE);
-        default: break;
+        default:
+            break;
     }
 }
 
@@ -143,7 +151,7 @@ void Server::handleLuaPacket(Client *client, Packet* packet)
 {
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();
-    Engine::GetInstance().netCallback(packetName, packet, client);
+    Engine::GetInstance().netCallback(packetName, packet, client->getUuid());
 }
 
 void Server::broadcastNewPackets()

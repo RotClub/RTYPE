@@ -19,7 +19,6 @@
     #include <string>
     #include <filesystem>
     #include <map>
-    #include "client/Client.hpp"
     #include "GameInfo/GameInfo.hpp"
     #include "Networking/PacketBuilder.hpp"
     #include "spdlog/spdlog.h"
@@ -76,7 +75,7 @@ class Engine {
         PacketBuilder &getPacketBuilder() { return _builder; }
         std::string &getLastStartedPacket() { return _lastStartedPacket; }
 
-        void netCallback(const std::string &packetName, Packet *packet, Client *client);
+        void netCallback(const std::string &packetName, Packet *packet, const std::string &client);
 
         Node *root;
         bool clientStarted = false;
