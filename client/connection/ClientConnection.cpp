@@ -7,7 +7,11 @@
 
 #include "ClientConnection.hpp"
 
-#include "Engine.hpp"
+#include "Networking/Packet.hpp"
+#include "spdlog/spdlog.h"
+#include <stdexcept>
+#include <sys/select.h>
+#include <unistd.h>
 
 ClientConnection::ClientConnection(std::string ip, int port, bool udp)
     : GlobalConnection(udp), _ip(ip), _port(port)
@@ -50,23 +54,25 @@ bool ClientConnection::establishConnection()
     return true;
 }
 
+bool ClientConnection::hasPendingPacket()
+{
+    return !std::get<IN>(_queues).empty();
+}
+
 Packet *ClientConnection::_tryReceive()
 {
-    Packet *pckt = new Packet;
-    int dataSize = 0;
+    Packet *packet = new Packet;
 
-    ssize_t ret = read(_fd, &dataSize, sizeof(int));
-    if (ret == -1)
-        throw std::runtime_error("Error reading data size from server");
-    if (ret == 0 || dataSize == 0)
-        return nullptr;
-    Engine::GetInstance().Log(Engine::LogLevel::INFO, "Data size: " + std::to_string(dataSize));
-    ssize_t ret2 = read(_fd, &pckt, dataSize);
-    if (ret2 == -1)
-        throw std::runtime_error("Error reading data from server");
-    if (ret2 == 0)
-        return nullptr;
-    return pckt;
+    std::memset(packet, 0, sizeof(Packet));
+    if (read(_fd, packet, sizeof(Packet)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+    spdlog::info("Packet size: {}", packet->n);
+    packet->data = std::malloc(packet->n);
+    if (read(_fd, packet->data, packet->n) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+    return packet;
 }
 
 void ClientConnection::sendToServer(Packet *pckt)
@@ -76,7 +82,16 @@ void ClientConnection::sendToServer(Packet *pckt)
 
 void ClientConnection::_receiveLoop()
 {
-    _packet = _tryReceive();
+    if (FD_ISSET(_fd, &_readfds) == 0) {
+        return;
+    }
+    try {
+        _packet = _tryReceive();
+    } catch (const std::runtime_error &e) {
+        spdlog::info(e.what());
+        _connected = false;
+        return;
+    }
     if (!_packet)
         return;
     std::get<IN>(_queues).enqueue(_packet);
@@ -85,12 +100,15 @@ void ClientConnection::_receiveLoop()
 
 void ClientConnection::_sendLoop()
 {
+    if (!_connected)
+        return;
+    if (FD_ISSET(_fd, &_writefds) == 0)
+        return;
     while (!std::get<OUT>(_queues).empty()) {
         Packet *sending = std::get<OUT>(_queues).dequeue();
-        size_t dataSize = sizeof(sending);
-
-        write(_fd, &dataSize, sizeof(size_t));
-        write(_fd, sending->data.data(), dataSize);
+        write(_fd, sending, sizeof(*sending));
+        write(_fd, sending->data, sending->n);
+        free(sending->data);
     }
 }
 

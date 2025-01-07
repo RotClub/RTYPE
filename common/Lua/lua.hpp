@@ -19,12 +19,13 @@
     #include "luacode.h"
     #include <queue>
     #include <filesystem>
-    #include "../GameInfo/GameInfo.hpp"
+    #include "Types.hpp"
+    #include "GameInfo/GameInfo.hpp"
 
     void luau_ExposeFunctions(lua_State *L);
+    void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *functions, const char *name);
     void luau_ExposeGameInfoTable(lua_State *L, const GameInfo *info);
     void luau_ExposeConstants(lua_State *L, Types::VMState state);
-
     LUA_API int luau_Import(lua_State *L);
 
     /* NET LIBRARY */
@@ -40,6 +41,18 @@
     /* READ/WRITE OPERATIONS */
 
     /* NET LIBRARY */
+
+    /* NODE LIBRARY */
+    void luau_ExposeRootNode(lua_State *L);
+    LUA_API int luau_NodeGetName(lua_State *L);
+    LUA_API int luau_NodeSetName(lua_State *L);
+    LUA_API int luau_NodeGetChildren(lua_State *L);
+    LUA_API int luau_NodeGetChild(lua_State *L);
+    LUA_API int luau_NodeAddChild(lua_State *L);
+    LUA_API int lua_gcNode(lua_State* L);
+    LUA_API int lua_gcNode2D(lua_State* L);
+    LUA_API int lua_gcSprite2D(lua_State* L);
+    /* NODE LIBRARY */
 
 
     /* HOOK LIBRARY */

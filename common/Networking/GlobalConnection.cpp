@@ -6,6 +6,7 @@
 */
 
 #include "GlobalConnection.hpp"
+#include "Networking/Packet.hpp"
 
 GlobalConnection::GlobalConnection(bool udp)
     : _udp(udp)
@@ -20,7 +21,11 @@ GlobalConnection::~GlobalConnection()
 Packet *GlobalConnection::getLatestPacket()
 {
     Packet *pckt = std::get<IN>(_queues).dequeue();
-    if (pckt == nullptr)
+    if (pckt->n <= 0)
+        return nullptr;
+    if (pckt->data == nullptr)
+        return nullptr;
+    if (static_cast<int>(pckt->cmd) < 0 || static_cast<int>(pckt->cmd) > 4)
         return nullptr;
     return pckt;
 }

@@ -9,10 +9,7 @@
     #define SERVERCONNECTION_HPP_
 
     #include "../common/Networking/GlobalConnection.hpp"
-    #include "../common/Networking/Defines.hpp"
-    #include "../common/Networking/SafeQueue.hpp"
     #include "../common/Networking/Packet.hpp"
-    #include "../common/Networking/PacketBuilder.hpp"
 
     #define KEYWORD "xMmM21B6dFdwJY39"
 
@@ -25,6 +22,9 @@
         void disconnectFromServer();
         bool establishConnection();
         void sendToServer(Packet *pckt);
+        bool hasPendingPacket();
+
+        bool isConnected() const { return _connected; }
 
     private:
         void _loop();

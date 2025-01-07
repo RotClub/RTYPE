@@ -12,6 +12,7 @@
 #include "connection/ServerConnection.hpp"
 #include "client/Client.hpp"
 #include <vector>
+#include "Engine.hpp"
 
 class Server {
     public:
@@ -21,6 +22,23 @@ class Server {
         void loop();
         void stop();
         int getPort() const;
+        void broadcastNewPackets();
+        void broadcastLuaPackets();
+        void sendToClients();
+
+        void handleNonePacket(Client *client, Packet *packet);
+        void handleConnectPacket(Client *client, Packet *packet);
+        void handleDisconnectPacket(Client *client, Packet *packet);
+        void handleNewMessagePacket(Client *client, Packet *packet);
+        void handleLuaPacket(Client *client, Packet *packet);
+
+        const std::unordered_map<PacketCmd, void (Server::*)(Client *, Packet *)> PACKET_HANDLERS = {
+            {PacketCmd::NONE, &Server::handleNonePacket},
+            {PacketCmd::CONNECT, &Server::handleConnectPacket},
+            {PacketCmd::DISCONNECT, &Server::handleDisconnectPacket},
+            {PacketCmd::NEW_MESSAGE, &Server::handleNewMessagePacket},
+            {PacketCmd::NET, &Server::handleLuaPacket},
+        };
 
     private:
         int _port;

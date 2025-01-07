@@ -8,13 +8,12 @@
 #ifndef NODE2D_HPP_
     #define NODE2D_HPP_
 
-    #include "../Node.hpp"
+    #include "Nodes/Node.hpp"
     #include <raylib-cpp.hpp>
 
 class Node2D : public Node {
     public:
-        Node2D(const std::string &name);
-        ~Node2D();
+		explicit Node2D(const std::string &name = "node2d");
 
         Types::Vector2 position;
 

@@ -10,6 +10,7 @@
 
     #include "Packet.hpp"
 
+    #include <cstddef>
     #include <string>
 
     class PacketBuilder {
@@ -18,18 +19,24 @@
             PacketBuilder(Packet *packet);
             ~PacketBuilder() = default;
 
+            void loadFromPacket(Packet *packet);
+
+            PacketBuilder setCmd(PacketCmd cmd);
+
             PacketBuilder &writeInt(int nb);
-            PacketBuilder &writeString(std::string str);
+            PacketBuilder &writeString(const std::string &str);
 
             int readInt();
             std::string readString();
 
             Packet *build();
+            void destroyPacket();
 
         private:
-            Packet *_packet;
+            size_t _n;
+            PacketCmd _cmd;
+            void *_data;
 
-            void *_popFront();
     };
 
 #endif /* !PACKETUTILS_HPP_ */

@@ -12,10 +12,13 @@
 #include <unistd.h>
 #include <chrono>
 
+#include "client/Client.hpp"
+#include "Lua/lua.hpp"
+
 #include "nlohmann/json.hpp"
 
 Engine::Engine(Types::VMState state, const std::string &gamePath)
-    : root(nullptr), L(luaL_newstate()), _gamePath("games/" + gamePath), _libPath("libs"), _state(state)
+    : root(new Node("root")), L(luaL_newstate()), _gamePath("games/" + gamePath), _libPath("libs"), _state(state)
 {
     if (!L)
         throw std::runtime_error("Failed to create Lua state");
@@ -32,6 +35,43 @@ Engine::Engine(Types::VMState state, const std::string &gamePath)
         throw std::runtime_error("Failed to load manifest.json: " + std::string(e.what()));
     }
 
+    std::vector<spdlog::sink_ptr> sinks;
+    sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+    switch (state)
+    {
+        case Types::VMState::SERVER:
+            sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/" + _gameInfo->getName() + "/server", 23, 59));
+            break;
+        case Types::VMState::CLIENT:
+            sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/" + _gameInfo->getName() + "/client", 23, 59));
+            break;
+    }
+    auto engineLogger = std::make_shared<spdlog::logger>("EngineLogger", begin(sinks), end(sinks));
+    spdlog::set_default_logger(engineLogger);
+    switch (state)
+    {
+        case Types::VMState::SERVER:
+            #ifdef RTYPE_DEBUG
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] <%t> %v");
+            #else
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] %v");
+            #endif
+            break;
+        case Types::VMState::CLIENT:
+            #ifdef RTYPE_DEBUG
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] <%t> %v");
+            #else
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] %v");
+            #endif
+            break;
+    }
+    spdlog::flush_every(std::chrono::seconds(5));
+    #ifdef RTYPE_DEBUG
+        spdlog::set_level(spdlog::level::debug);
+    #else
+        spdlog::set_level(spdlog::level::info);
+    #endif
+
     luaL_openlibs(L);
     luau_ExposeGameInfoTable(L, _gameInfo);
     luau_ExposeConstants(L, state);
@@ -41,13 +81,14 @@ Engine::Engine(Types::VMState state, const std::string &gamePath)
 Engine::~Engine()
 {
     lua_close(L);
-    ClearLogs();
     delete _gameInfo;
 }
 
 Engine& Engine::StartInstance(Types::VMState state, const std::string &gamePath)
 {
     _instance = new Engine(state, gamePath);
+    if (_instance->L != nullptr)
+        luau_ExposeRootNode(_instance->L);
     return *_instance;
 }
 
@@ -60,39 +101,14 @@ Engine &Engine::GetInstance()
     return *_instance;
 }
 
-void Engine::Log(const LogLevel level, const std::string &message)
-{
-    if (level == LogLevel::DEBUG) {
-    #ifndef RTYPE_DEBUG
-        return;
-    #endif
-    }
-    if (logQueue.size() >= MAX_LOGS)
-        logQueue.pop();
-    const std::time_t t = std::time(nullptr);
-    const std::tm* now = std::localtime(&t);
-    const std::string timestamp = "[" + std::to_string(now->tm_mday) + "-" + std::to_string(now->tm_mon + 1) + "-" + std::to_string(now->tm_year + 1900) + " @ " + std::to_string(now->tm_hour) + ":" + std::to_string(now->tm_min) + ":" + std::to_string(now->tm_sec) + "]";
-    std::cout << timestamp << " " << _getLogLevelString(level) << ": " << message << std::endl;
-    logQueue.push({
-        .level = level,
-        .timestamp = timestamp,
-        .message = message
-    });
-}
-
-void Engine::ClearLogs()
-{
-    while (!logQueue.empty())
-        logQueue.pop();
-}
-
-void Engine::addPacket(const std::string &packetName, const bool reliable)
+void Engine::addPacketRegistryEntry(const std::string &packetName, const bool reliable)
 {
     _packetsRegistry[packetName] = reliable;
-    // TODO: Network packet creation to all clients if SERVER. if CLIENT, just create the packet
+    if (_state == Types::VMState::SERVER)
+        _newPacketsInRegistry.push(packetName);
 }
 
-bool Engine::hasPacket(const std::string &packetName) const
+bool Engine::hasPacketRegistryEntry(const std::string &packetName) const
 {
     return _packetsRegistry.contains(packetName);
 }
@@ -104,15 +120,15 @@ bool Engine::isPacketReliable(const std::string &packetName) const
 
 void Engine::displayGameInfo()
 {
-    Log(LogLevel::INFO, "Selected game info:");
-    Log(LogLevel::INFO, "Name: " + _gameInfo->getName());
-    Log(LogLevel::INFO, "Description: " + _gameInfo->getDescription());
-    Log(LogLevel::INFO, "Max players: " + std::to_string(_gameInfo->getMaxPlayers()));
-    Log(LogLevel::INFO, "Authors:");
+    spdlog::info("Selected game info:");
+    spdlog::info("Name: " + _gameInfo->getName());
+    spdlog::info("Description: " + _gameInfo->getDescription());
+    spdlog::info("Max players: " + std::to_string(_gameInfo->getMaxPlayers()));
+    spdlog::info("Authors:");
     for (const auto &author : _gameInfo->getAuthors()) {
-        Log(LogLevel::INFO, "  - " + author);
+        spdlog::info("  - " + author);
     }
-    Log(LogLevel::INFO, "Version: " + _gameInfo->getVersion());
+    spdlog::info("Version: " + _gameInfo->getVersion());
 }
 
 // WARNING: This function requires the last argument to be nullptr
@@ -161,20 +177,43 @@ void Engine::callHook(const std::string &eventName, ...)
     lua_pop(L, 1);
 }
 
+void Engine::netCallback(const std::string &packetName, Packet *packet, Client *client)
+{
+    _builder.loadFromPacket(packet);
+    lua_getglobal(L, "net");
+    lua_getfield(L, -1, "Call");
+
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 1);
+        return;
+    }
+
+    lua_pushstring(L, packetName.c_str());
+    lua_pushinteger(L, packet->n);
+    lua_pushstring(L, client->getUuid().c_str());
+
+    if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
+        std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+}
+
 std::string Engine::GetLibraryFileContents(const std::string& filename)
 {
     const std::filesystem::path filePath = _libPath / filename;
     if (!std::filesystem::exists(filePath)) {
-        Log(LogLevel::ERROR, "File " + filename + " does not exist");
+        spdlog::error("File " + filename + " does not exist");
         return "";
     }
     if (filePath.string().find(_libPath.string()) != 0) {
-        Log(LogLevel::ERROR, "File " + filename + " is outside the lib path");
+        spdlog::error("File " + filename + " is outside the lib path");
         return "";
     }
     std::ifstream stream(filePath.c_str(), std::ios::binary);
     if (!stream.is_open()) {
-        Log(LogLevel::ERROR, "Failed to open file " + filename);
+        spdlog::error("Failed to open file " + filename);
         return "";
     }
     std::string contents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
@@ -205,7 +244,7 @@ static void loadLibrary(lua_State *L, const std::string &filePath)
             throw std::runtime_error(lua_tostring(L, -1));
         }
 
-        Engine::GetInstance().Log(Engine::LogLevel::DEBUG, std::format("Successfully loaded file: {}", filePath));
+        spdlog::debug("Successfully loaded file: {}", filePath);
     } catch (const std::exception& e) {
         lua_pushfstring(L, "Exception: %s", e.what());
         lua_error(L);
@@ -217,22 +256,23 @@ void Engine::loadLibraries() const
     loadLibrary(L, "hook.luau");
     loadLibrary(L, "utils.luau");
     loadLibrary(L, "json.luau");
-    luaL_sandbox(L);
-}
+    loadLibrary(L, "net.luau");
 
-std::string Engine::_getLogLevelString(const LogLevel level)
-{
-    switch (level) {
-        case LogLevel::DEBUG:
-            return "DEBUG";
-        case LogLevel::INFO:
-            return "INFO";
-        case LogLevel::WARNING:
-            return "WARNING";
-        case LogLevel::ERROR:
-            return "ERROR";
-    }
-    return "UNKNOWN";
+    /* NET LIBRARY */
+    constexpr luaL_Reg netLibrary[] = {
+        {"CreatePacket", luau_NetCreatePacket},
+        {"Start", luau_NetStart},
+        {"SendToServer", luau_NetSendToServer},
+        {"SendToClient", luau_NetSendToClient},
+        {"Broadcast", luau_NetBroadcast},
+        {"WriteString", luau_NetWriteString},
+        {"ReadString", luau_NetReadString},
+        {nullptr, nullptr}
+    };
+    luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
+    /* NET LIBRARY */
+
+    luaL_sandbox(L);
 }
 
 int Engine::deltaTime()
@@ -248,16 +288,16 @@ std::string Engine::GetLuaFileContents(const std::string &filename)
 {
     const std::filesystem::path filePath = _gamePath / LUA_PATH / filename;
     if (!std::filesystem::exists(filePath)) {
-        Log(LogLevel::ERROR, "File " + filename + " does not exist");
+        spdlog::error("File " + filename + " does not exist");
         return "";
     }
     if (filePath.string().find(_gamePath.string()) != 0) {
-        Log(LogLevel::ERROR, "File " + filename + " is outside the game path");
+        spdlog::error("File " + filename + " is outside the game path");
         return "";
     }
     std::ifstream stream(filePath.c_str(), std::ios::binary);
     if (!stream.is_open()) {
-        Log(LogLevel::ERROR, "Failed to open file " + filename);
+        spdlog::error("Failed to open file " + filename);
         return "";
     }
     std::string contents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
@@ -275,7 +315,7 @@ bool Engine::LoadLuaFile(const std::string &filename)
     const int result = luau_load(L, filename.c_str(), bytecode, bytecodeSize, 0);
     free(bytecode);
     if (result != 0) {
-        Log(LogLevel::ERROR, "Failed to load Lua file " + filename);
+        spdlog::error("Failed to load Lua file " + filename);
         return false;
     }
     return true;
@@ -285,8 +325,8 @@ void Engine::execute()
 {
     luaL_sandboxthread(L);
     if (lua_pcall(L, 0, LUA_MULTRET, 0) != 0) {
-        Log(LogLevel::ERROR, lua_tostring(L, -1));
+        spdlog::error(lua_tostring(L, -1));
     } else {
-        Log(LogLevel::INFO, "Successfully initialized Luau environment");
+        spdlog::info("Successfully initialized Luau environment");
     }
 }

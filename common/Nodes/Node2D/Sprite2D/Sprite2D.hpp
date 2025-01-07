@@ -13,7 +13,7 @@
 
 class Sprite2D : public Node2D {
     public:
-        Sprite2D(const std::string &name, const std::string &texture);
+        Sprite2D(const std::string &name = "sprite2d", const std::string &texture = "");
         ~Sprite2D();
 
         Sprite2D &SetTexture(const std::string &texture);

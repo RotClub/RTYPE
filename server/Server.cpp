@@ -7,8 +7,6 @@
 
 #include "Server.hpp"
 
-#include <Engine.hpp>
-
 Server::Server(int port)
     : _port(port), _isRunning(false), _serverConnection(port)
 {
@@ -23,12 +21,12 @@ void Server::start()
 {
     try {
         Engine &engine = Engine::StartInstance(Types::VMState::SERVER, "rtype");
-        engine.Log(Engine::LogLevel::INFO, "Server starting...");
+        spdlog::info("Server starting...");
         engine.displayGameInfo();
         engine.loadLibraries();
         if (engine.LoadLuaFile("index.luau"))
             engine.execute();
-        engine.Log(Engine::LogLevel::INFO, "Server started!");
+        spdlog::info("Server started!");
         engine.callHook("RType:InitServer", nullptr);
         _serverConnection.start();
         _isRunning = true;
@@ -36,15 +34,133 @@ void Server::start()
             loop();
         }
     } catch (const std::exception &e) {
-        Engine::GetInstance().Log(Engine::LogLevel::ERROR, "Error starting server: " + std::string(e.what()));
-        throw;
+        spdlog::error(e.what());
     }
 }
 
 void Server::loop()
 {
     Engine &engine = Engine::GetInstance();
+
     engine.callHook("RType:Tick", "int", engine.deltaTime(), nullptr);
+    for (auto client : _serverConnection.getClientConnections()) {
+        if (!client->shouldDisconnect()) {
+            broadcastNewPackets();
+            broadcastLuaPackets();
+            sendToClients();
+            // TODO: handle multiple incoming packets per tick for both TCP and UDP, implement with a limit of packets per tick.
+            if (client->hasTcpPacketInput()) {
+                Packet *packet = client->popTcpPacketInput();
+                (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
+            }
+            if (client->hasUdpPacketInput()) {
+                Packet *packet = client->popUdpPacketInput();
+                (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
+            }
+        }
+    }
+}
+
+void Server::broadcastLuaPackets()
+{
+    while (!Engine::GetInstance().getBroadcastQueue().empty()) {
+        std::pair<std::string, Packet *> newPacket = Engine::GetInstance().getBroadcastQueue().front();
+        for (auto &client : _serverConnection.getClientConnections()) {
+            if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
+                client->addTcpPacketOutput(newPacket.second);
+            } else {
+                client->addUdpPacketOutput(newPacket.second);
+            }
+        }
+        Engine::GetInstance().getBroadcastQueue().pop();
+    }
+}
+
+void Server::sendToClients()
+{
+    for (auto &packetClient : Engine::GetInstance().getSendToClientMap()) {
+        for (auto &client : _serverConnection.getClientConnections()) {
+            if (client->getUuid() == packetClient.first) {
+                while (!packetClient.second.empty()) {
+                    std::pair<std::string, Packet *> newPacket = packetClient.second.front();
+                    if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
+                        client->addTcpPacketOutput(newPacket.second);
+                    } else {
+                        client->addUdpPacketOutput(newPacket.second);
+                    }
+                    packetClient.second.pop();
+                }
+            }
+        }
+    }
+}
+
+void Server::handleNonePacket(Client *client, Packet* packet)
+{
+}
+
+void Server::handleConnectPacket(Client *client, Packet* packet)
+{
+    PacketBuilder builder;
+    switch (client->getStep())
+    {
+        case Client::ConnectionStep::UNVERIFIED:
+            builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
+            client->addTcpPacketOutput(builder.build());
+            client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
+            break;
+        case Client::ConnectionStep::AUTH_CODE_SENT:
+            builder.loadFromPacket(packet);
+            std::string clientChallengeCode = builder.readString();
+            if (clientChallengeCode == CLIENT_CHALLENGE) {
+                builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
+                client->addTcpPacketOutput(builder.build());
+                client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
+            } else {
+                client->disconnect();
+            }
+            break;
+        case Client::ConnectionStep::AUTH_CODE_VERIFIED:
+            for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
+                builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
+                client->addTcpPacketOutput(builder.build());
+            }
+            client->setStep(Client::ConnectionStep::COMPLETE);
+        default: break;
+    }
+}
+
+void Server::handleDisconnectPacket(Client *client, Packet* packet)
+{
+    client->disconnect();
+}
+
+void Server::handleNewMessagePacket(Client *client, Packet* packet)
+{
+}
+
+void Server::handleLuaPacket(Client *client, Packet* packet)
+{
+    PacketBuilder builder(packet);
+    std::string packetName = builder.readString();
+    Engine::GetInstance().netCallback(packetName, packet, client);
+}
+
+void Server::broadcastNewPackets()
+{
+    if (Engine::GetInstance().hasNewPacketToBroadcast())
+    {
+        while (Engine::GetInstance().getNewPacketsInRegistry().size() > 0) {
+            const std::string packetName = Engine::GetInstance().getNewPacketsInRegistry().front();
+            const bool reliable = Engine::GetInstance().isPacketReliable(packetName);
+            for (auto &client : _serverConnection.getClientConnections()) {
+                PacketBuilder builder;
+                Packet *packet = builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable).build();
+                client->addTcpPacketOutput(packet);
+            }
+            Engine::GetInstance().getNewPacketsInRegistry().pop();
+        }
+    }
 }
 
 void Server::stop()

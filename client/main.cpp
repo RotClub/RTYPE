@@ -6,24 +6,20 @@
 */
 
 #include "Client.hpp"
-#include "raylib-cpp.hpp"
+#include "Networking/PacketBuilder.hpp"
 
-#include "Nodes/Node2D/Sprite2D/Sprite2D.hpp"
+#include "spdlog/spdlog.h"
+#include <cstdlib>
 
 int main(void)
 {
     Engine &engine = Engine::StartInstance(Types::VMState::CLIENT, "rtype");
     Client &client = Client::InitiateInstance("127.0.0.1", 25777);
-
-    engine.Log(Engine::LogLevel::INFO, "Client started");
-    Node rootNode = Node("root");
-    Engine::GetInstance().root = &rootNode;
-    Sprite2D sprite = Sprite2D("sprite", "assets/a.png");
-    sprite.position = {30, 100};
-    Sprite2D subSprite = Sprite2D("subSprite", "assets/b.png");
-    subSprite.position = {350, 50};
-    rootNode.addChild(sprite);
-    sprite.addChild(subSprite);
-    client.startGame();
-    return 0;
+    client.setupLua();
+    try {
+        client.getClientConnectionTcp().connectToServer();
+    } catch (const std::exception &e) {
+        spdlog::error(e.what());
+        return 84;
+    }
 }

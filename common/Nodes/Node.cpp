@@ -8,13 +8,10 @@
 #include "Node.hpp"
 #include <raylib-cpp.hpp>
 
-Node::Node(const std::string &name = "node")
-    : children(), name(name)
+Node::Node(const std::string &name)
+    : children(std::vector<Node*>()), name(name)
 {
-}
-
-Node::~Node()
-{
+    this->metatable = "NodeMetaTable";
 }
 
 const Node &Node::GetChild(const std::string &name) const

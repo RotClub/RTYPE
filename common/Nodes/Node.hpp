@@ -11,12 +11,12 @@
     #include <vector>
     #include <string>
     #include <stdexcept>
-    #include "../Types.hpp"
+    #include "Types.hpp"
 
 class Node {
     public:
-        Node(const std::string &name);
-        ~Node();
+        explicit Node(const std::string& name = "node");
+		virtual ~Node() = default;
 
         const Node &GetChild(const std::string &name) const;
         const std::vector<Node *> &GetChildren() const;
@@ -30,6 +30,7 @@ class Node {
 
         std::vector<Node *> children;
         std::string name;
+        std::string metatable;
 
     private:
         Node *_parent = nullptr;
