@@ -61,13 +61,14 @@ RFC: RTYPE
     4.3 DISCONNECT
 
     4.4 NET
+        The NET packet command is used to send messages between the server and
+        clients and will be handled by the lua virtual machine. The start of
+        the data is always a string that represents the name of the channel
+        where the message will be sent.
 
     4.5 NEW_MESSAGE
-        Only sent from server, the packet command `NEW_MESSAGE` indicate to
+        Only sent from server, the packet command `NEW_MESSAGE` indicates to
         create a new communication channel between client and server
-        with a specific name. The new channel can be either UDP or TCP.
-
-        A channel is a named group of one or more users which will all receive
-        messages addressed to that channel.
+        with a specific name. The new channel can be either TCP or UDP.
         A channel is characterized by its name.
 
