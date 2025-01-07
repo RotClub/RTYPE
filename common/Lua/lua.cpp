@@ -628,10 +628,10 @@ LUA_API int luau_Include(lua_State *L)
 
     void luau_ExposeConstants(lua_State *L, const Types::VMState state)
     {
-        lua_pushinteger(L, state == Types::VMState::CLIENT);
+        lua_pushboolean(L, state == Types::VMState::CLIENT);
         lua_setglobal(L, "CLIENT");
 
-        lua_pushinteger(L, state == Types::VMState::SERVER);
+        lua_pushboolean(L, state == Types::VMState::SERVER);
         lua_setglobal(L, "SERVER");
 
         #ifdef RTYPE_DEBUG
