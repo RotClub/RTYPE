@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <chrono>
 
+#include "client/Client.hpp"
+#include "Lua/lua.hpp"
+
 #include "nlohmann/json.hpp"
 
 Engine::Engine(Types::VMState state, const std::string &gamePath)
@@ -98,13 +101,14 @@ Engine &Engine::GetInstance()
     return *_instance;
 }
 
-void Engine::addPacket(const std::string &packetName, const bool reliable)
+void Engine::addPacketRegistryEntry(const std::string &packetName, const bool reliable)
 {
     _packetsRegistry[packetName] = reliable;
-    // TODO: Network packet creation to all clients if SERVER. if CLIENT, just create the packet
+    if (_state == Types::VMState::SERVER)
+        _newPacketsInRegistry.push(packetName);
 }
 
-bool Engine::hasPacket(const std::string &packetName) const
+bool Engine::hasPacketRegistryEntry(const std::string &packetName) const
 {
     return _packetsRegistry.contains(packetName);
 }
@@ -173,6 +177,29 @@ void Engine::callHook(const std::string &eventName, ...)
     lua_pop(L, 1);
 }
 
+void Engine::netCallback(const std::string &packetName, Packet *packet, Client *client)
+{
+    _builder.loadFromPacket(packet);
+    lua_getglobal(L, "net");
+    lua_getfield(L, -1, "Call");
+
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 1);
+        return;
+    }
+
+    lua_pushstring(L, packetName.c_str());
+    lua_pushinteger(L, packet->n);
+    lua_pushstring(L, client->getUuid().c_str());
+
+    if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
+        std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+}
+
 std::string Engine::GetLibraryFileContents(const std::string& filename)
 {
     const std::filesystem::path filePath = _libPath / filename;
@@ -229,22 +256,23 @@ void Engine::loadLibraries() const
     loadLibrary(L, "hook.luau");
     loadLibrary(L, "utils.luau");
     loadLibrary(L, "json.luau");
-    luaL_sandbox(L);
-}
+    loadLibrary(L, "net.luau");
 
-std::string Engine::_getLogLevelString(const LogLevel level)
-{
-    switch (level) {
-        case LogLevel::DEBUG:
-            return "DEBUG";
-        case LogLevel::INFO:
-            return "INFO";
-        case LogLevel::WARNING:
-            return "WARNING";
-        case LogLevel::ERROR:
-            return "ERROR";
-    }
-    return "UNKNOWN";
+    /* NET LIBRARY */
+    constexpr luaL_Reg netLibrary[] = {
+        {"CreatePacket", luau_NetCreatePacket},
+        {"Start", luau_NetStart},
+        {"SendToServer", luau_NetSendToServer},
+        {"SendToClient", luau_NetSendToClient},
+        {"Broadcast", luau_NetBroadcast},
+        {"WriteString", luau_NetWriteString},
+        {"ReadString", luau_NetReadString},
+        {nullptr, nullptr}
+    };
+    luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
+    /* NET LIBRARY */
+
+    luaL_sandbox(L);
 }
 
 int Engine::deltaTime()

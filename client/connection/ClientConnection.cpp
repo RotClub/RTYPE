@@ -7,11 +7,9 @@
 
 #include "ClientConnection.hpp"
 
-#include "Engine.hpp"
 #include "Networking/Packet.hpp"
-#include "spdlog/common.h"
 #include "spdlog/spdlog.h"
-#include <cstddef>
+#include <stdexcept>
 #include <sys/select.h>
 #include <unistd.h>
 
@@ -56,24 +54,25 @@ bool ClientConnection::establishConnection()
     return true;
 }
 
-Packet ClientConnection::_tryReceive()
+bool ClientConnection::hasPendingPacket()
 {
-    Packet pckt = NULL_PACKET;
-    int dataSize = 0;
+    return !std::get<IN>(_queues).empty();
+}
 
-    if (FD_ISSET(_fd, &_readfds) == 0) {
-        return NULL_PACKET;
+Packet *ClientConnection::_tryReceive()
+{
+    Packet *packet = new Packet;
+
+    std::memset(packet, 0, sizeof(Packet));
+    if (read(_fd, packet, sizeof(Packet)) <= 0) {
+        throw std::runtime_error("Disconnect");
     }
-    if (read(_fd, &dataSize, sizeof(size_t)) <= 0) {
-        return NULL_PACKET;
+    spdlog::info("Packet size: {}", packet->n);
+    packet->data = std::malloc(packet->n);
+    if (read(_fd, packet->data, packet->n) <= 0) {
+        throw std::runtime_error("Disconnect");
     }
-    pckt.n = dataSize;
-    pckt.cmd = PacketCmd::NONE;
-    pckt.data = malloc(dataSize);
-    if (read(_fd, &pckt, sizeof(PacketCmd) + dataSize) <= 0) {
-        return NULL_PACKET;
-    }
-    return pckt;
+    return packet;
 }
 
 void ClientConnection::sendToServer(Packet *pckt)
@@ -83,8 +82,16 @@ void ClientConnection::sendToServer(Packet *pckt)
 
 void ClientConnection::_receiveLoop()
 {
-    Packet receivedPacket = _tryReceive();
-    _packet = &receivedPacket;
+    if (FD_ISSET(_fd, &_readfds) == 0) {
+        return;
+    }
+    try {
+        _packet = _tryReceive();
+    } catch (const std::runtime_error &e) {
+        spdlog::info(e.what());
+        _connected = false;
+        return;
+    }
     if (!_packet)
         return;
     std::get<IN>(_queues).enqueue(_packet);
@@ -93,12 +100,14 @@ void ClientConnection::_receiveLoop()
 
 void ClientConnection::_sendLoop()
 {
-    if (FD_ISSET(_fd, &_writefds) == 0) {
+    if (!_connected)
         return;
-    }
+    if (FD_ISSET(_fd, &_writefds) == 0)
+        return;
     while (!std::get<OUT>(_queues).empty()) {
         Packet *sending = std::get<OUT>(_queues).dequeue();
-        write(_fd, sending, sending->n);
+        write(_fd, sending, sizeof(*sending));
+        write(_fd, sending->data, sending->n);
         free(sending->data);
     }
 }

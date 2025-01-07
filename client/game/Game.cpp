@@ -7,6 +7,7 @@
 
 #include "Game.hpp"
 #include "../Client.hpp"
+#include "Networking/Packet.hpp"
 
 Game::Game()
 {
@@ -25,8 +26,9 @@ void Game::run()
     _loadResources();
     while (!_shouldClose) {
         int dt = Engine::GetInstance().deltaTime();
-        _window.BeginDrawing();
         _update(dt);
+        _window.BeginDrawing();
+        _draw(dt);
         _window.EndDrawing();
         if (_window.ShouldClose())
             _shouldClose = true;
@@ -35,9 +37,16 @@ void Game::run()
 
 void Game::_update(int dt)
 {
+    Client &client = Client::GetInstance();
+    client.broadcastLuaPackets();
+    client.processIncomingPackets();
     Node *rootNode = Engine::GetInstance().root;
-    _window.ClearBackground(raylib::Color::Black());
     _updateNodes(*rootNode);
+}
+
+void Game::_draw(int dt)
+{
+    _window.ClearBackground(raylib::Color::Black());
 }
 
 void Game::_updateNodes(Node &node)

@@ -10,16 +10,16 @@
 
     #include "Packet.hpp"
 
-    #include <array>
-    #include <queue>
+    #include <cstddef>
     #include <string>
-    #include <vector>
 
     class PacketBuilder {
         public:
             PacketBuilder();
             PacketBuilder(Packet *packet);
             ~PacketBuilder() = default;
+
+            void loadFromPacket(Packet *packet);
 
             PacketBuilder setCmd(PacketCmd cmd);
 
@@ -30,11 +30,12 @@
             std::string readString();
 
             Packet *build();
-
             void destroyPacket();
 
         private:
-            Packet _packet;
+            size_t _n;
+            PacketCmd _cmd;
+            void *_data;
 
     };
 

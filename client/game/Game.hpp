@@ -9,10 +9,9 @@
     #define GAME_HPP_
 
     #include "../../common/Engine.hpp"
+    #include "Networking/Packet.hpp"
 
     #include <raylib-cpp.hpp>
-
-class Client;
 
 class Game {
     public:
@@ -23,6 +22,7 @@ class Game {
 
     private:
         void _update(int dt);
+        void _draw(int dt);
         void _updateNodes(Node &node);
         void _loadResources();
 

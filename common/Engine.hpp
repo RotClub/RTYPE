@@ -19,15 +19,18 @@
     #include <string>
     #include <filesystem>
     #include <map>
-    #include <GameInfo/GameInfo.hpp>
+    #include "client/Client.hpp"
+    #include "GameInfo/GameInfo.hpp"
+    #include "Networking/PacketBuilder.hpp"
     #include "spdlog/spdlog.h"
     #include "spdlog/sinks/stdout_color_sinks.h"
     #include "spdlog/sinks/daily_file_sink.h"
     #include "Types.hpp"
 
-#define MAX_LOGS 50
-
     #define LUA_PATH "lua/"
+
+    #define SERVER_CHALLENGE "SERVER-YNwUJMvHMf09J0R1"
+    #define CLIENT_CHALLENGE "CLIENT-qtZzAo4HL71h0iMt"
 
 class Engine {
     public:
@@ -38,28 +41,15 @@ class Engine {
         static Engine &StartInstance(Types::VMState state, const std::string &gamePath);
         static Engine &GetInstance();
 
-        enum class LogLevel {
-            DEBUG,
-            INFO,
-            WARNING,
-            ERROR
-        };
-
-        using log_t = struct log_s {
-            const LogLevel level;
-            const std::string &timestamp;
-            const std::string &message;
-        };
-
         int deltaTime();
 
-        void addPacket(const std::string &packetName, bool reliable);
-        [[nodiscard]] bool hasPacket(const std::string &packetName) const;
+        void addPacketRegistryEntry(const std::string &packetName, bool reliable);
+        [[nodiscard]] bool hasPacketRegistryEntry(const std::string &packetName) const;
         [[nodiscard]] bool isPacketReliable(const std::string &packetName) const;
 
         [[nodiscard]] const std::filesystem::path &getGamePath() const { return _gamePath; }
 
-        Types::VMState getState() const { return _state; }
+        [[nodiscard]] Types::VMState getState() const { return _state; }
 
         void displayGameInfo();
         [[nodiscard]] const GameInfo *getGameInfo() const { return _gameInfo; }
@@ -77,6 +67,17 @@ class Engine {
 
         [[nodiscard]] lua_State *getLuaState() const { return L; }
 
+        [[nodiscard]] const std::unordered_map<std::string, bool> &getPacketsRegistry() const { return _packetsRegistry; }
+        bool hasNewPacketToBroadcast() const { return !_newPacketsInRegistry.empty(); }
+        std::queue<std::string> &getNewPacketsInRegistry() { return _newPacketsInRegistry; }
+        std::queue<std::pair<std::string, Packet *>> &getBroadcastQueue() { return _broadcastQueue; }
+        std::unordered_map<std::string, std::queue<std::pair<std::string, Packet *>>> &getSendToClientMap() { return _sendToClientQueue; }
+
+        PacketBuilder &getPacketBuilder() { return _builder; }
+        std::string &getLastStartedPacket() { return _lastStartedPacket; }
+
+        void netCallback(const std::string &packetName, Packet *packet, Client *client);
+
         Node *root;
         bool clientStarted = false;
 
@@ -90,9 +91,12 @@ class Engine {
          * true  = reliable   (TCP)
          * false = unreliable (UDP)
          */
-        std::map<std::string, bool> _packetsRegistry;
+        std::unordered_map<std::string, bool> _packetsRegistry;
+        std::queue<std::string> _newPacketsInRegistry;
 
-        static std::string _getLogLevelString(LogLevel level);
+        std::queue<std::pair<std::string, Packet *>> _broadcastQueue;
+        std::unordered_map<std::string, std::queue<std::pair<std::string, Packet *>>> _sendToClientQueue;
+
         lua_State *L;
         std::filesystem::path _gamePath;
         std::filesystem::path _libPath;
@@ -100,6 +104,8 @@ class Engine {
         std::chrono::high_resolution_clock::time_point _deltaLast;
         const GameInfo *_gameInfo;
         ResourceManager _resourceManager;
+        std::string _lastStartedPacket;
+        PacketBuilder _builder;
 };
 
 #endif /* !ENGINE_HPP_ */
