@@ -2,7 +2,13 @@
 
 The engine is a shared library that is used by the server and the client.
 The server and the client are two separate executables that use the engine library.
-You can build all the project with the following command:
+Before building the project, you need to pull the submodules with the following command:
+
+```bash
+git submodule update --init --recursive
+```
+
+Then you can build all the project with the following command:
 
 ```bash
 ./build.sh release
