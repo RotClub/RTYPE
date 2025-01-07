@@ -17,15 +17,15 @@ file(GLOB_RECURSE SERVER_SRC "./server/*.cpp")
 file(GLOB_RECURSE COMMON_SRC "./common/*.cpp")
 file(GLOB_RECURSE CLIENT_SRC "./client/*.cpp")
 
-# Includes
-include_directories(client)
-include_directories(common)
-include_directories(server)
-
 # Executables
 add_library(${PROJECT_NAME}_engine SHARED ${COMMON_SRC})
 add_executable(${PROJECT_NAME}_server ${SERVER_SRC})
 add_executable(${PROJECT_NAME}_client ${CLIENT_SRC})
+
+# Includes
+target_include_directories(${PROJECT_NAME}_client PRIVATE client)
+target_include_directories(${PROJECT_NAME}_engine PUBLIC common)
+target_include_directories(${PROJECT_NAME}_server PRIVATE server)
 
 # Libraries
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
