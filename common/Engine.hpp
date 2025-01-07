@@ -19,16 +19,18 @@
     #include <string>
     #include <filesystem>
     #include <map>
-    #include <GameInfo/GameInfo.hpp>
+    #include "client/Client.hpp"
+    #include "GameInfo/GameInfo.hpp"
     #include "Networking/PacketBuilder.hpp"
     #include "spdlog/spdlog.h"
     #include "spdlog/sinks/stdout_color_sinks.h"
     #include "spdlog/sinks/daily_file_sink.h"
     #include "Types.hpp"
 
-#define MAX_LOGS 50
-
     #define LUA_PATH "lua/"
+
+    #define SERVER_CHALLENGE "SERVER-YNwUJMvHMf09J0R1"
+    #define CLIENT_CHALLENGE "CLIENT-qtZzAo4HL71h0iMt"
 
 class Engine {
     public:
@@ -73,7 +75,7 @@ class Engine {
         PacketBuilder &getPacketBuilder() { return _builder; }
         std::string &getLastStartedPacket() { return _lastStartedPacket; }
 
-        void netCallback(const std::string &packetName, Packet *packet);
+        void netCallback(const std::string &packetName, Packet *packet, Client *client);
 
         Node *root;
         bool clientStarted = false;

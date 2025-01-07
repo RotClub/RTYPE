@@ -9,22 +9,22 @@
 #include <Networking/Defines.hpp>
 #include <random>
 
-static std::string *generateUUID() {
+static std::string generateUUID() {
     static std::random_device dev;
     static std::mt19937 rng(dev());
 
     std::uniform_int_distribution<int> dist(0, 15);
 
     const char *v = "0123456789ABCDEF";
-    const bool dash[] = { 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0 };
+    const bool dash[] = { 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0 };
 
-    auto *res = new std::string("");
+    std::string str;
     for (int i = 0; i < 16; i++) {
-        if (dash[i]) *res += "-";
-        *res += v[dist(rng)];
-        *res += v[dist(rng)];
+        if (dash[i]) str += "-";
+        str += v[dist(rng)];
+        str += v[dist(rng)];
     }
-    return res;
+    return str;
 }
 
 Client::Client(const int srvTcpFd)
@@ -37,7 +37,7 @@ Client::Client(const int srvTcpFd)
     if (_tcpFd == -1) {
         throw std::runtime_error("Error accepting client");
     }
-    spdlog::debug("Client connected with UUID: {}", *uuid);
+    spdlog::debug("Client connected with UUID: {}", uuid);
 }
 
 Client::~Client()

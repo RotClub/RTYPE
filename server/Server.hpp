@@ -26,13 +26,13 @@ class Server {
         void broadcastLuaPackets();
         void sendToClients();
 
-        void handleNonePacket(Packet *packet);
-        void handleConnectPacket(Packet *packet);
-        void handleDisconnectPacket(Packet *packet);
-        void handleNewMessagePacket(Packet *packet);
-        void handleLuaPacket(Packet *packet);
+        void handleNonePacket(Client *client, Packet *packet);
+        void handleConnectPacket(Client *client, Packet *packet);
+        void handleDisconnectPacket(Client *client, Packet *packet);
+        void handleNewMessagePacket(Client *client, Packet *packet);
+        void handleLuaPacket(Client *client, Packet *packet);
 
-        const std::unordered_map<PacketCmd, void (Server::*)(Packet *)> PACKET_HANDLERS = {
+        const std::unordered_map<PacketCmd, void (Server::*)(Client *, Packet *)> PACKET_HANDLERS = {
             {PacketCmd::NONE, &Server::handleNonePacket},
             {PacketCmd::CONNECT, &Server::handleConnectPacket},
             {PacketCmd::DISCONNECT, &Server::handleDisconnectPacket},

@@ -11,6 +11,8 @@
 #include <fstream>
 #include <unistd.h>
 #include <chrono>
+
+#include "client/Client.hpp"
 #include "Lua/lua.hpp"
 
 #include "nlohmann/json.hpp"
@@ -175,7 +177,7 @@ void Engine::callHook(const std::string &eventName, ...)
     lua_pop(L, 1);
 }
 
-void Engine::netCallback(const std::string& packetName, Packet* packet)
+void Engine::netCallback(const std::string &packetName, Packet *packet, Client *client)
 {
     _builder.loadFromPacket(packet);
     lua_getglobal(L, "net");
@@ -187,8 +189,8 @@ void Engine::netCallback(const std::string& packetName, Packet* packet)
     }
 
     lua_pushstring(L, packetName.c_str());
-    lua_pushnil(L);
-    lua_pushnil(L);
+    lua_pushinteger(L, packet->n);
+    lua_pushstring(L, client->getUuid().c_str());
 
     if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
         std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;

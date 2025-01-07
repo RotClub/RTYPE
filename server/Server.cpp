@@ -43,7 +43,7 @@ void Server::loop()
     Engine &engine = Engine::GetInstance();
 
     engine.callHook("RType:Tick", "int", engine.deltaTime(), nullptr);
-    for (auto &client : _serverConnection.getClientConnections()) {
+    for (auto client : _serverConnection.getClientConnections()) {
         if (!client->shouldDisconnect()) {
             broadcastNewPackets();
             broadcastLuaPackets();
@@ -51,11 +51,11 @@ void Server::loop()
             // TODO: handle multiple incoming packets per tick for both TCP and UDP, implement with a limit of packets per tick.
             if (client->hasTcpPacketInput()) {
                 Packet *packet = client->popTcpPacketInput();
-                (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
+                (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
             }
             if (client->hasUdpPacketInput()) {
                 Packet *packet = client->popUdpPacketInput();
-                (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
+                (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
             }
         }
     }
@@ -95,27 +95,49 @@ void Server::sendToClients()
     }
 }
 
-void Server::handleNonePacket(Packet* packet)
+void Server::handleNonePacket(Client *client, Packet* packet)
 {
 }
 
-void Server::handleConnectPacket(Packet* packet)
+void Server::handleConnectPacket(Client *client, Packet* packet)
+{
+    PacketBuilder builder;
+    switch (client->getStep())
+    {
+        case Client::ConnectionStep::UNVERIFIED:
+            builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
+            client->addTcpPacketOutput(builder.build());
+            client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
+            break;
+        case Client::ConnectionStep::AUTH_CODE_SENT:
+            builder.loadFromPacket(packet);
+            std::string clientChallengeCode = builder.readString();
+            if (clientChallengeCode == CLIENT_CHALLENGE) {
+                builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
+                client->addTcpPacketOutput(builder.build());
+                client->setStep(Client::ConnectionStep::COMPLETE);
+            } else {
+                client->disconnect();
+            }
+            break;
+        default: break;
+    }
+}
+
+void Server::handleDisconnectPacket(Client *client, Packet* packet)
+{
+    client->disconnect();
+}
+
+void Server::handleNewMessagePacket(Client *client, Packet* packet)
 {
 }
 
-void Server::handleDisconnectPacket(Packet* packet)
-{
-}
-
-void Server::handleNewMessagePacket(Packet* packet)
-{
-}
-
-void Server::handleLuaPacket(Packet* packet)
+void Server::handleLuaPacket(Client *client, Packet* packet)
 {
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();
-    Engine::GetInstance().netCallback(packetName, packet);
+    Engine::GetInstance().netCallback(packetName, packet, client);
 }
 
 void Server::broadcastNewPackets()
