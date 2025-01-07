@@ -79,7 +79,7 @@ RFC: RTYPE
         where the message will be sent.
 
     4.5 NEW_MESSAGE
-        Only sent from server, the packet command `NEW_MESSAGE` indicates to
+        Only sent from server, the packet command "NEW_MESSAGE" indicates to
         create a new communication channel between client and server
         with a specific name. The new channel can be either TCP or UDP.
         The choice for the type of communication (TCP/UDP) is indicated
