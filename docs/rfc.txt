@@ -43,7 +43,7 @@ RFC: RTYPE
                 - NET = 3 (Message will be handled by the lua virtual machine)
                 - NEW_MESSAGE = 4 (Create a new channel for the NET messages)
 
-3.2. Handshake
+3.2 Handshake
     Clients establish a TCP connection to the server using the server's IP
     address and port number. The server listens for incoming connections and
     accepts new clients.
@@ -95,10 +95,11 @@ RFC: RTYPE
     the transfer of data between devices.
     Differents type of communication characterized by differents protocols are
     used depending of the needs. The type of communication (TCP/UDP) is defined
-    by the engine when the channel is created by “NEW_MESSAGE”.
+    by the engine when the channel is created by "NEW_MESSAGE".
 
 5.1 Channel lifetime
-    After the creation of a channel, it's not deleted until the end of the game.
+    After the creation of a channel, it's not deleted until the end of the
+    game.
 
 5.2 TCP channel
     Transport Control Protocol (TCP) is connection-oriented and establishes a
