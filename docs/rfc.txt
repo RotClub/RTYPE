@@ -29,6 +29,9 @@ RFC: RTYPE
         - Packet:
             - Integer: represents the size of the data.
             - Data: the actual data being sent.
+                The data contains serialized string or/and an integer, so the
+                data content is in binary. The data will be read in the same
+                order it was written.
             - Integer: represents the type of the packet:
                 - NONE = 0 (No action will be taken, this packet is ignored)
                 - CONNECT = 1 (A new client is connecting to the server)
@@ -50,6 +53,8 @@ RFC: RTYPE
 
 4. Packet commands Specification
     4.1 NONE
+        It is the default packet type, no action will be taken. Packet using
+        this command will be ignored and discarded.
 
     4.2 CONNECT
 
