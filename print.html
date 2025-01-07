@@ -163,7 +163,76 @@
 <li>LUAU Virtual Machine</li>
 </ul>
 <p>The engine in itself makes 2 executables, a <code>server</code> and a <code>client</code>, the server on launch selects a game from a bunch of available games (either via launch arguments or selection if multiple games are available)</p>
-<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="games-filesystem"><a class="header" href="#games-filesystem">Games Filesystem</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="rfc"><a class="header" href="#rfc">RFC</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="building"><a class="header" href="#building">Building</a></h1>
+<p>The engine is a shared library that is used by the server and the client.
+The server and the client are two separate executables that use the engine library.
+You can build all the project with the following command:</p>
+<pre><code class="language-bash">./build.sh release
+</code></pre>
+<p>This command will build the engine, the server and the client in release mode.
+The executables will be at the root of the project.</p>
+<p>You can also build the engine, the server and the client separately with the following commands:</p>
+<pre><code class="language-bash">./build.sh release engine
+./build.sh release server
+./build.sh release client
+</code></pre>
+<p>This will build the engine, the server or the client in release mode.</p>
+<p>You can also build the project in debug mode with the following command:</p>
+<pre><code class="language-bash">./build.sh debug
+</code></pre>
+<p>or</p>
+<pre><code class="language-bash">./build.sh debug engine
+./build.sh debug server
+./build.sh debug client
+</code></pre>
+<p>This will build the engine, the server or the client in debug mode.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="server"><a class="header" href="#server">Server</a></h1>
+<p>The server is responsible of managing the game state and the communication between the clients and the game.
+When the server is started, it will start the game engine and the connection manager.
+It run on the port "25777" by default but it can be changed with the <code>--port</code> option.
+The server can use two types of connection: TCP and UDP.</p>
+<p>The command to run the server is:</p>
+<pre><code class="language-bash">./r-type_server
+</code></pre>
+<p>or with the port option:</p>
+<pre><code class="language-bash">./r-type_server --port 12345
+</code></pre>
+<h2 id="tcp-connection"><a class="header" href="#tcp-connection">TCP Connection</a></h2>
+<p>The TCP connection is used to do the initial handshake between the client and the server.
+The client will send a message to the server to ask to join the game.
+The server will then send a message to the client to tell him if he can join the game or not.
+If the client can join the game, the server will send the game state to the client.</p>
+<p>It is also used ...</p>
+<h2 id="udp-connection"><a class="header" href="#udp-connection">UDP Connection</a></h2>
+<p>The UDP connection is used to send the game state to the clients.
+The server will send the game state to all the clients at a fixed rate.
+The client will then update the game state and render it and send the input to the server.</p>
+<p>It is also used ...</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="client"><a class="header" href="#client">Client</a></h1>
+<p>The client runs the game and is responsible for rendering the game state and sending the input to the server.</p>
+<p>The client is written in C++ and uses the Raylib library to render the game.</p>
+<p>The client can be run with the following command:</p>
+<pre><code class="language-bash">./r-type_client
+</code></pre>
+<p>The client can be run with the following options:</p>
+<ul>
+<li><code>--ip</code> to specify the server IP address</li>
+<li><code>--port</code> to specify the server port</li>
+</ul>
+<p>The client can use two types of connection: TCP and UDP.</p>
+<h2 id="tcp-connection-1"><a class="header" href="#tcp-connection-1">TCP Connection</a></h2>
+<p>The TCP connection is used to do the initial handshake between the client and the server.
+The client will send a message to the server to ask to join the game.
+The server will then send a message to the client to tell him if he can join the game or not.
+If the client can join the game, the server will send the game state to the client.</p>
+<p>It is also used ...</p>
+<h2 id="udp-connection-1"><a class="header" href="#udp-connection-1">UDP Connection</a></h2>
+<p>The UDP connection is used to send the input to the server.
+The client will send the input to the server at a fixed rate.
+The server will then update the game state and send it to the client.</p>
+<p>It is also used ...</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="games-filesystem"><a class="header" href="#games-filesystem">Games Filesystem</a></h1>
 <p>Each game is put in the <code>games/</code> folder. The directory architecture is strict and must be followed as such:</p>
 <p><em>Files/Folders in <strong>bold</strong> are required for the project to be valid.</em></p>
 <ul>
