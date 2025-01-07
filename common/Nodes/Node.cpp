@@ -14,10 +14,6 @@ Node::Node(const std::string &name)
     this->metatable = "NodeMetaTable";
 }
 
-Node::~Node()
-{
-}
-
 const Node &Node::GetChild(const std::string &name) const
 {
     for (const auto &child : children) {
