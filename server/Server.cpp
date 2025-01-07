@@ -115,11 +115,17 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
             if (clientChallengeCode == CLIENT_CHALLENGE) {
                 builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
                 client->addTcpPacketOutput(builder.build());
-                client->setStep(Client::ConnectionStep::COMPLETE);
+                client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
             } else {
                 client->disconnect();
             }
             break;
+        case Client::ConnectionStep::AUTH_CODE_VERIFIED:
+            for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
+                builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
+                client->addTcpPacketOutput(builder.build());
+            }
+            client->setStep(Client::ConnectionStep::COMPLETE);
         default: break;
     }
 }

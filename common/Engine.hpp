@@ -67,6 +67,7 @@ class Engine {
 
         [[nodiscard]] lua_State *getLuaState() const { return L; }
 
+        [[nodiscard]] const std::unordered_map<std::string, bool> &getPacketsRegistry() const { return _packetsRegistry; }
         bool hasNewPacketToBroadcast() const { return !_newPacketsInRegistry.empty(); }
         std::queue<std::string> &getNewPacketsInRegistry() { return _newPacketsInRegistry; }
         std::queue<std::pair<std::string, Packet *>> &getBroadcastQueue() { return _broadcastQueue; }
