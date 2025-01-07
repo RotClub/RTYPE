@@ -63,3 +63,11 @@ RFC: RTYPE
     4.4 NET
 
     4.5 NEW_MESSAGE
+        Only sent from server, the packet command `NEW_MESSAGE` indicate to
+        create a new communication channel between client and server
+        with a specific name. The new channel can be either UDP or TCP.
+
+        A channel is a named group of one or more users which will all receive
+        messages addressed to that channel.
+        A channel is characterized by its name.
+
