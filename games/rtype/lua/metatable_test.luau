@@ -57,3 +57,27 @@ local sprite = root:CreateChild("Node2D", "sprite")
 print("Should be 0, 0 -> ", sprite:GetPosition())  -- Works as expected (prints 0, 0)
 sprite:SetPosition(100, 200)
 print("Should be 100, 200 -> ", sprite:GetPosition(), "\n")  -- Works as expected (prints 100, 200)
+
+-- Add a child CollisionShape2D
+local rect_shape = root:CreateChild("CollisionShape2D", "rect", "Rectangle", 0, 0, 100, 100)
+
+-- Directly call CollisionShape2DMetaTable methods
+print("Should be 0, 0, 100, 100 -> ", rect_shape:GetBoundingBox())
+print("Should be true -> ", rect_shape:IsCollisionEnabled())
+rect_shape:ToggleCollision()
+print("Should be false -> ", rect_shape:IsCollisionEnabled())
+rect_shape:ToggleCollision()
+
+print("Testing for collisions")
+
+-- Add a child CollisionShape2D
+local rect1_shape = root:CreateChild("CollisionShape2D", "rect1", "Rectangle", 1, 1, 50, 50)
+
+-- Directly call CollisionShape2DMetaTable methods
+print("Should be true -> ", rect1_shape:Collide(rect_shape))
+
+-- Add a child CollisionShape2D
+local rect2_shape = root:CreateChild("CollisionShape2D", "rect2", "Rectangle", 200, 200, 10, 10)
+
+-- Directly call CollisionShape2DMetaTable methods
+print("Should be false -> ", rect2_shape:Collide(rect_shape))

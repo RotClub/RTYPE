@@ -323,7 +323,7 @@ LUA_API int luau_Include(lua_State *L)
 				luaL_error(L, "Invalid shape type '%s' provided to AddChild in CollisionShape2D.", shapeType);
 			}
 			child = new CollisionShape2D(name);
-			static_cast<CollisionShape2D*>(child)->setShape(shape);
+			dynamic_cast<CollisionShape2D*>(child)->setShape(shape);
         } else {
             luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
         }

@@ -27,11 +27,18 @@ bool CollisionShape2D::isCollisionEnabled() const {
 }
 
 bool CollisionShape2D::collidesWith(const CollisionShape2D& other) {
-    if (!collision_enabled || !other.collision_enabled || !shape || !other.shape) {
+    if (!collision_enabled || !other.collision_enabled) {
+		std::cout << "Init condition" << std::endl;
         return false;
     }
+	if (!shape || !other.shape)
+	{
+		std::cout << "First condition" << std::endl;
+		return false;
+	}
 
 	if (!this->getBoundingBox().intersects(other.getBoundingBox())) {
+		std::cout << "Second condition" << std::endl;
 		return false;
 	}
 

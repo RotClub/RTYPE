@@ -36,9 +36,10 @@ Types::Vector2 Rectangle2D::getOrigin() const {
 }
 
 bool Rectangle2D::intersects(const Shape2D& other) const {
-  if (other.shape == Shape2D::ShapeType::RECTANGLE) {
-	  return _intersectsRect(other);
-  }
+	std::cout << "Last condition" << std::endl;
+	if (other.shape == Shape2D::ShapeType::RECTANGLE) {
+		return _intersectsRect(other);
+	}
 }
 
 Types::Rect2 Rectangle2D::getBoundingBox() const {
