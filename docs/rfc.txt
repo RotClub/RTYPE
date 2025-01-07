@@ -15,6 +15,10 @@ RFC: RTYPE
     - UDP: User Datagram Protocol, a connectionless protocol.
     - Socket: A communication endpoint for sending and receiving data.
     - IP Address: A unique identifier for a device on a network.
+    - Port Number: A number that identifies a specific process on a device.
+    - Packet: A unit of data sent over a network.
+    - Channel: A communication path between the server and clients.
+    - Lua: A lightweight, high-level programming language used for scripting.
 
 3. Protocol Overview
     The RTYPE protocol is designed to be lightweight and efficient for
