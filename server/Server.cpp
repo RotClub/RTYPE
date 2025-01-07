@@ -51,11 +51,11 @@ void Server::loop()
             // TODO: handle multiple incoming packets per tick for both TCP and UDP, implement with a limit of packets per tick.
             if (client->hasTcpPacketInput()) {
                 Packet *packet = client->popTcpPacketInput();
-                PACKET_HANDLERS.at(packet->cmd)(packet);
+                (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
             }
             if (client->hasUdpPacketInput()) {
                 Packet *packet = client->popUdpPacketInput();
-                PACKET_HANDLERS.at(packet->cmd)(packet);
+                (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
             }
         }
     }
