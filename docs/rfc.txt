@@ -85,3 +85,23 @@ RFC: RTYPE
         The choice for the type of communication (TCP/UDP) is indicated
         by a boolean in the "data" sent in the packet.
         A channel is characterized by its name.
+
+5. Channel
+    In networking, a channel refers to a communication pathway that facilitates
+    the transfer of data between devices.
+    Differents type of communication characterized by differents protocols are
+    used depending of the needs. The type of communication (TCP/UDP) is defined
+    by the engine when the channel is created by “NEW_MESSAGE”.
+    
+5.1 Channel lifetime
+    After the creation of a channel, it's not deleted until the end of the game.
+
+5.2 TCP channel
+    Transport Control Protocol (TCP) is connection-oriented and establishes a
+    three-way handshake before data transfer. Packet architecture ensures
+    delivery in the correct order.
+
+5.3 UDP channel
+    User Datagram Protocol (UDP) is connectionless and does not establish a
+    connection before sending data. Does not guarantee delivery, order, or
+    error checking.
