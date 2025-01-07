@@ -1,0 +1,79 @@
+RFC: RTYPE
+
+1. Introduction
+    This document describes the RTYPE networking protocol, designed for a
+    multiplayer game. The system comprises a server and clients, with the
+    server (r-type_server) managing the game state and clients (r-type_client)
+    rendering the game world. The protocol facilitates communication between
+    the server and clients over TCP and UDP sockets for efficient data
+    transfer.
+
+2. Terminology
+    - Server: The central game server that manages the game state.
+    - Client: A player's game client that connects to the server.
+    - TCP: Transmission Control Protocol, a connection-oriented protocol.
+    - UDP: User Datagram Protocol, a connectionless protocol.
+    - Socket: A communication endpoint for sending and receiving data.
+    - IP Address: A unique identifier for a device on a network.
+    - Port Number: A number that identifies a specific process on a device.
+    - Packet: A unit of data sent over a network.
+    - Channel: A communication path between the server and clients.
+    - Lua: A lightweight, high-level programming language used for scripting.
+
+3. Protocol Overview
+    The RTYPE protocol is designed to be lightweight and efficient for
+    real-time multiplayer games. It operates over TCP and UDP sockets, with TCP
+    used for reliable data transfer and UDP for real-time data. The protocol is
+    designed to handle multiple concurrent connections.
+
+3.1 Protocol Specification
+    Every communication exchange between the server and clients will occur in
+    this order:
+        - Integer: represents the size of the packet.
+        - Packet:
+            - Integer: represents the size of the data.
+            - Data: the actual data being sent.
+                The data contains serialized string or/and an integer, so the
+                data content is in binary. The data will be read in the same
+                order it was written.
+            - Integer: represents the type of the packet:
+                - NONE = 0 (No action will be taken, this packet is ignored)
+                - CONNECT = 1 (A new client is connecting to the server)
+                - DISCONNECT = 2 (A client is disconnecting from the server)
+                - NET = 3 (Message will be handled by the lua virtual machine)
+                - NEW_MESSAGE = 4 (Create a new channel for the NET messages)
+
+3.2. Server-Client Connection Establishment
+    Clients establish a TCP connection to the server using the server's IP
+    address and port number. The server listens for incoming connections and
+    accepts new clients.
+
+3.3 Data Transfer
+    Once the connection is established, the server and client can exchange
+    data. The server sends game state updates to the clients over UDP for
+    real-time rendering. Clients can send input commands to the server over UDP
+    to control their game characters. TCP is used for reliable data transfer,
+    such as player login/logout messages.
+
+4. Packet commands Specification
+    4.1 NONE
+        It is the default packet type, no action will be taken. Packet using
+        this command will be ignored and discarded.
+
+    4.2 CONNECT
+
+    4.3 DISCONNECT
+
+    4.4 NET
+        The NET packet command is used to send messages between the server and
+        clients and will be handled by the lua virtual machine. The start of
+        the data is always a string that represents the name of the channel
+        where the message will be sent.
+
+    4.5 NEW_MESSAGE
+        Only sent from server, the packet command `NEW_MESSAGE` indicates to
+        create a new communication channel between client and server
+        with a specific name. The new channel can be either TCP or UDP.
+        The choice for the type of communication (TCP/UDP) is indicated
+        by a boolean in the `data` sent in the packet.
+        A channel is characterized by its name.
