@@ -37,6 +37,16 @@ void Client::startGame()
     _game.run();
 }
 
+void Client::setupLua()
+{
+    Engine &engine = Engine::GetInstance();
+    engine.displayGameInfo();
+    engine.loadLibraries();
+    if (engine.LoadLuaFile("index.luau"))
+        engine.execute();
+    engine.callHook("RType:InitClient", nullptr);
+}
+
 std::string Client::getIp() const
 {
     return _ip;
@@ -102,7 +112,9 @@ void Client::handleDisconnectPacket(Packet *packet)
 
 void Client::handleLuaPacket(Packet *packet)
 {
-    spdlog::info("Received Lua packet");
+    PacketBuilder builder(packet);
+    std::string packetName = builder.readString();
+    Engine::GetInstance().netCallback(packetName, packet);
 }
 
 void Client::handleNewMessagePacket(Packet *packet)
