@@ -42,3 +42,19 @@ or
 ```
 
 This will build the engine, the server or the client in debug mode.
+
+You can also build the project in profile mode with the following command:
+
+```bash
+./build.sh profile
+```
+
+or
+
+```bash
+./build.sh profile engine
+./build.sh profile server
+./build.sh profile client
+```
+
+This mode is used tu use a profiler to analyze the performance of the engine and the game.
