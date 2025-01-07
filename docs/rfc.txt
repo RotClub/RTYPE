@@ -46,15 +46,19 @@ RFC: RTYPE
 3.2. Handshake
     Clients establish a TCP connection to the server using the server's IP
     address and port number. The server listens for incoming connections and
-    accepts new clients. The client sends a "CONNECT" packet to the server to
-    initiate the connection. The server send a challenge key to the client, the
-    client must respond with the correct answer to the challenge to be
-    authenticated. If the client fails to respond with the correct answer, the
-    server will close the connection. Then the server sends a "CONNECT" packet
-    to the client to confirm the connection with the data being a single string
-    that contains "AUTHENTICATED". The client will then send a "CONNECT" packet
-    with no data to request available channels. The server will respond with
-    all the available channels send in individual "NEW_MESSAGE" packets.
+    accepts new clients.
+
+    The client sends a "CONNECT" packet to the server to initiate the
+    connection. The server send a challenge key to the client, the client must
+    respond with the correct answer to the challenge to be authenticated.
+    If the client fails to respond with the correct answer, the server will
+    close the connection.
+
+    Then the server sends a "CONNECT" packet to the client to confirm the
+    connection with the data being a single string that contains
+    "AUTHENTICATED". The client will then send a "CONNECT" packet with no data
+    to request available channels. The server will respond with all the
+    available channels send in individual "NEW_MESSAGE" packets.
 
 3.3 Data Transfer
     Once the connection is established, the server and client can exchange
@@ -92,7 +96,7 @@ RFC: RTYPE
     Differents type of communication characterized by differents protocols are
     used depending of the needs. The type of communication (TCP/UDP) is defined
     by the engine when the channel is created by “NEW_MESSAGE”.
-    
+
 5.1 Channel lifetime
     After the creation of a channel, it's not deleted until the end of the game.
 
