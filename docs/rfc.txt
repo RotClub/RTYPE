@@ -105,8 +105,12 @@ RFC: RTYPE
     Transport Control Protocol (TCP) is connection-oriented and establishes a
     three-way handshake before data transfer. Packet architecture ensures
     delivery in the correct order.
+    Used for Connexion, Handshake and all cases where data is important and
+    cannot be lost.
 
 5.3 UDP channel
     User Datagram Protocol (UDP) is connectionless and does not establish a
     connection before sending data. Does not guarantee delivery, order, or
     error checking.
+    Used for large transfers without precision and where data loss is
+    acceptable.
