@@ -54,27 +54,22 @@ void ServerConnection::_loop()
             _receiveLoop();
             _disconnectClients();
             _sendLoop();
-            // for (auto &client : _clientConnections) {
-            //     if (client->getStep() != Client::ConnectionStep::COMPLETE) {
-            //         _authFlow(client);
-            //     }
-            // }
         } catch (const std::exception &e) {
-            spdlog::error("Error in loop: {}", e.what());
+            spdlog::error("Error in networking loop: {}", e.what());
         }
     }
 }
 
 void ServerConnection::_disconnectClients()
 {
-    _clientConnections.erase(std::ranges::remove_if(_clientConnections, [](Client *client) {
-        if (client->shouldDisconnect()) {
-            spdlog::debug("Client (fd {}) disconnected", client->getTcpFd());
-            delete client;
-            return true;
-        }
-        return false;
-    }).begin(), _clientConnections.end());
+    auto it = std::ranges::remove_if(_clientConnections, [](Client *client) {
+        return client->shouldDisconnect();
+    }).begin();
+    if (it != _clientConnections.end()) {
+        Client *client = *it;
+        _clientConnections.erase(it, _clientConnections.end());
+        delete client;
+    }
 }
 
 void ServerConnection::_receiveLoop()
@@ -91,15 +86,6 @@ void ServerConnection::_receiveLoop()
     }
 }
 
-void ServerConnection::_authFlow(Client *client)
-{
-    // PacketBuilder builder;
-    // Packet *packet = builder.writeString(Engine::GetInstance().getGameInfo()->getName()).build();
-    //
-    // client->addTcpPacketOutput(packet);
-    // client->setStep(Client::ConnectionStep::COMPLETE);
-}
-
 void ServerConnection::_sendLoop()
 {
     for (auto &client : _clientConnections) {
@@ -107,8 +93,11 @@ void ServerConnection::_sendLoop()
             while (client->hasTcpPacketOutput()) {
                 Packet *packet = client->popTcpPacketOutput();
                 size_t len = packet->n;
-                write(client->getTcpFd(), &packet, len);
-                std::free(packet->data);
+                write(client->getTcpFd(), packet, sizeof(*packet));
+                if (len > 0) {
+                    write(client->getTcpFd(), packet->data, len);
+                    std::free(packet->data);
+                }
             }
         }
     }
@@ -129,7 +118,6 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
     if (read(client->getTcpFd(), packet, sizeof(Packet)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
-    spdlog::debug("Packet size: {}", packet->n);
     if (packet->n == 0) {
         packet->data = nullptr;
         return packet;

@@ -28,7 +28,7 @@ static std::string generateUUID() {
 }
 
 Client::Client(const int srvTcpFd)
-    : uuid(generateUUID())
+    : uuid(generateUUID()), _shouldDisconnect(false)
 {
     _step = ConnectionStep::UNVERIFIED;
     std::memset(&_address, 0, sizeof(_address));
@@ -37,7 +37,6 @@ Client::Client(const int srvTcpFd)
     if (_tcpFd == -1) {
         throw std::runtime_error("Error accepting client");
     }
-    spdlog::debug("Client connected with UUID: {}", uuid);
 }
 
 Client::~Client()

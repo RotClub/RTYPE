@@ -42,7 +42,7 @@ void Server::loop()
 {
     Engine &engine = Engine::GetInstance();
 
-    engine.callHook("RType:Tick", "int", engine.deltaTime(), nullptr);
+    engine.callHook("Tick", "int", engine.deltaTime(), nullptr);
     for (auto client : _serverConnection.getClientConnections()) {
         if (!client->shouldDisconnect()) {
             broadcastNewPackets();
@@ -79,7 +79,7 @@ void Server::broadcastLuaPackets()
 void Server::sendToClients()
 {
     for (auto &packetClient : Engine::GetInstance().getSendToClientMap()) {
-        for (auto &client : _serverConnection.getClientConnections()) {
+        for (auto client : _serverConnection.getClientConnections()) {
             if (client->getUuid() == packetClient.first) {
                 while (!packetClient.second.empty()) {
                     std::pair<std::string, Packet *> newPacket = packetClient.second.front();
@@ -110,6 +110,7 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
                 builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
                 client->addTcpPacketOutput(builder.build());
                 client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
+                Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
                 break;
             }
         case Client::ConnectionStep::AUTH_CODE_SENT:
@@ -132,7 +133,7 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
                     client->addTcpPacketOutput(builder.build());
                 }
                 client->setStep(Client::ConnectionStep::COMPLETE);
-                spdlog::debug("Client {} is now connected", client->getUuid());
+                Engine::GetInstance().callHook("ClientConnected", "string", client->getUuid().c_str(), nullptr);
                 break;
             }
         default:

@@ -37,7 +37,6 @@
         private:
             void _loop();
             void _receiveLoop();
-            void _authFlow(Client *client);
             void _sendLoop();
             void _accept();
             void _disconnectClients();
