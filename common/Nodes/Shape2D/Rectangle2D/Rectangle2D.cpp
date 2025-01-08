@@ -35,13 +35,6 @@ Types::Vector2 Rectangle2D::getOrigin() const {
   return dimensions.origin;
 }
 
-bool Rectangle2D::intersects(const Shape2D& other) const {
-	if (other.shape == ShapeType::RECTANGLE) {
-		return _intersectsRect(other);
-	}
-	return false;
-}
-
 Types::Rect2 Rectangle2D::getBoundingBox() const {
   return dimensions;
 }
