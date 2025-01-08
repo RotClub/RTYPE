@@ -29,5 +29,15 @@ bool ArgumentManager::checkArguments()
         spdlog::error("Usage: ./rtype_server --port [port]");
         return false;
     }
+    for (int i = 0; _av[2][i]; i++) {
+        if (_av[2][i] < '0' || _av[2][i] > '9') {
+            spdlog::error("Usage: ./rtype_server --port [port]");
+            return false;
+        }
+    }
+    if (std::stoi(_av[2]) < 0 || std::stoi(_av[2]) > 65535) {
+        spdlog::error("Port must be between 0 and 65535");
+        return false;
+    }
     return true;
 }
