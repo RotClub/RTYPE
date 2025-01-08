@@ -42,10 +42,12 @@ PacketBuilder &PacketBuilder::setCmd(PacketCmd cmd)
 
 PacketBuilder &PacketBuilder::writeInt(int nb)
 {
-    if (_data == nullptr)
-        _data = new char[0];
     _n += sizeof(int);
-    void *rt = realloc(_data, _n);
+    void *rt = nullptr;
+    if (_data == nullptr)
+        rt = std::malloc(_n);
+    else
+        rt = std::realloc(_data, _n);
     if (rt == NULL)
         throw std::runtime_error("Error reallocating memory");
     _data = rt;
@@ -55,11 +57,13 @@ PacketBuilder &PacketBuilder::writeInt(int nb)
 
 PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
-    if (_data == nullptr)
-        _data = new char[0];
     const char *cstr = str.c_str();
     _n += sizeof(char) * str.length() + 1;
-    void *rt = realloc(_data, _n);
+    void *rt = nullptr;
+    if (_data == nullptr)
+        rt = std::malloc(_n);
+    else
+        rt = std::realloc(_data, _n);
     if (rt == NULL)
         throw std::runtime_error("Error reallocating memory");
     _data = rt;
@@ -97,10 +101,8 @@ Packet *PacketBuilder::build()
     return packet;
 }
 
-void PacketBuilder::destroyPacket()
+void PacketBuilder::resetPacket()
 {
-    if (_data != nullptr)
-        std::free(_data);
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;
