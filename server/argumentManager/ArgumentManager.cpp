@@ -30,13 +30,22 @@ bool ArgumentManager::checkArguments()
         return false;
     }
     for (int i = 0; _av[2][i]; i++) {
-        if (_av[2][i] < '0' || _av[2][i] > '9') {
-            spdlog::error("Usage: ./rtype_server --port [port]");
+        if (!std::isdigit(_av[2][i])) {
+            spdlog::error("Port must be a valid number");
             return false;
         }
     }
-    if (std::stoi(_av[2]) < 0 || std::stoi(_av[2]) > 65535) {
-        spdlog::error("Port must be between 0 and 65535");
+    try {
+        unsigned long port = std::stoul(_av[2]);
+        if (port > 65535) {
+            spdlog::error("Port must be between 0 and 65535");
+            return false;
+        }
+    } catch (const std::invalid_argument&) {
+        spdlog::error("Invalid port: not a number");
+        return false;
+    } catch (const std::out_of_range&) {
+        spdlog::error("Invalid port: out of range");
         return false;
     }
     return true;
