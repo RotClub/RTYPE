@@ -11,11 +11,11 @@ CollisionShape2D::CollisionShape2D(const std::string &name)
 }
 
 void CollisionShape2D::setShape(Shape2D* new_shape) {
-    shape = new_shape;
+    shape.reset(new_shape);
 }
 
 Shape2D* CollisionShape2D::getShape() const {
-    return shape;
+    return shape.get();
 }
 
 void CollisionShape2D::toggleCollision() {
