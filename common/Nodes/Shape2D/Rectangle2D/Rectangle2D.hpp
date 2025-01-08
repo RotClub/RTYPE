@@ -13,6 +13,8 @@ private:
 
   bool _intersectsRect(const Shape2D& other) const override;
 
+  bool _intersectsCircle(const Shape2D& circle) const override;
+
 public:
   Rectangle2D(const Types::Vector2 &origin, const Types::Vector2 &size);
 

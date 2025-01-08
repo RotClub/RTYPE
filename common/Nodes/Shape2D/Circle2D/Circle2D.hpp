@@ -17,6 +17,8 @@ class Circle2D : public Shape2D {
 
         bool _intersectsCircle(const Shape2D& other) const override;
 
+        bool _intersectsRect(const Shape2D &rect) const override;
+
     public:
         Circle2D(const Types::Vector2 &origin, float radius);
 

@@ -46,6 +46,10 @@ bool Circle2D::_intersectsCircle(const Shape2D &other) const
     return dist <= (sumr * sumr);
 }
 
+bool Circle2D::_intersectsRect(const Shape2D &rect) const
+{
+    return Geometric::intersectCircleWithRect(*this, static_cast<const Rectangle2D&>(rect));
+}
 
 Types::Rect2 Circle2D::getBoundingBox() const
 {

@@ -9,6 +9,10 @@ bool Rectangle2D::_intersectsRect(const Shape2D& other) const {
   return dimensions.intersects(other_bb);
 }
 
+bool Rectangle2D::_intersectsCircle(const Shape2D& circle) const {
+  return Geometric::intersectCircleWithRect(static_cast<const Circle2D&>(circle), *this);
+}
+
 Rectangle2D::Rectangle2D(const Types::Vector2 &origin, const Types::Vector2 &size)
 	: dimensions(Types::Rect2(origin, size)) {
 
