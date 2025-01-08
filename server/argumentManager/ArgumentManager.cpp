@@ -19,5 +19,15 @@ ArgumentManager::~ArgumentManager()
 
 bool ArgumentManager::checkArguments()
 {
-    return false;
+    if (_ac == 1)
+        return true;
+    if (_ac != 3) {
+        spdlog::error("Usage: ./rtype_server --port [port]");
+        return false;
+    }
+    if (std::string(_av[1]) != "--port") {
+        spdlog::error("Usage: ./rtype_server --port [port]");
+        return false;
+    }
+    return true;
 }
