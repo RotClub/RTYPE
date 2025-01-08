@@ -7,6 +7,7 @@
 
 #include "Client.hpp"
 #include "Engine.hpp"
+#include "Networking/Packet.hpp"
 #include "Networking/PacketBuilder.hpp"
 #include "game/Game.hpp"
 #include "spdlog/spdlog.h"
@@ -115,11 +116,13 @@ void Client::handleConnectPacket(Packet *packet)
                 spdlog::debug("Received auth code from server");
                 builder.loadFromPacket(packet);
                 std::string authCode = builder.readString();
-                builder.resetPacket();
-                PacketBuilder::destroy(packet);
+                builder.destroyPacket(packet);
+                spdlog::debug("Auth code: {}", authCode);
                 if (authCode == SERVER_CHALLENGE) {
                     builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
-                    getClientConnectionTcp().sendToServer(builder.build());
+                    Packet *packet = builder.build();
+                    getClientConnectionTcp().sendToServer(packet);
+                    spdlog::debug("Sent auth code verification to server: {}", packet->n);
                     _step = Client::ConnectionStep::AUTH_CODE_SENT;
                 } else {
                     throw std::runtime_error("Invalid auth code");
@@ -131,8 +134,8 @@ void Client::handleConnectPacket(Packet *packet)
                 spdlog::debug("Received auth code verification from server");
                 builder.loadFromPacket(packet);
                 std::string message = builder.readString();
-                builder.resetPacket();
-                PacketBuilder::destroy(packet);
+                builder.destroyPacket(packet);
+                spdlog::debug("Auth code verification: {}", message);
                 if (message == "AUTHENTICATED") {
                     builder.setCmd(PacketCmd::CONNECT);
                     getClientConnectionTcp().sendToServer(builder.build());

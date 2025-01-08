@@ -31,6 +31,7 @@
 
             Packet *build();
             void resetPacket();
+            void destroyPacket(Packet *packet);
 
             static void destroy(Packet *packet);
 

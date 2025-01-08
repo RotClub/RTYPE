@@ -8,6 +8,7 @@
 #include "Server.hpp"
 #include "Engine.hpp"
 #include "Networking/Packet.hpp"
+#include "Networking/PacketBuilder.hpp"
 #include "spdlog/spdlog.h"
 
 Server::Server(int port)
@@ -112,6 +113,7 @@ void Server::handleConnectPacket(Client *client, Packet *packet)
         case Client::ConnectionStep::UNVERIFIED:
             {
                 spdlog::debug("First connection packet received from client {}", client->getUuid());
+                PacketBuilder::destroy(packet);
                 builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
                 Packet *packet = builder.build();
                 client->addTcpPacketOutput(packet);
@@ -125,6 +127,7 @@ void Server::handleConnectPacket(Client *client, Packet *packet)
                 builder.loadFromPacket(packet);
                 std::string clientChallengeCode = builder.readString();
                 if (clientChallengeCode == CLIENT_CHALLENGE) {
+                    builder.destroyPacket(packet);
                     builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
                     client->addTcpPacketOutput(builder.build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
@@ -136,6 +139,7 @@ void Server::handleConnectPacket(Client *client, Packet *packet)
         case Client::ConnectionStep::AUTH_CODE_VERIFIED:
             {
                 spdlog::debug("Client {} is now connected", client->getUuid());
+                builder.destroyPacket(packet);
                 for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
                     builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
                     client->addTcpPacketOutput(builder.build());

@@ -8,6 +8,7 @@
 #include "PacketBuilder.hpp"
 #include "Networking/Packet.hpp"
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
@@ -59,14 +60,17 @@ PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
     const char *cstr = str.c_str();
     _n += sizeof(char) * str.length() + 1;
-    void *rt = nullptr;
-    if (_data == nullptr)
-        rt = std::malloc(_n);
-    else
-        rt = std::realloc(_data, _n);
-    if (rt == NULL)
-        throw std::runtime_error("Error reallocating memory");
-    _data = rt;
+    if (_data == nullptr){
+        _data = std::malloc(_n);
+        if (_data == NULL)
+            throw std::runtime_error("Error allocating memory");
+    }
+    else {
+        void *rt = std::realloc(_data, _n);
+        if (rt == NULL)
+            throw std::runtime_error("Error reallocating memory");
+        _data = rt;
+    }
     size_t len = sizeof(char) * str.length() + 1;
     std::memcpy(static_cast<char*>(_data) + _n - len, cstr, len);
     return *this;
@@ -106,6 +110,12 @@ void PacketBuilder::resetPacket()
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;
+}
+
+void PacketBuilder::destroyPacket(Packet* packet)
+{
+    resetPacket();
+    PacketBuilder::destroy(packet);
 }
 
 void PacketBuilder::destroy(Packet* packet)
