@@ -47,7 +47,7 @@ void Client::setupLua()
     engine.loadLibraries();
     if (engine.LoadLuaFile("index.luau"))
         engine.execute();
-    engine.callHook("RType:InitClient", nullptr);
+    engine.callHook("InitClient", nullptr);
 }
 
 std::string Client::getIp() const
@@ -89,6 +89,7 @@ void Client::processIncomingPackets()
         Packet *packet = client.getClientConnectionTcp().getLatestPacket();
         if (packet == nullptr)
             return;
+        spdlog::debug("Packet cmd: {}", static_cast<int>(packet->cmd));
         (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
         std::free(packet->data);
         delete packet;
@@ -105,11 +106,13 @@ void Client::processIncomingPackets()
 
 void Client::handleConnectPacket(Packet *packet)
 {
+    spdlog::debug("Handling connect packet");
     PacketBuilder builder;
     switch (_step)
     {
         case Client::ConnectionStep::AUTH_CODE_RECEIVED:
             {
+                spdlog::debug("Received auth code from server");
                 builder.loadFromPacket(packet);
                 std::string authCode = builder.readString();
                 builder.destroyPacket();
@@ -124,6 +127,7 @@ void Client::handleConnectPacket(Packet *packet)
             }
         case Client::ConnectionStep::AUTH_CODE_SENT:
             {
+                spdlog::debug("Received auth code verification from server");
                 builder.loadFromPacket(packet);
                 std::string message = builder.readString();
                 builder.destroyPacket();

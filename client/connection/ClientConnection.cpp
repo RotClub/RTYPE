@@ -71,9 +71,13 @@ Packet *ClientConnection::_tryReceive()
         throw std::runtime_error("Disconnect");
     }
     spdlog::info("Packet size: {}", packet->n);
-    packet->data = std::malloc(packet->n);
-    if (read(_fd, packet->data, packet->n) <= 0) {
-        throw std::runtime_error("Disconnect");
+    if (packet->n != 0) {
+        packet->data = std::malloc(packet->n);
+        if (read(_fd, packet->data, packet->n) <= 0) {
+            throw std::runtime_error("Disconnect");
+        }
+    } else {
+        packet->data = nullptr;
     }
     return packet;
 }
@@ -110,8 +114,11 @@ void ClientConnection::_sendLoop()
     while (!std::get<OUT>(_queues).empty()) {
         Packet *sending = std::get<OUT>(_queues).dequeue();
         write(_fd, sending, sizeof(*sending));
+        if (sending->n == 0)
+            continue;
         write(_fd, sending->data, sending->n);
-        std::free(sending->data);
+        if (sending->data)
+            std::free(sending->data);
         delete sending;
     }
 }
