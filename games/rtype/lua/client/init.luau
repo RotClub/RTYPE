@@ -1,2 +1,2 @@
-net.Start("Hello")
-net.SendToServer()
+-- net.Start("Hello")
+-- net.SendToServer()

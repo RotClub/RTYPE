@@ -21,7 +21,7 @@
 
             void loadFromPacket(Packet *packet);
 
-            PacketBuilder setCmd(PacketCmd cmd);
+            PacketBuilder &setCmd(PacketCmd cmd);
 
             PacketBuilder &writeInt(int nb);
             PacketBuilder &writeString(const std::string &str);

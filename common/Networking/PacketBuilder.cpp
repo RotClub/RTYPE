@@ -34,7 +34,7 @@ void PacketBuilder::loadFromPacket(Packet* packet)
     _n = packet->n;
 }
 
-PacketBuilder PacketBuilder::setCmd(PacketCmd cmd)
+PacketBuilder &PacketBuilder::setCmd(PacketCmd cmd)
 {
     _cmd = cmd;
     return *this;

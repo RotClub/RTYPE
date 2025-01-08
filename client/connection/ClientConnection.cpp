@@ -67,11 +67,15 @@ Packet *ClientConnection::_tryReceive()
     Packet *packet = new Packet;
 
     std::memset(packet, 0, sizeof(Packet));
-    if (read(_fd, packet, sizeof(Packet)) <= 0) {
+    unsigned short tmpCmd = -1;
+    if (read(_fd, &tmpCmd, sizeof(unsigned short)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
-    spdlog::info("Packet size: {}", packet->n);
-    if (packet->n != 0) {
+    packet->cmd = static_cast<PacketCmd>(tmpCmd);
+    if (read(_fd, &packet->n, sizeof(size_t)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+    if (packet->n > 0) {
         packet->data = std::malloc(packet->n);
         if (read(_fd, packet->data, packet->n) <= 0) {
             throw std::runtime_error("Disconnect");
@@ -92,17 +96,18 @@ void ClientConnection::_receiveLoop()
     if (FD_ISSET(_fd, &_readfds) == 0) {
         return;
     }
+    Packet *packet = nullptr;
     try {
-        _packet = _tryReceive();
+        packet = _tryReceive();
     } catch (const std::runtime_error &e) {
         spdlog::info(e.what());
         _connected = false;
         return;
     }
-    if (!_packet)
+    if (!packet)
         return;
-    std::get<IN>(_queues).enqueue(_packet);
-    _packet = nullptr;
+    std::get<IN>(_queues).enqueue(packet);
+    spdlog::debug("Queue size: {}", std::get<IN>(_queues).empty());
 }
 
 void ClientConnection::_sendLoop()
@@ -112,14 +117,15 @@ void ClientConnection::_sendLoop()
     if (FD_ISSET(_fd, &_writefds) == 0)
         return;
     while (!std::get<OUT>(_queues).empty()) {
-        Packet *sending = std::get<OUT>(_queues).dequeue();
-        write(_fd, sending, sizeof(*sending));
-        if (sending->n == 0)
-            continue;
-        write(_fd, sending->data, sending->n);
-        if (sending->data)
-            std::free(sending->data);
-        delete sending;
+        Packet *packet = std::get<OUT>(_queues).dequeue();
+        auto tmpCmd = static_cast<unsigned short>(packet->cmd);
+        write(_fd, &tmpCmd, sizeof(unsigned short));
+        write(_fd, &packet->n, sizeof(size_t));
+        if (packet->n > 0) {
+            write(_fd, packet->data, packet->n);
+            std::free(packet->data);
+        }
+        delete packet;
     }
 }
 

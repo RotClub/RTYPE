@@ -84,9 +84,8 @@ void Client::broadcastLuaPackets()
 
 void Client::processIncomingPackets()
 {
-    Client &client = Client::GetInstance();
-    while (client.getClientConnectionTcp().hasPendingPacket()) {
-        Packet *packet = client.getClientConnectionTcp().getLatestPacket();
+    while (getClientConnectionTcp().hasPendingPacket()) {
+        Packet *packet = getClientConnectionTcp().getLatestPacket();
         if (packet == nullptr)
             return;
         spdlog::debug("Packet cmd: {}", static_cast<int>(packet->cmd));
@@ -94,8 +93,8 @@ void Client::processIncomingPackets()
         std::free(packet->data);
         delete packet;
     }
-    while (client.getClientConnectionUdp().hasPendingPacket()) {
-        Packet *packet = client.getClientConnectionUdp().getLatestPacket();
+    while (getClientConnectionUdp().hasPendingPacket()) {
+        Packet *packet = getClientConnectionUdp().getLatestPacket();
         if (packet == nullptr)
             return;
         (this->*PACKET_HANDLERS.at(packet->cmd))(packet);

@@ -6,6 +6,8 @@
 */
 
 #include "Server.hpp"
+#include "Engine.hpp"
+#include "Networking/Packet.hpp"
 #include "spdlog/spdlog.h"
 
 Server::Server(int port)
@@ -109,7 +111,8 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
             {
                 spdlog::debug("First connection packet received from client {}", client->getUuid());
                 builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
-                client->addTcpPacketOutput(builder.build());
+                Packet *packet = builder.build();
+                client->addTcpPacketOutput(packet);
                 client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
                 Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
                 break;
