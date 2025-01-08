@@ -30,10 +30,7 @@
             std::string readString();
 
             Packet *build();
-            void resetPacket();
-            void destroyPacket(Packet *packet);
-
-            static void destroy(Packet *packet);
+            void reset();
 
         private:
             size_t _n;

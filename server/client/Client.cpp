@@ -16,12 +16,9 @@ static std::string generateUUID() {
     std::uniform_int_distribution<int> dist(0, 15);
 
     const char *v = "0123456789ABCDEF";
-    const bool dash[] = { 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0 };
 
     std::string str;
     for (int i = 0; i < 16; i++) {
-        if (dash[i]) str += "-";
-        str += v[dist(rng)];
         str += v[dist(rng)];
     }
     return str;

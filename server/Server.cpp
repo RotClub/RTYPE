@@ -56,12 +56,12 @@ void Server::loop()
             if (client->hasTcpPacketInput()) {
                 Packet *packet = client->popTcpPacketInput();
                 (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
-                PacketBuilder::destroy(packet);
+                PacketBuilder(packet).reset();
             }
             if (client->hasUdpPacketInput()) {
                 Packet *packet = client->popUdpPacketInput();
                 (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
-                PacketBuilder::destroy(packet);
+                PacketBuilder(packet).reset();
             }
         }
     }
@@ -107,13 +107,14 @@ void Server::handleNonePacket(Client *client, Packet* packet)
 
 void Server::handleConnectPacket(Client *client, Packet *packet)
 {
+    PacketBuilder readBuilder(packet);
     PacketBuilder builder;
     switch (client->getStep())
     {
         case Client::ConnectionStep::UNVERIFIED:
             {
                 spdlog::debug("First connection packet received from client {}", client->getUuid());
-                PacketBuilder::destroy(packet);
+                readBuilder.reset();
                 builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
                 Packet *packet = builder.build();
                 client->addTcpPacketOutput(packet);
@@ -124,22 +125,21 @@ void Server::handleConnectPacket(Client *client, Packet *packet)
         case Client::ConnectionStep::AUTH_CODE_SENT:
             {
                 spdlog::debug("Second connection packet received from client {}", client->getUuid());
-                builder.loadFromPacket(packet);
-                std::string clientChallengeCode = builder.readString();
+                std::string clientChallengeCode = readBuilder.readString();
                 if (clientChallengeCode == CLIENT_CHALLENGE) {
-                    builder.destroyPacket(packet);
                     builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
                     client->addTcpPacketOutput(builder.build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
                 } else {
                     client->disconnect();
                 }
+                readBuilder.reset();
                 break;
             }
         case Client::ConnectionStep::AUTH_CODE_VERIFIED:
             {
                 spdlog::debug("Client {} is now connected", client->getUuid());
-                builder.destroyPacket(packet);
+                readBuilder.reset();
                 for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
                     builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
                     client->addTcpPacketOutput(builder.build());

@@ -49,7 +49,7 @@ PacketBuilder &PacketBuilder::writeInt(int nb)
         rt = std::malloc(_n);
     else
         rt = std::realloc(_data, _n);
-    if (rt == NULL)
+    if (rt == nullptr)
         throw std::runtime_error("Error reallocating memory");
     _data = rt;
     std::memcpy(static_cast<char*>(_data) + _n - sizeof(int), &nb, sizeof(int));
@@ -62,12 +62,12 @@ PacketBuilder &PacketBuilder::writeString(const std::string &str)
     _n += sizeof(char) * str.length() + 1;
     if (_data == nullptr){
         _data = std::malloc(_n);
-        if (_data == NULL)
+        if (_data == nullptr)
             throw std::runtime_error("Error allocating memory");
     }
     else {
         void *rt = std::realloc(_data, _n);
-        if (rt == NULL)
+        if (rt == nullptr)
             throw std::runtime_error("Error reallocating memory");
         _data = rt;
     }
@@ -105,21 +105,11 @@ Packet *PacketBuilder::build()
     return packet;
 }
 
-void PacketBuilder::resetPacket()
+void PacketBuilder::reset()
 {
+    if (_n > 0)
+        std::free(_data);
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;
-}
-
-void PacketBuilder::destroyPacket(Packet* packet)
-{
-    resetPacket();
-    PacketBuilder::destroy(packet);
-}
-
-void PacketBuilder::destroy(Packet* packet)
-{
-    if (packet->data != nullptr)
-        std::free(packet->data);
 }

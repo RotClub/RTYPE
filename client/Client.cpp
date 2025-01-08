@@ -108,15 +108,14 @@ void Client::processIncomingPackets()
 void Client::handleConnectPacket(Packet *packet)
 {
     spdlog::debug("Handling connect packet");
+    PacketBuilder readBuilder(packet);
     PacketBuilder builder;
     switch (_step)
     {
         case Client::ConnectionStep::AUTH_CODE_RECEIVED:
             {
                 spdlog::debug("Received auth code from server");
-                builder.loadFromPacket(packet);
-                std::string authCode = builder.readString();
-                builder.destroyPacket(packet);
+                std::string authCode = readBuilder.readString();
                 spdlog::debug("Auth code: {}", authCode);
                 if (authCode == SERVER_CHALLENGE) {
                     builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
@@ -132,9 +131,8 @@ void Client::handleConnectPacket(Packet *packet)
         case Client::ConnectionStep::AUTH_CODE_SENT:
             {
                 spdlog::debug("Received auth code verification from server");
-                builder.loadFromPacket(packet);
-                std::string message = builder.readString();
-                builder.destroyPacket(packet);
+                std::string message = readBuilder.readString();
+                readBuilder.reset();
                 spdlog::debug("Auth code verification: {}", message);
                 if (message == "AUTHENTICATED") {
                     builder.setCmd(PacketCmd::CONNECT);

@@ -80,7 +80,7 @@ LUA_API int luau_Include(lua_State *L)
             lua_error(L);
         }
         PacketBuilder &builder = Engine::GetInstance().getPacketBuilder();
-        builder.resetPacket();
+        builder.reset();
         builder.setCmd(PacketCmd::NET).writeString(packetName);
         Engine::GetInstance().getLastStartedPacket() = packetName;
 

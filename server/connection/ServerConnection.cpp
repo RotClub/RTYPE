@@ -133,6 +133,7 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
     } else {
         packet->data = nullptr;
     }
+    spdlog::debug("received packet");
     return packet;
 }
 
