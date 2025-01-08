@@ -105,9 +105,9 @@ void Server::handleNonePacket(Client *client, Packet* packet)
 {
 }
 
-void Server::handleConnectPacket(Client *client, Packet *packet)
+void Server::handleConnectPacket(Client *client, Packet *inPacket)
 {
-    PacketBuilder readBuilder(packet);
+    PacketBuilder readBuilder(inPacket);
     PacketBuilder builder;
     switch (client->getStep())
     {
@@ -119,7 +119,7 @@ void Server::handleConnectPacket(Client *client, Packet *packet)
                 Packet *packet = builder.build();
                 client->addTcpPacketOutput(packet);
                 client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
-                Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
+                // Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
                 break;
             }
         case Client::ConnectionStep::AUTH_CODE_SENT:
@@ -145,7 +145,7 @@ void Server::handleConnectPacket(Client *client, Packet *packet)
                     client->addTcpPacketOutput(builder.build());
                 }
                 client->setStep(Client::ConnectionStep::COMPLETE);
-                Engine::GetInstance().callHook("ClientConnected", "string", client->getUuid().c_str(), nullptr);
+                // Engine::GetInstance().callHook("ClientConnected", "string", client->getUuid().c_str(), nullptr);
                 break;
             }
         default:

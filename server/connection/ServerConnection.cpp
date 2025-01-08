@@ -100,6 +100,7 @@ void ServerConnection::_sendLoop()
                     std::free(packet->data);
                 }
                 delete packet;
+                spdlog::debug("sent packet");
             }
         }
     }
