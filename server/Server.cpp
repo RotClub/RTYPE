@@ -27,7 +27,7 @@ void Server::start()
         if (engine.LoadLuaFile("index.luau"))
             engine.execute();
         spdlog::info("Server started!");
-        engine.callHook("RType:InitServer", nullptr);
+        engine.callHook("InitServer", nullptr);
         _serverConnection.start();
         _isRunning = true;
         while (_isRunning) {

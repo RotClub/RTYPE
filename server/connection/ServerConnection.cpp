@@ -118,13 +118,13 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
     if (read(client->getTcpFd(), packet, sizeof(Packet)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
-    if (packet->n == 0) {
+    if (packet->n > 0) {
+        packet->data = std::malloc(packet->n);
+        if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
+            throw std::runtime_error("Disconnect");
+        }
+    } else {
         packet->data = nullptr;
-        return packet;
-    }
-    packet->data = std::malloc(packet->n);
-    if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
-        throw std::runtime_error("Disconnect");
     }
     return packet;
 }
