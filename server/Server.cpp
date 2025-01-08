@@ -6,6 +6,7 @@
 */
 
 #include "Server.hpp"
+#include "spdlog/spdlog.h"
 
 Server::Server(int port)
     : _port(port), _isRunning(false), _serverConnection(port)
@@ -115,6 +116,7 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
             }
         case Client::ConnectionStep::AUTH_CODE_SENT:
             {
+                spdlog::debug("Second connection packet received from client {}", client->getUuid());
                 builder.loadFromPacket(packet);
                 std::string clientChallengeCode = builder.readString();
                 if (clientChallengeCode == CLIENT_CHALLENGE) {
@@ -128,6 +130,7 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
             }
         case Client::ConnectionStep::AUTH_CODE_VERIFIED:
             {
+                spdlog::debug("Client {} is now connected", client->getUuid());
                 for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
                     builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
                     client->addTcpPacketOutput(builder.build());
