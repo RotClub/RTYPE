@@ -17,7 +17,7 @@
         CONNECT,
         DISCONNECT,
         NET,
-        NEW_MESSAGE,
+        NEW_MESSAGE
     };
 
     using Packet = struct packet_s {
@@ -25,7 +25,5 @@
         PacketCmd cmd;
         void *data;
     };
-
-    #define NULL_PACKET (Packet){0, PacketCmd::NONE, NULL}
 
 #endif /* !STRINGPACKET_HPP_ */

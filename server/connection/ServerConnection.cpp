@@ -92,12 +92,14 @@ void ServerConnection::_sendLoop()
         if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_writefds) && client->hasTcpPacketOutput()) {
             while (client->hasTcpPacketOutput()) {
                 Packet *packet = client->popTcpPacketOutput();
-                size_t len = packet->n;
-                write(client->getTcpFd(), packet, sizeof(*packet));
-                if (len > 0) {
-                    write(client->getTcpFd(), packet->data, len);
+                auto tmpCmd = static_cast<unsigned short>(packet->cmd);
+                write(client->getTcpFd(), &tmpCmd, sizeof(unsigned short));
+                write(client->getTcpFd(), &packet->n, sizeof(size_t));
+                if (packet->n > 0) {
+                    write(client->getTcpFd(), packet->data, packet->n);
                     std::free(packet->data);
                 }
+                delete packet;
             }
         }
     }
@@ -115,7 +117,12 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
     Packet *packet = new Packet;
 
     std::memset(packet, 0, sizeof(Packet));
-    if (read(client->getTcpFd(), packet, sizeof(Packet)) <= 0) {
+    unsigned short tmpCmd = -1;
+    if (read(client->getTcpFd(), &tmpCmd, sizeof(unsigned short)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+    packet->cmd = static_cast<PacketCmd>(tmpCmd);
+    if (read(client->getTcpFd(), &packet->n, sizeof(size_t)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
     if (packet->n > 0) {
