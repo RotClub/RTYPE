@@ -106,6 +106,7 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
     {
         case Client::ConnectionStep::UNVERIFIED:
             {
+                spdlog::debug("First connection packet received from client {}", client->getUuid());
                 builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
                 client->addTcpPacketOutput(builder.build());
                 client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
@@ -131,6 +132,7 @@ void Server::handleConnectPacket(Client *client, Packet* packet)
                     client->addTcpPacketOutput(builder.build());
                 }
                 client->setStep(Client::ConnectionStep::COMPLETE);
+                spdlog::debug("Client {} is now connected", client->getUuid());
                 break;
             }
         default:

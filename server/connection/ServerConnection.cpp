@@ -129,6 +129,11 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
     if (read(client->getTcpFd(), packet, sizeof(Packet)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
+    spdlog::debug("Packet size: {}", packet->n);
+    if (packet->n == 0) {
+        packet->data = nullptr;
+        return packet;
+    }
     packet->data = std::malloc(packet->n);
     if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
         throw std::runtime_error("Disconnect");

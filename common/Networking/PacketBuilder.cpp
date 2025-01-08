@@ -100,7 +100,7 @@ Packet *PacketBuilder::build()
 void PacketBuilder::destroyPacket()
 {
     if (_data != nullptr)
-        free(_data);
+        std::free(_data);
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;

@@ -6,8 +6,11 @@
 */
 
 #include "Client.hpp"
+#include "Engine.hpp"
 #include "game/Game.hpp"
+#include "spdlog/spdlog.h"
 #include <cstdlib>
+#include <string>
 
 Client *Client::_instance = nullptr;
 
@@ -86,23 +89,62 @@ void Client::processIncomingPackets()
         Packet *packet = client.getClientConnectionTcp().getLatestPacket();
         if (packet == nullptr)
             return;
-        client.packetHandlers[packet->cmd](packet);
-        free(packet->data);
-        free(packet);
+        (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
+        std::free(packet->data);
+        delete packet;
     }
     while (client.getClientConnectionUdp().hasPendingPacket()) {
         Packet *packet = client.getClientConnectionUdp().getLatestPacket();
         if (packet == nullptr)
             return;
-        client.packetHandlers[packet->cmd](packet);
-        free(packet->data);
-        free(packet);
+        (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
+        std::free(packet->data);
+        delete packet;
     }
 }
 
 void Client::handleConnectPacket(Packet *packet)
 {
-    spdlog::info("Connected to server");
+    PacketBuilder builder;
+    switch (_step)
+    {
+        case Client::ConnectionStep::AUTH_CODE_RECEIVED:
+            {
+                builder.loadFromPacket(packet);
+                std::string authCode = builder.readString();
+                builder.destroyPacket();
+                if (authCode == SERVER_CHALLENGE) {
+                    builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
+                    getClientConnectionTcp().sendToServer(builder.build());
+                    _step = Client::ConnectionStep::AUTH_CODE_SENT;
+                } else {
+                    throw std::runtime_error("Invalid auth code");
+                }
+                break;
+            }
+        case Client::ConnectionStep::AUTH_CODE_SENT:
+            {
+                builder.loadFromPacket(packet);
+                std::string message = builder.readString();
+                builder.destroyPacket();
+                if (message == "AUTHENTICATED") {
+                    builder.setCmd(PacketCmd::CONNECT);
+                    getClientConnectionTcp().sendToServer(builder.build());
+                    _step = Client::ConnectionStep::COMPLETE;
+                } else {
+                    throw std::runtime_error("Failed to authenticate");
+                }
+                spdlog::debug("Connection established");
+                _connectionEstablished = true;
+                break;
+            }
+        case Client::ConnectionStep::COMPLETE:
+            {
+                break;
+            }
+        default:
+            break;
+    }
 }
 
 void Client::handleDisconnectPacket(Packet *packet)
@@ -114,7 +156,7 @@ void Client::handleLuaPacket(Packet *packet)
 {
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();
-    Engine::GetInstance().netCallback(packetName, packet);
+    Engine::GetInstance().netCallback(packetName, packet, packetName);
 }
 
 void Client::handleNewMessagePacket(Packet *packet)

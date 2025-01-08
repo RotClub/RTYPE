@@ -8,6 +8,7 @@
 #include "ClientConnection.hpp"
 
 #include "Networking/Packet.hpp"
+#include "Networking/PacketBuilder.hpp"
 #include "spdlog/spdlog.h"
 #include <stdexcept>
 #include <sys/select.h>
@@ -49,9 +50,11 @@ void ClientConnection::disconnectFromServer()
     _fd = -1;
 }
 
-bool ClientConnection::establishConnection()
+void ClientConnection::establishConnection()
 {
-    return true;
+    PacketBuilder builder;
+    builder.setCmd(PacketCmd::CONNECT);
+    sendToServer(builder.build());
 }
 
 bool ClientConnection::hasPendingPacket()
@@ -108,7 +111,8 @@ void ClientConnection::_sendLoop()
         Packet *sending = std::get<OUT>(_queues).dequeue();
         write(_fd, sending, sizeof(*sending));
         write(_fd, sending->data, sending->n);
-        free(sending->data);
+        std::free(sending->data);
+        delete sending;
     }
 }
 

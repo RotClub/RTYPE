@@ -23,7 +23,15 @@ void Game::run()
     if (_window.IsReady() == false)
         throw std::runtime_error("Window is not ready");
     Engine::GetInstance().clientStarted = true;
+    Client &client = Client::GetInstance();
+    client.getClientConnectionTcp().establishConnection();
+    while (!client.isConnectionEstablished()) {
+        if (_window.ShouldClose())
+            return;
+        client.processIncomingPackets();
+    }
     _loadResources();
+    client.setupLua();
     while (!_shouldClose) {
         int dt = Engine::GetInstance().deltaTime();
         _update(dt);
