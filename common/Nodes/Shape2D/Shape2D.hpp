@@ -11,6 +11,7 @@ class Shape2D {
 public:
 	enum class ShapeType {
 		RECTANGLE,
+		CIRCLE,
 	} shape;
 
     virtual Types::Vector2 getOrigin() const = 0;
@@ -21,6 +22,8 @@ public:
 
 private:
 	virtual bool _intersectsRect(const Shape2D& other) const = 0;
+
+	virtual bool _intersectsCircle(const Shape2D& other) const = 0;
 };
 
 #endif //SHAPE2D_HPP

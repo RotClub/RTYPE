@@ -11,23 +11,23 @@
     #include "Nodes/Shape2D/Shape2D.hpp"
 
 class Circle2D : public Shape2D {
-private:
-    float radius;
+    private:
+        float _radius;
+        Types::Vector2 _origin;
 
-    bool _intersectsCircle(const Shape2D& other) const override;
-public:
-    Circle2D(const Types::Vector2 &origin, float radius);
+        bool _intersectsCircle(const Shape2D& other) const override;
 
-    void setRadius(float radius);
+    public:
+        Circle2D(const Types::Vector2 &origin, float radius);
 
-    float getRadius() const;
+        void setRadius(float radius);
 
-    Types::Vector2 getOrigin() const override;
+        float getRadius() const;
 
-    bool intersects(const Shape2D& other) const override;
+        Types::Vector2 getOrigin() const override;
 
-    Types::Rect2 getBoundingBox() const override;
-
+        // bool intersects(const Shape2D& other) const override;
+        // Types::Circle2 getBoundingBox() const override;
 };
 
 #endif //CIRCLE2D_HPP
