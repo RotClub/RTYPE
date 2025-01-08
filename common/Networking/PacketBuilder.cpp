@@ -105,3 +105,9 @@ void PacketBuilder::destroyPacket()
     _cmd = PacketCmd::NONE;
     _data = nullptr;
 }
+
+void PacketBuilder::destroy(Packet* packet)
+{
+    if (packet->data != nullptr)
+        std::free(packet->data);
+}

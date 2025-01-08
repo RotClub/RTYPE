@@ -32,6 +32,8 @@
             Packet *build();
             void destroyPacket();
 
+            static void destroy(Packet *packet);
+
         private:
             size_t _n;
             PacketCmd _cmd;

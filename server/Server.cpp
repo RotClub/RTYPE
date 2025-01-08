@@ -55,10 +55,12 @@ void Server::loop()
             if (client->hasTcpPacketInput()) {
                 Packet *packet = client->popTcpPacketInput();
                 (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
+                PacketBuilder::destroy(packet);
             }
             if (client->hasUdpPacketInput()) {
                 Packet *packet = client->popUdpPacketInput();
                 (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
+                PacketBuilder::destroy(packet);
             }
         }
     }
@@ -102,7 +104,7 @@ void Server::handleNonePacket(Client *client, Packet* packet)
 {
 }
 
-void Server::handleConnectPacket(Client *client, Packet* packet)
+void Server::handleConnectPacket(Client *client, Packet *packet)
 {
     PacketBuilder builder;
     switch (client->getStep())
@@ -171,6 +173,8 @@ void Server::broadcastNewPackets()
             const std::string packetName = Engine::GetInstance().getNewPacketsInRegistry().front();
             const bool reliable = Engine::GetInstance().isPacketReliable(packetName);
             for (auto &client : _serverConnection.getClientConnections()) {
+                if (client->getStep() != Client::ConnectionStep::COMPLETE)
+                    continue;
                 PacketBuilder builder;
                 Packet *packet = builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable).build();
                 client->addTcpPacketOutput(packet);
