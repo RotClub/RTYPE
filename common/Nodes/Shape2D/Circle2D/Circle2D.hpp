@@ -26,8 +26,9 @@ class Circle2D : public Shape2D {
 
         Types::Vector2 getOrigin() const override;
 
-        // bool intersects(const Shape2D& other) const override;
-        // Types::Circle2 getBoundingBox() const override;
+        bool intersects(const Shape2D& other) const override;
+
+        Types::Rect2 getBoundingBox() const override;
 };
 
 #endif //CIRCLE2D_HPP
