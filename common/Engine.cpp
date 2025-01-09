@@ -250,7 +250,7 @@ static void loadLibrary(lua_State *L, const std::string &filePath)
     }
 }
 
-void Engine::loadLibraries() const
+void Engine::loadLibraries()
 {
     loadLibrary(L, "hook.luau");
     loadLibrary(L, "utils.luau");
@@ -270,8 +270,6 @@ void Engine::loadLibraries() const
     };
     luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
     /* NET LIBRARY */
-
-    luaL_sandbox(L);
 }
 
 int Engine::deltaTime()
@@ -281,6 +279,11 @@ int Engine::deltaTime()
 
     _deltaLast = currentTime;
     return elapsed.count();
+}
+
+void Engine::lockLuaState()
+{
+    luaL_sandbox(L);
 }
 
 std::string Engine::GetLuaFileContents(const std::string &filename)

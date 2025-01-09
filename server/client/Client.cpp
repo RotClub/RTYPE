@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <Networking/Defines.hpp>
 #include <random>
+#include <unistd.h>
 
 static std::string generateUUID() {
     static std::random_device dev;
@@ -38,6 +39,7 @@ Client::Client(const int srvTcpFd)
 
 Client::~Client()
 {
+    close(_tcpFd);
 }
 
 void Client::addTcpPacketInput(Packet *packet)

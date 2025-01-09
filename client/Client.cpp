@@ -13,6 +13,7 @@
 #include "spdlog/spdlog.h"
 #include <cstdlib>
 #include <string>
+#include <lua/ClientSideLua.hpp>
 
 Client *Client::_instance = nullptr;
 
@@ -46,7 +47,17 @@ void Client::setupLua()
 {
     Engine &engine = Engine::GetInstance();
     engine.loadLibraries();
+    setupClientSideLua();
+    engine.lockLuaState();
 }
+
+void Client::setupClientSideLua()
+{
+    lua_State *L = Engine::GetInstance().getLuaState();
+    luau_ExposeGlobalFunction(L, luau_IsKeyPressed, "IsKeyPressed");
+    luau_ExposeGlobalFunction(L, luau_IsKeyJustPressed, "IsKeyJustPressed");
+}
+
 
 void Client::loadLuaGame()
 {

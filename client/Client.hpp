@@ -13,8 +13,9 @@
     #include "game/Game.hpp"
     #include <string>
     #include <unordered_map>
+#include <input_manager/InputManager.hpp>
 
-    class Client {
+class Client {
 
         public:
             Client(Client const &) = delete;
@@ -44,6 +45,7 @@
 
             void startGame();
             void setupLua();
+            void setupClientSideLua();
             void loadLuaGame();
             std::string getIp() const;
             int getPort() const;

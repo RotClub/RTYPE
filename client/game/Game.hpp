@@ -12,6 +12,7 @@
     #include "Networking/Packet.hpp"
 
     #include <raylib-cpp.hpp>
+#include <input_manager/InputManager.hpp>
 
 class Game {
     public:

@@ -28,6 +28,7 @@ void Server::start()
         spdlog::info("Server starting...");
         engine.displayGameInfo();
         engine.loadLibraries();
+        engine.lockLuaState();
         if (engine.LoadLuaFile("index.luau"))
             engine.execute();
         else
@@ -190,6 +191,7 @@ void Server::broadcastNewPackets()
 
 void Server::stop()
 {
+    spdlog::info("Stopping server...");
     _serverConnection.stop();
     _isRunning = false;
 }

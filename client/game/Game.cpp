@@ -47,6 +47,8 @@ void Game::run()
 void Game::_update(int dt)
 {
     Client &client = Client::GetInstance();
+    InputManager::GetInstance().update();
+    Engine::GetInstance().callHook("Tick", "int", dt, nullptr);
     client.broadcastLuaPackets();
     client.processIncomingPackets();
     Node *rootNode = Engine::GetInstance().root;

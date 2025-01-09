@@ -726,7 +726,7 @@ LUA_API int luau_Debug(lua_State *L)
 
 /* LUA API LIBRARY */
 
-    static void luau_ExposeGlobalFunction(lua_State *L, const lua_CFunction func, const char *name)
+    void luau_ExposeGlobalFunction(lua_State *L, const lua_CFunction func, const char *name)
     {
         lua_pushcfunction(L, func, name);
         lua_setglobal(L, name);

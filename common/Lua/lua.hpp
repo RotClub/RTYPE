@@ -22,6 +22,7 @@
     #include "Types.hpp"
     #include "GameInfo/GameInfo.hpp"
 
+    void luau_ExposeGlobalFunction(lua_State *L, const lua_CFunction func, const char *name);
     void luau_ExposeFunctions(lua_State *L);
     void luau_ExposeFunctionsAsLibrary(lua_State *L, const luaL_Reg *functions, const char *name);
     void luau_ExposeGameInfoTable(lua_State *L, const GameInfo *info);

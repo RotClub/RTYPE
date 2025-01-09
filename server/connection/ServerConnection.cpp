@@ -34,6 +34,7 @@ void ServerConnection::stop()
 {
     if (!_running) return;
     _running = false;
+    pthread_cancel(_networkThread.native_handle());
     if (_networkThread.joinable()) {
         _networkThread.join();
     }
