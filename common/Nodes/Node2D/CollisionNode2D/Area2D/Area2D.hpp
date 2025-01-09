@@ -6,12 +6,10 @@
 */
 
 #include "Nodes/Node2D/CollisionNode2D/CollisionNode2D.hpp"
-#include "raylib.h"
 
 class Area2D : public CollisionNode2D {
     public:
-        explicit Area2D(const std::string &name = "area2d");
-        ~Area2D();
+        Area2D(const std::string &name = "area2d", Types::Vector2 position = {0, 0}, Types::Vector2 size = {0, 0});
 
         void addCollisionShape(CollisionShape2D* new_shape) = delete;
         void removeCollisionShape(const std::string &name) = delete;

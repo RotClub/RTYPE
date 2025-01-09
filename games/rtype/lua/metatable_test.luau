@@ -81,3 +81,9 @@ local rect2_shape = root:CreateChild("CollisionShape2D", "rect2", "Rectangle", 2
 
 -- Directly call CollisionShape2DMetaTable methods
 print("Should be false -> ", rect2_shape:Collide(rect_shape))
+
+-- Area2D
+local area2d = root:CreateChild("Area2D", "area" , 50, 50, 100, 100)
+print("Area2D position should be 50, 50 -> ", area2d:GetPosition())
+print("Area2D size should be 100, 100 -> ", area2d:GetSize())
+

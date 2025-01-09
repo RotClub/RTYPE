@@ -114,7 +114,7 @@ void Client::handleLuaPacket(Packet *packet)
 {
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();
-    Engine::GetInstance().netCallback(packetName, packet);
+    // Engine::GetInstance().netCallback(packetName, packet);
 }
 
 void Client::handleNewMessagePacket(Packet *packet)

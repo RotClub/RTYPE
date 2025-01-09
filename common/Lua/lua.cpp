@@ -382,6 +382,12 @@ LUA_API int luau_Include(lua_State *L)
 			}
 			child = new CollisionShape2D(name);
 			dynamic_cast<CollisionShape2D*>(child)->setShape(shape);
+        } else if (type == "Area2D") {
+        	double x = luaL_checknumber(L, 4);
+            double y = luaL_checknumber(L, 5);
+            double width = luaL_checknumber(L, 6);
+            double height = luaL_checknumber(L, 7);
+            child = new Area2D(name, Types::Vector2(x, y), Types::Vector2(width, height));
         } else {
             luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
         }
@@ -999,6 +1005,7 @@ LUA_API int luau_Include(lua_State *L)
             {"GetSize", luau_Area2DGetSize},
             {"SetSize", luau_Area2DSetSize},
             {"__gc", lua_gcArea2D},
+            {nullptr, nullptr}
         };
         luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
         /* NODE LIBRARY */

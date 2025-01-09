@@ -3,6 +3,7 @@
 //
 
 #include "CollisionNode2D.hpp"
+#include <algorithm>
 
 CollisionNode2D::CollisionNode2D(const std::string &name)
 	: shapes(), collision_enabled(true), Node2D(name) {
@@ -17,6 +18,15 @@ void CollisionNode2D::removeCollisionShape(const std::string &name) {
 	shapes.erase(std::remove_if(shapes.begin(), shapes.end(), [name](const std::unique_ptr<CollisionShape2D> &shape) {
 		return shape->name == name;
 	}), shapes.end());
+}
+
+CollisionShape2D* CollisionNode2D::getCollisionShape(const std::string &name) const {
+    for (const auto& shape : shapes) {
+        if (shape->name == name) {
+            return shape.get();
+        }
+    }
+    return nullptr;
 }
 
 std::vector<CollisionShape2D*> CollisionNode2D::getCollisionShapes() const {
