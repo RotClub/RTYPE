@@ -45,8 +45,13 @@ void Client::startGame()
 void Client::setupLua()
 {
     Engine &engine = Engine::GetInstance();
-    engine.displayGameInfo();
     engine.loadLibraries();
+}
+
+void Client::loadLuaGame()
+{
+    Engine &engine = Engine::GetInstance();
+    engine.displayGameInfo();
     if (engine.LoadLuaFile("index.luau"))
         engine.execute();
     engine.callHook("InitClient", nullptr);

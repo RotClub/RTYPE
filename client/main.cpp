@@ -6,9 +6,6 @@
 */
 
 #include "Client.hpp"
-#include "Networking/PacketBuilder.hpp"
-
-#include "spdlog/spdlog.h"
 #include <cstdlib>
 
 int main(void)

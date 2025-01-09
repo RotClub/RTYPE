@@ -25,13 +25,14 @@ void Game::run()
     Engine::GetInstance().clientStarted = true;
     Client &client = Client::GetInstance();
     client.getClientConnectionTcp().establishConnection();
+    client.setupLua();
     while (!client.isConnectionEstablished()) {
         if (_window.ShouldClose())
             return;
         client.processIncomingPackets();
     }
+    client.loadLuaGame();
     _loadResources();
-    client.setupLua();
     while (!_shouldClose) {
         int dt = Engine::GetInstance().deltaTime();
         _update(dt);

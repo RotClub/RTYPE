@@ -44,6 +44,7 @@
 
             void startGame();
             void setupLua();
+            void loadLuaGame();
             std::string getIp() const;
             int getPort() const;
             ClientConnection &getClientConnectionTcp();
