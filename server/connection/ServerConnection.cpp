@@ -9,6 +9,8 @@
 
 #include <Engine.hpp>
 #include <cstddef>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 ServerConnection::ServerConnection(int port)
     : _port(port)
@@ -112,10 +114,10 @@ void ServerConnection::_sendLoop()
             while (client->hasUdpPacketOutput()) {
                 Packet *packet = client->popUdpPacketOutput();
                 auto tmpCmd = static_cast<unsigned short>(packet->cmd);
-                sendto(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(&client->getAddress()), sizeof(client->getAddress()));
-                sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(&client->getAddress()), sizeof(client->getAddress()));
+                sendto(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(client->getAddress()), sizeof(sockaddr_in));
+                sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(client->getAddress()), sizeof(sockaddr_in));
                 if (packet->n > 0) {
-                    sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(&client->getAddress()), sizeof(client->getAddress()));
+                    sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(client->getAddress()), sizeof(sockaddr_in));
                     std::free(packet->data);
                 }
             }

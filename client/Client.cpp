@@ -90,7 +90,6 @@ void Client::processIncomingPackets()
         Packet *packet = getClientConnectionTcp().getLatestPacket();
         if (packet == nullptr)
             return;
-        spdlog::debug("Packet cmd: {}", static_cast<int>(packet->cmd));
         (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
         std::free(packet->data);
         delete packet;
@@ -156,7 +155,7 @@ void Client::handleConnectPacket(Packet *packet)
 
 void Client::handleDisconnectPacket(Packet *packet)
 {
-    spdlog::info("Disconnected from server");
+    spdlog::debug("Disconnected from server");
 }
 
 void Client::handleLuaPacket(Packet *packet)
@@ -168,5 +167,10 @@ void Client::handleLuaPacket(Packet *packet)
 
 void Client::handleNewMessagePacket(Packet *packet)
 {
-    spdlog::info("Received new message packet");
+    spdlog::debug("Received new message packet");
+    PacketBuilder builder(packet);
+    std::string packetName = builder.readString();
+    int reliable = builder.readInt();
+    spdlog::debug("Packet name: {}, reliable: {}", packetName, reliable);
+    Engine::GetInstance().addPacketRegistryEntry(packetName, static_cast<bool>(reliable));
 }
