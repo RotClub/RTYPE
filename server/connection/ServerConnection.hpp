@@ -41,7 +41,7 @@
             void _accept();
             void _disconnectClients();
             Packet *_tryReceiveTCP(Client *client);
-            Packet *_tryReceiveUDP(Client *client);
+            Packet *_tryReceiveUDP(sockaddr_in *addr);
             void _createSocket();
             void _setClientFds(fd_set *set);
             int _getMaxFd();

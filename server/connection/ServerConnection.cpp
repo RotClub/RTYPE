@@ -86,14 +86,25 @@ void ServerConnection::_receiveLoop()
             }
         }
     }
-    // if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
-    //     try {
-    //         Packet *packet = _tryReceiveTCP(client);
-    //         client->addTcpPacketInput(packet);
-    //     } catch (const std::exception &e) {
-    //         client->disconnect();
-    //     }
-    // }
+    if (FD_ISSET(_udpFd, &_readfds)) {
+        sockaddr_in addr{};
+        std::memset(&addr, 0, sizeof(addr));
+        Packet *packet = _tryReceiveUDP(&addr);
+        for (auto &client : _clientConnections) {
+            if (client->shouldDisconnect())
+                continue;
+            if (client->getStep() != Client::ConnectionStep::COMPLETE)
+                continue;
+            if (client->getAddress()->sin_addr.s_addr == addr.sin_addr.s_addr
+                && client->getAddress()->sin_port == addr.sin_port) {
+                client->addUdpPacketInput(packet);
+                return;
+            }
+        }
+        if (packet->n > 0)
+            std::free(packet->data);
+        delete packet;
+    }
 }
 
 void ServerConnection::_sendLoop()
@@ -156,23 +167,24 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
     return packet;
 }
 
-Packet *ServerConnection::_tryReceiveUDP(Client *client)
+Packet *ServerConnection::_tryReceiveUDP(sockaddr_in *addr)
 {
     Packet *packet = new Packet;
 
     std::memset(packet, 0, sizeof(Packet));
     unsigned short tmpCmd = -1;
-    if (read(client->getTcpFd(), &tmpCmd, sizeof(unsigned short)) <= 0) {
-        throw std::runtime_error("Disconnect");
+    socklen_t len = sizeof(*addr);
+    if (recvfrom(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+        throw std::runtime_error("Error receiving udp packet");
     }
     packet->cmd = static_cast<PacketCmd>(tmpCmd);
-    if (read(client->getTcpFd(), &packet->n, sizeof(size_t)) <= 0) {
-        throw std::runtime_error("Disconnect");
+    if (recvfrom(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+        throw std::runtime_error("Error receiving udp packet");
     }
     if (packet->n > 0) {
         packet->data = std::malloc(packet->n);
-        if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
-            throw std::runtime_error("Disconnect");
+        if (recvfrom(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+            throw std::runtime_error("Error receiving udp packet");
         }
     } else {
         packet->data = nullptr;

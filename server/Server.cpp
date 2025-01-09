@@ -30,6 +30,8 @@ void Server::start()
         engine.loadLibraries();
         if (engine.LoadLuaFile("index.luau"))
             engine.execute();
+        else
+            throw std::runtime_error("Failed to load index.luau");
         spdlog::info("Server started!");
         engine.callHook("InitServer", nullptr);
         _serverConnection.start();
@@ -125,6 +127,10 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
             {
                 std::string clientChallengeCode = readBuilder.readString();
                 if (clientChallengeCode == CLIENT_CHALLENGE) {
+                    for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
+                        builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
+                        client->addTcpPacketOutput(builder.build());
+                    }
                     builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
                     client->addTcpPacketOutput(builder.build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
@@ -137,10 +143,6 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
         case Client::ConnectionStep::AUTH_CODE_VERIFIED:
             {
                 readBuilder.reset();
-                for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
-                    builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
-                    client->addTcpPacketOutput(builder.build());
-                }
                 client->setStep(Client::ConnectionStep::COMPLETE);
                 spdlog::info("Client {} connected", client->getUuid());
                 Engine::GetInstance().callHook("ClientConnected", "string", client->getUuid().c_str(), nullptr);
