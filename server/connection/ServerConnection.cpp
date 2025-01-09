@@ -84,6 +84,14 @@ void ServerConnection::_receiveLoop()
             }
         }
     }
+    // if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
+    //     try {
+    //         Packet *packet = _tryReceiveTCP(client);
+    //         client->addTcpPacketInput(packet);
+    //     } catch (const std::exception &e) {
+    //         client->disconnect();
+    //     }
+    // }
 }
 
 void ServerConnection::_sendLoop()
@@ -100,7 +108,16 @@ void ServerConnection::_sendLoop()
                     std::free(packet->data);
                 }
                 delete packet;
-                spdlog::debug("sent packet");
+            }
+            while (client->hasUdpPacketOutput()) {
+                Packet *packet = client->popUdpPacketOutput();
+                auto tmpCmd = static_cast<unsigned short>(packet->cmd);
+                sendto(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(&client->getAddress()), sizeof(client->getAddress()));
+                sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(&client->getAddress()), sizeof(client->getAddress()));
+                if (packet->n > 0) {
+                    sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(&client->getAddress()), sizeof(client->getAddress()));
+                    std::free(packet->data);
+                }
             }
         }
     }
@@ -134,7 +151,30 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
     } else {
         packet->data = nullptr;
     }
-    spdlog::debug("received packet");
+    return packet;
+}
+
+Packet *ServerConnection::_tryReceiveUDP(Client *client)
+{
+    Packet *packet = new Packet;
+
+    std::memset(packet, 0, sizeof(Packet));
+    unsigned short tmpCmd = -1;
+    if (read(client->getTcpFd(), &tmpCmd, sizeof(unsigned short)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+    packet->cmd = static_cast<PacketCmd>(tmpCmd);
+    if (read(client->getTcpFd(), &packet->n, sizeof(size_t)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+    if (packet->n > 0) {
+        packet->data = std::malloc(packet->n);
+        if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
+            throw std::runtime_error("Disconnect");
+        }
+    } else {
+        packet->data = nullptr;
+    }
     return packet;
 }
 
@@ -194,8 +234,8 @@ int ServerConnection::_selectFd()
     _setClientFds(&_readfds);
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
-    // FD_SET(_udpFd, &_readfds);
-    int maxFd = std::max(_getMaxFd(), _tcpFd);
+    FD_SET(_udpFd, &_readfds);
+    int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
     retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, nullptr);
     return retval;
 }

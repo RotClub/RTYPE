@@ -4,10 +4,10 @@ function PrintTable(tbl: table, indents: number)
     local indent = string.rep("  ", indents)
     for k, v in pairs(tbl) do
         if type(v) == "table" then
-            print(indent .. k .. ":")
+            info(indent .. k .. ":")
             PrintTable(v, indents + 1)
         else
-            print(indent .. k .. ": " .. tostring(v))
+            info(indent .. k .. ": " .. tostring(v))
         end
     end
 end

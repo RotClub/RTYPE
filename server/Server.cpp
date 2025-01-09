@@ -113,18 +113,16 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
     {
         case Client::ConnectionStep::UNVERIFIED:
             {
-                spdlog::debug("First connection packet received from client {}", client->getUuid());
                 readBuilder.reset();
                 builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
                 Packet *packet = builder.build();
                 client->addTcpPacketOutput(packet);
                 client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
-                // Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
+                Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
                 break;
             }
         case Client::ConnectionStep::AUTH_CODE_SENT:
             {
-                spdlog::debug("Second connection packet received from client {}", client->getUuid());
                 std::string clientChallengeCode = readBuilder.readString();
                 if (clientChallengeCode == CLIENT_CHALLENGE) {
                     builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
@@ -138,14 +136,14 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
             }
         case Client::ConnectionStep::AUTH_CODE_VERIFIED:
             {
-                spdlog::debug("Client {} is now connected", client->getUuid());
                 readBuilder.reset();
                 for (const auto & [packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
                     builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
                     client->addTcpPacketOutput(builder.build());
                 }
                 client->setStep(Client::ConnectionStep::COMPLETE);
-                // Engine::GetInstance().callHook("ClientConnected", "string", client->getUuid().c_str(), nullptr);
+                spdlog::info("Client {} connected", client->getUuid());
+                Engine::GetInstance().callHook("ClientConnected", "string", client->getUuid().c_str(), nullptr);
                 break;
             }
         default:

@@ -51,6 +51,50 @@ LUA_API int luau_Include(lua_State *L)
     }
 }
 
+LUA_API int luau_Info(lua_State *L)
+{
+    const char *msg = lua_tostring(L, 1);
+    if (!msg) {
+        lua_pushstring(L, "Invalid info message provided.");
+        lua_error(L);
+    }
+    spdlog::info(msg);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_Error(lua_State *L)
+{
+    const char *msg = lua_tostring(L, 1);
+    if (!msg) {
+        lua_pushstring(L, "Invalid error message provided.");
+        lua_error(L);
+    }
+    spdlog::error(msg);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_Warn(lua_State *L)
+{
+    const char *msg = lua_tostring(L, 1);
+    if (!msg) {
+        lua_pushstring(L, "Invalid warn message provided.");
+        lua_error(L);
+    }
+    spdlog::warn(msg);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_Debug(lua_State *L)
+{
+    const char *msg = lua_tostring(L, 1);
+    if (!msg) {
+        lua_pushstring(L, "Invalid debug message provided.");
+        lua_error(L);
+    }
+    spdlog::debug(msg);
+    return lua_gettop(L);
+}
+
 /* NET LIBRARY */
     LUA_API int luau_NetCreatePacket(lua_State *L)
     {
@@ -799,6 +843,10 @@ LUA_API int luau_Include(lua_State *L)
     void luau_ExposeFunctions(lua_State *L)
     {
         luau_ExposeGlobalFunction(L, luau_Include, "include");
+        luau_ExposeGlobalFunction(L, luau_Info, "info");
+        luau_ExposeGlobalFunction(L, luau_Warn, "warn");
+        luau_ExposeGlobalFunction(L, luau_Error, "error");
+        luau_ExposeGlobalFunction(L, luau_Debug, "debug");
 
         /* NODE LIBRARY */
         constexpr luaL_Reg nodeLibrary[] = {
