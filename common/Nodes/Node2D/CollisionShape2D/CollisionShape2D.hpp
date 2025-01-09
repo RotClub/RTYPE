@@ -5,11 +5,13 @@
 #ifndef COLLISIONSHAPE2D_HPP
 #define COLLISIONSHAPE2D_HPP
 
+#include <memory>
+
 #include "Nodes/Node2D/Node2D.hpp"
 #include "Nodes/Shape2D/Shape2D.hpp"
 
 class CollisionShape2D : public Node2D {
-	Shape2D* shape;
+	std::unique_ptr<Shape2D> shape;
     bool collision_enabled;
 
 public:
