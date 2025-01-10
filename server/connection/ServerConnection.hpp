@@ -8,11 +8,11 @@
 #ifndef SERVERCONNECTION_HPP_
     #define SERVERCONNECTION_HPP_
 
-    #include "Networking/GlobalConnection.hpp"
     #include "Networking/Defines.hpp"
     #include "Networking/SafeQueue.hpp"
     #include "Networking/Packet.hpp"
     #include "Networking/PacketBuilder.hpp"
+    #include <unistd.h>
     #include <map>
     #include <thread>
     #include <set>
