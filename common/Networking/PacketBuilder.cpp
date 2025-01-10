@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "spdlog/spdlog.h"
+
 PacketBuilder::PacketBuilder()
 {
     _n = 0;
@@ -88,8 +90,8 @@ int PacketBuilder::readInt()
 std::string PacketBuilder::readString()
 {
     std::string str(static_cast<char*>(_data));
-    _data = static_cast<char*>(_data) + sizeof(char) * str.length() + 1;
-    _n -= sizeof(char) * str.length() + 1;
+    _data = static_cast<char*>(_data) + sizeof(char) * (str.length() + 1);
+    _n -= sizeof(char) * (str.length() + 1);
     return str;
 }
 
@@ -107,7 +109,7 @@ Packet *PacketBuilder::build()
 
 void PacketBuilder::reset()
 {
-    if (_n > 0)
+    if (_n > 0 && _data != nullptr)
         std::free(_data);
     _n = 0;
     _cmd = PacketCmd::NONE;

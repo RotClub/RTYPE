@@ -1,5 +1,14 @@
-net.CreatePacket("Hello", true)
+net.CreatePacket("HelloTCP", true)
+net.CreatePacket("Hello", false)
 
-net.Receive("Hello", function(len, ply)
-    info("Hello from client: " .. ply)
+target = nil
+
+net.Receive("HelloTCP", function(len, ply)
+    target = ply
+end)
+
+hook.Add("Tick", "test", function(delta)
+    if not target then return end
+    net.Start("Hello")
+    net.SendToClient(target)
 end)

@@ -40,6 +40,7 @@ Client::Client(const int srvTcpFd)
 Client::~Client()
 {
     close(_tcpFd);
+    spdlog::info("Client {} disconnected", uuid);
 }
 
 void Client::addTcpPacketInput(Packet *packet)

@@ -12,6 +12,6 @@ int main(void)
 {
     Engine &engine = Engine::StartInstance(Types::VMState::CLIENT, "rtype");
     Client &client = Client::InitiateInstance("127.0.0.1", 25777);
-    client.getClientConnectionTcp().connectToServer();
+    client.getClientConnection().connectToServer();
     client.startGame();
 }

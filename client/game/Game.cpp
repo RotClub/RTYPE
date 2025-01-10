@@ -24,7 +24,7 @@ void Game::run()
         throw std::runtime_error("Window is not ready");
     Engine::GetInstance().clientStarted = true;
     Client &client = Client::GetInstance();
-    client.getClientConnectionTcp().establishConnection();
+    client.getClientConnection().establishConnection();
     client.setupLua();
     while (!client.isConnectionEstablished()) {
         if (_window.ShouldClose())

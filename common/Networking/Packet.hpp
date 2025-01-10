@@ -23,6 +23,7 @@
     using Packet = struct packet_s {
         size_t n;
         PacketCmd cmd;
+        // char id[16];
         void *data;
     };
 

@@ -9,6 +9,7 @@
 
 #include <Engine.hpp>
 #include <cstddef>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 
@@ -98,12 +99,12 @@ void ServerConnection::_receiveLoop()
                 continue;
             if (client->getAddress()->sin_addr.s_addr == addr.sin_addr.s_addr
                 && client->getAddress()->sin_port == addr.sin_port) {
+                spdlog::debug("Received udp packet from client");
                 client->addUdpPacketInput(packet);
                 return;
             }
         }
-        if (packet->n > 0)
-            std::free(packet->data);
+        PacketBuilder(packet).reset();
         delete packet;
     }
 }
@@ -119,8 +120,8 @@ void ServerConnection::_sendLoop()
                 write(client->getTcpFd(), &packet->n, sizeof(size_t));
                 if (packet->n > 0) {
                     write(client->getTcpFd(), packet->data, packet->n);
-                    std::free(packet->data);
                 }
+                PacketBuilder(packet).reset();
                 delete packet;
             }
             while (client->hasUdpPacketOutput()) {
@@ -130,8 +131,9 @@ void ServerConnection::_sendLoop()
                 sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(client->getAddress()), sizeof(sockaddr_in));
                 if (packet->n > 0) {
                     sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(client->getAddress()), sizeof(sockaddr_in));
-                    std::free(packet->data);
                 }
+                PacketBuilder(packet).reset();
+                delete packet;
             }
         }
     }

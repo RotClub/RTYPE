@@ -34,7 +34,7 @@ Client &Client::GetInstance()
 
 Client::Client(std::string ip, int port)
     : _ip(ip), _port(port),
-    _clientConnectionTcp(ip, port, false), _clientConnectionUdp(ip, port, true), _step(ConnectionStep::AUTH_CODE_RECEIVED)
+    _clientConnection(ip, port), _step(ConnectionStep::AUTH_CODE_RECEIVED)
 {
 }
 
@@ -77,14 +77,9 @@ int Client::getPort() const {
     return _port;
 }
 
-ClientConnection &Client::getClientConnectionTcp()
+ClientConnection &Client::getClientConnection()
 {
-    return _clientConnectionTcp;
-}
-
-ClientConnection &Client::getClientConnectionUdp()
-{
-    return _clientConnectionUdp;
+    return _clientConnection;
 }
 
 void Client::broadcastLuaPackets()
@@ -92,9 +87,9 @@ void Client::broadcastLuaPackets()
     while (!Engine::GetInstance().getBroadcastQueue().empty()) {
         std::pair<std::string, Packet *> newPacket = Engine::GetInstance().getBroadcastQueue().front();
             if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
-                getClientConnectionTcp().sendToServer(newPacket.second);
+                getClientConnection().sendToServerTCP(newPacket.second);
             } else {
-                getClientConnectionUdp().sendToServer(newPacket.second);
+                getClientConnection().sendToServerUDP(newPacket.second);
             }
         Engine::GetInstance().getBroadcastQueue().pop();
     }
@@ -102,20 +97,20 @@ void Client::broadcastLuaPackets()
 
 void Client::processIncomingPackets()
 {
-    while (getClientConnectionTcp().hasPendingPacket()) {
-        Packet *packet = getClientConnectionTcp().getLatestPacket();
+    while (getClientConnection().hasPendingTCPPacket()) {
+        Packet *packet = getClientConnection().getLatestTCPPacket();
         if (packet == nullptr)
             return;
         (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
-        std::free(packet->data);
+        PacketBuilder(packet).reset();
         delete packet;
     }
-    while (getClientConnectionUdp().hasPendingPacket()) {
-        Packet *packet = getClientConnectionUdp().getLatestPacket();
+    while (getClientConnection().hasPendingUDPPacket()) {
+        Packet *packet = getClientConnection().getLatestUDPPacket();
         if (packet == nullptr)
             return;
         (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
-        std::free(packet->data);
+        PacketBuilder(packet).reset();
         delete packet;
     }
 }
@@ -135,7 +130,7 @@ void Client::handleConnectPacket(Packet *packet)
                 if (authCode == SERVER_CHALLENGE) {
                     builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
                     Packet *packet = builder.build();
-                    getClientConnectionTcp().sendToServer(packet);
+                    getClientConnection().sendToServerTCP(packet);
                     spdlog::debug("Sent auth code verification to server: {}", packet->n);
                     _step = Client::ConnectionStep::AUTH_CODE_SENT;
                 } else {
@@ -151,7 +146,7 @@ void Client::handleConnectPacket(Packet *packet)
                 spdlog::debug("Auth code verification: {}", message);
                 if (message == "AUTHENTICATED") {
                     builder.setCmd(PacketCmd::CONNECT);
-                    getClientConnectionTcp().sendToServer(builder.build());
+                    getClientConnection().sendToServerTCP(builder.build());
                     _step = Client::ConnectionStep::COMPLETE;
                 } else {
                     throw std::runtime_error("Failed to authenticate");
