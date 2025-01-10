@@ -7,14 +7,23 @@
 
 #include "Server.hpp"
 
+static void sigHandler(const int sig, Server *srv)
+{
+    static Server *saved = nullptr;
+
+    if (saved == nullptr)
+        saved = srv;
+    if (sig != SIGINT && sig != SIGTERM)
+        return;
+    saved->stop();
+}
+
 int main(int argc, char **argv)
 {
-    try {
-        Server srv(25777);
-        srv.start();
-    } catch (const std::exception &e) {
-        std::cerr << "Could not start server: " << e.what() << std::endl;
-        return 84;
-    }
+    Server srv(25777);
+    signal(SIGINT, reinterpret_cast<void (*)(int)>(sigHandler));
+    signal(SIGTERM, reinterpret_cast<void (*)(int)>(sigHandler));
+    sigHandler(-1, &srv);
+    srv.start();
     return 0;
 }

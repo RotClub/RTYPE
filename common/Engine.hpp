@@ -58,13 +58,14 @@ class Engine {
         void callHook(const std::string &eventName, ...);
 
         std::string GetLibraryFileContents(const std::string &filename);
-        void loadLibraries() const;
+        void loadLibraries();
+        void lockLuaState();
 
         std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
         void execute();
 
-        [[nodiscard]] lua_State *getLuaState() const { return L; }
+        [[nodiscard]] lua_State *getLuaState() { return L; }
 
         [[nodiscard]] const std::unordered_map<std::string, bool> &getPacketsRegistry() const { return _packetsRegistry; }
         bool hasNewPacketToBroadcast() const { return !_newPacketsInRegistry.empty(); }

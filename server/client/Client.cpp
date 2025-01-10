@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <Networking/Defines.hpp>
 #include <random>
+#include <unistd.h>
 
 static std::string generateUUID() {
     static std::random_device dev;
@@ -16,19 +17,16 @@ static std::string generateUUID() {
     std::uniform_int_distribution<int> dist(0, 15);
 
     const char *v = "0123456789ABCDEF";
-    const bool dash[] = { 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0 };
 
     std::string str;
     for (int i = 0; i < 16; i++) {
-        if (dash[i]) str += "-";
-        str += v[dist(rng)];
         str += v[dist(rng)];
     }
     return str;
 }
 
 Client::Client(const int srvTcpFd)
-    : uuid(generateUUID())
+    : uuid(generateUUID()), _shouldDisconnect(false)
 {
     _step = ConnectionStep::UNVERIFIED;
     std::memset(&_address, 0, sizeof(_address));
@@ -37,11 +35,11 @@ Client::Client(const int srvTcpFd)
     if (_tcpFd == -1) {
         throw std::runtime_error("Error accepting client");
     }
-    spdlog::debug("Client connected with UUID: {}", uuid);
 }
 
 Client::~Client()
 {
+    close(_tcpFd);
 }
 
 void Client::addTcpPacketInput(Packet *packet)
