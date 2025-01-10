@@ -13,7 +13,6 @@
     #include "game/Game.hpp"
     #include <string>
     #include <unordered_map>
-#include <input_manager/InputManager.hpp>
 
 class Client {
 

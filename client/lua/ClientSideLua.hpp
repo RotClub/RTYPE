@@ -6,7 +6,7 @@
     #define CLIENTSIDELUA_HPP
 
     #include "Lua/lua.hpp"
-    #include "input_manager/InputManager.hpp"
+
 
 LUA_API int luau_IsKeyPressed(lua_State *L);
 LUA_API int luau_IsKeyJustPressed(lua_State *L);
