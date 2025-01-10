@@ -16,10 +16,10 @@ Area2D::Area2D(const std::string &name, Types::Vector2 position, Types::Vector2 
     this->metatable = "Area2DMetaTable";
     this->position = position;
     _size = size;
-    Rectangle2D rectangle = Rectangle2D(position, size);
-    CollisionShape2D area2dCollision = CollisionShape2D("area2d_collision");
-    area2dCollision.setShape(&rectangle);
-    CollisionNode2D::addCollisionShape(&area2dCollision);
+    Rectangle2D* rectangle = new Rectangle2D(position, size);
+    CollisionShape2D* area2dCollision = new CollisionShape2D("area2d_collision");
+    area2dCollision->setShape(rectangle);
+    CollisionNode2D::addCollisionShape(area2dCollision);
 }
 
 Types::Vector2 Area2D::getSize() const
@@ -31,8 +31,8 @@ void Area2D::setSize(const Types::Vector2 &size)
 {
     _size = size;
     CollisionShape2D* area2dCollision = CollisionNode2D::getCollisionShape("area2d_collision");
-    Rectangle2D rectangle = Rectangle2D(position, _size);
-    area2dCollision->setShape(&rectangle);
+    Rectangle2D* rectangle = new Rectangle2D(position, _size);
+    area2dCollision->setShape(rectangle);
     CollisionNode2D::removeCollisionShape("area2d_collision");
     CollisionNode2D::addCollisionShape(area2dCollision);
 }

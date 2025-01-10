@@ -751,6 +751,29 @@ LUA_API int luau_Include(lua_State *L)
 
     /** SetTexture functions **/
 
+    /** Collide functions **/
+
+    template<typename T>
+    LUA_API int luau_TemplateCollisionShape2DCollide(lua_State *L, const char *metaTableName)
+	{
+		T* node = *static_cast<T**>(luaL_checkudata(L, 1, metaTableName));
+		T* other = *static_cast<T**>(luaL_checkudata(L, 2, metaTableName));
+		lua_pushboolean(L, node->collidesWith(*other));
+		return 1;
+	}
+
+	LUA_API int luau_CollisionShape2DCollide(lua_State *L)
+	{
+		return luau_TemplateCollisionShape2DCollide<CollisionShape2D>(L, "CollisionShape2DMetaTable");
+	}
+
+    LUA_API int luau_Area2DCollide(lua_State *L)
+    {
+        return luau_TemplateCollisionShape2DCollide<Area2D>(L, "Area2DMetaTable");
+    }
+
+    /** Collide functions **/
+
 	/** CollisionShape2D functions **/
 
 	LUA_API int luau_CollisionShape2DGetBoundingBox(lua_State *L)
@@ -775,14 +798,6 @@ LUA_API int luau_Include(lua_State *L)
 	{
 		CollisionShape2D* node = *static_cast<CollisionShape2D**>(luaL_checkudata(L, 1, "CollisionShape2DMetaTable"));
 		lua_pushboolean(L, node->isCollisionEnabled());
-		return 1;
-	}
-
-	LUA_API int luau_CollisionShape2DCollide(lua_State *L)
-	{
-		CollisionShape2D* node = *static_cast<CollisionShape2D**>(luaL_checkudata(L, 1, "CollisionShape2DMetaTable"));
-		CollisionShape2D* other = *static_cast<CollisionShape2D**>(luaL_checkudata(L, 2, "CollisionShape2DMetaTable"));
-		lua_pushboolean(L, node->collidesWith(*other));
 		return 1;
 	}
 
@@ -1002,6 +1017,7 @@ LUA_API int luau_Include(lua_State *L)
             {"SetPosition", luau_Area2DSetPosition},
             {"CreateChild", luau_Area2DCreateChild},
             {"Update", luau_Area2DUpdate},
+        	{"Collide", luau_Area2DCollide},
             {"GetSize", luau_Area2DGetSize},
             {"SetSize", luau_Area2DSetSize},
             {"__gc", lua_gcArea2D},
