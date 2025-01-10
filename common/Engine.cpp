@@ -114,6 +114,8 @@ bool Engine::hasPacketRegistryEntry(const std::string &packetName) const
 
 bool Engine::isPacketReliable(const std::string &packetName) const
 {
+    if (!_packetsRegistry.contains(packetName))
+        return false;
     return _packetsRegistry.at(packetName);
 }
 

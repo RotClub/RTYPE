@@ -42,6 +42,7 @@ void Server::start()
         }
     } catch (const std::exception &e) {
         spdlog::error(e.what());
+        throw;
     }
 }
 
@@ -58,12 +59,14 @@ void Server::loop()
             // TODO: handle multiple incoming packets per tick for both TCP and UDP, implement with a limit of packets per tick.
             if (client->hasTcpPacketInput()) {
                 Packet *packet = client->popTcpPacketInput();
-                (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
+                if (PACKET_HANDLERS.find(packet->cmd) != PACKET_HANDLERS.end())
+                    (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
                 PacketBuilder(packet).reset();
             }
             if (client->hasUdpPacketInput()) {
                 Packet *packet = client->popUdpPacketInput();
-                (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
+                if (PACKET_HANDLERS.find(packet->cmd) != PACKET_HANDLERS.end())
+                    (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
                 PacketBuilder(packet).reset();
             }
         }
