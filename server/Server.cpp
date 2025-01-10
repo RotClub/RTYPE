@@ -42,7 +42,6 @@ void Server::start()
         }
     } catch (const std::exception &e) {
         spdlog::error(e.what());
-        throw;
     }
 }
 
@@ -56,7 +55,6 @@ void Server::loop()
             broadcastNewPackets();
             broadcastLuaPackets();
             sendToClients();
-            // TODO: handle multiple incoming packets per tick for both TCP and UDP, implement with a limit of packets per tick.
             if (client->hasTcpPacketInput()) {
                 Packet *packet = client->popTcpPacketInput();
                 if (PACKET_HANDLERS.find(packet->cmd) != PACKET_HANDLERS.end())
