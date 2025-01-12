@@ -23,6 +23,13 @@ local function printMetatable(node)
     end
 end
 
+local function updateNodes(node)
+    for _, v in ipairs(node:GetChildren()) do
+        v:Update()
+        updateNodes(v)
+    end
+end
+
 root:CreateChild("Node2D", "node_two")
 root:CreateChild("Sprite2D", "iamasprite", "image.png")
 
@@ -83,13 +90,15 @@ local rect2_shape = root:CreateChild("CollisionShape2D", "rect2", "Rectangle", 2
 print("Should be false -> ", rect2_shape:Collide(rect_shape))
 
 -- Area2D
-local area2d = root:CreateChild("Area2D", "area" , 50, 50, 100, 100)
-print("Area2D position should be 50, 50 -> ", area2d:GetPosition())
+local area2d = root:CreateChild("Area2D", "area" , 0, 0, 100, 100)
+print("Area2D position should be 0, 0 -> ", area2d:GetPosition())
 print("Area2D size should be 100, 100 -> ", area2d:GetSize())
-local area2d2 = root:CreateChild("Area2D", "area2" , 200, 200, 30, 30)
+local area2d2 = root:CreateChild("Area2D", "area2" , 120, 120, 30, 30)
+updateNodes(root)
 print("Should be false -> ", area2d:Collide(area2d2))
-area2d2:SetPosition(40, 40)
-print("Area2D2 position should be 40, 40 -> ", area2d2:GetPosition())
+area2d:SetPosition(80, 80)
+print("Area2D position should be 80, 80 -> ", area2d:GetPosition())
+updateNodes(root)
 print("Area2D Pos : ", area2d:GetPosition())
 print("Area2D Size : ", area2d:GetSize())
 print("Area2D2 Pos : ", area2d2:GetPosition())

@@ -10,8 +10,13 @@ CollisionNode2D::CollisionNode2D(const std::string &name)
 	this->metatable = "CollisionNode2DMetaTable";
 }
 
+void CollisionNode2D::Update() {
+	Node2D::Update();
+}
+
 void CollisionNode2D::addCollisionShape(CollisionShape2D* new_shape) {
 	shapes.push_back(std::unique_ptr<CollisionShape2D>(new_shape));
+	addChild(*new_shape);
 }
 
 void CollisionNode2D::removeCollisionShape(const std::string &name) {
