@@ -23,6 +23,15 @@ void Game::run()
     if (_window.IsReady() == false)
         throw std::runtime_error("Window is not ready");
     Engine::GetInstance().clientStarted = true;
+    Client &client = Client::GetInstance();
+    client.getClientConnectionTcp().establishConnection();
+    client.setupLua();
+    while (!client.isConnectionEstablished()) {
+        if (_window.ShouldClose())
+            return;
+        client.processIncomingPackets();
+    }
+    client.loadLuaGame();
     _loadResources();
     while (!_shouldClose) {
         int dt = Engine::GetInstance().deltaTime();
@@ -38,6 +47,7 @@ void Game::run()
 void Game::_update(int dt)
 {
     Client &client = Client::GetInstance();
+    Engine::GetInstance().callHook("Tick", "int", dt, nullptr);
     client.broadcastLuaPackets();
     client.processIncomingPackets();
     Node *rootNode = Engine::GetInstance().root;

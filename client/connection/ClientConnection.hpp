@@ -20,7 +20,7 @@
 
         void connectToServer();
         void disconnectFromServer();
-        bool establishConnection();
+        void establishConnection();
         void sendToServer(Packet *pckt);
         bool hasPendingPacket();
 

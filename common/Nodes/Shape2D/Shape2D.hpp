@@ -11,6 +11,7 @@ class Shape2D {
 public:
 	enum class ShapeType {
 		RECTANGLE,
+		CIRCLE
 	} shape;
 
     virtual Types::Vector2 getOrigin() const = 0;

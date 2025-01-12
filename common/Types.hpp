@@ -97,6 +97,19 @@ namespace Types {
 
 			    return horizontal_overlap && vertical_overlap;
             }
+
+            void expands(const Rect2 &to_expand)
+			{
+				float new_left = origin.x < to_expand.origin.x ? origin.x : to_expand.origin.x;
+				float new_top = origin.y < to_expand.origin.y ? origin.y : to_expand.origin.y;
+				float new_right = origin.x + size.x > to_expand.origin.x + to_expand.size.x ? origin.x + size.x : to_expand.origin.x + to_expand.size.x;
+				float new_bottom = origin.y + size.y > to_expand.origin.y + to_expand.size.y ? origin.y + size.y : to_expand.origin.y + to_expand.size.y;
+
+				origin.x = new_left;
+				origin.y = new_top;
+				size.x = new_right - new_left;
+				size.y = new_bottom - new_top;
+			}
     };
 
     enum class VMState {

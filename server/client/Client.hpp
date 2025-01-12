@@ -23,7 +23,7 @@ class Client {
         };
 
         [[nodiscard]] int getTcpFd() const { return _tcpFd; }
-        [[nodiscard]] sockaddr_in getAddress() const { return _address; }
+        [[nodiscard]] sockaddr_in *getAddress() { return &_address; }
         [[nodiscard]] ConnectionStep getStep() const { return _step; }
         [[nodiscard]] const std::string &getUuid() const { return uuid; }
 
