@@ -1,7 +1,7 @@
 # Summary
 
 [Introduction](./introduction.md)<br/>
-[RFC](https://github.com/RotClub/RTYPE/tree/main/docs/rfc.txt)
+[RFC](./rfc.md)
 
 ---
 
