@@ -11,9 +11,11 @@ class Shape2D {
 public:
 	enum class ShapeType {
 		RECTANGLE,
+		CIRCLE
 	} shape;
 
     virtual Types::Vector2 getOrigin() const = 0;
+	virtual void setOrigin(float x, float y) = 0;
 
 	virtual bool intersects(const Shape2D& other) const = 0;
 
