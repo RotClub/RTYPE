@@ -17,6 +17,8 @@ class CollisionNode2D: public Node2D {
 public:
 	explicit CollisionNode2D(const std::string &name = "collisionnode2d");
 
+    void Update() override;
+
     void addCollisionShape(CollisionShape2D* new_shape);
 
     void removeCollisionShape(const std::string &name);
