@@ -6,6 +6,9 @@
 */
 
 #include "ResourceManager.hpp"
+
+#include <Shader.hpp>
+
 #include "Engine.hpp"
 
 const std::map<std::string, ResourceType> ResourceManager::resourceExtensionsMap = {
@@ -40,6 +43,8 @@ const std::map<std::string, ResourceType> ResourceManager::resourceExtensionsMap
     {".ini", ResourceType::TEXT},
     {".cfg", ResourceType::TEXT},
     {".conf", ResourceType::TEXT},
+    {".vs", ResourceType::VERTEX_SHADER},
+    {".fs", ResourceType::FRAGMENT_SHADER}
 };
 
 const Resource &ResourceManager::nullResourceRef = std::make_shared<std::string>("null");
@@ -75,6 +80,16 @@ Resource &ResourceManager::loadResource(const std::string &path)
                 break;
             case ResourceType::SOUND:
                 resource = std::make_shared<raylib::Sound>(path);
+                break;
+            case ResourceType::FRAGMENT_SHADER:
+                if (!path.ends_with(".fs"))
+                    throw std::runtime_error("Invalid shader file");
+                resource = std::make_shared<raylib::Shader>(nullptr, path);
+                break;
+            case ResourceType::VERTEX_SHADER:
+                if (!path.ends_with(".vs"))
+                    throw std::runtime_error("Invalid shader file");
+                resource = std::make_shared<raylib::Shader>(path, nullptr);
                 break;
         }
     }
@@ -139,4 +154,20 @@ raylib::Sound &ResourceManager::getSound(const std::string &path)
     if (!std::holds_alternative<std::shared_ptr<raylib::Sound>>(res))
         throw std::runtime_error("Resource is not a sound");
     return *std::get<std::shared_ptr<raylib::Sound>>(res);
+}
+
+raylib::Shader &ResourceManager::getVertexShader(const std::string &path)
+{
+    Resource &res = getResource(path);
+    if (!std::holds_alternative<std::shared_ptr<raylib::Shader>>(res))
+        throw std::runtime_error("Resource is not a vertex shader");
+    return *std::get<std::shared_ptr<raylib::Shader>>(res);
+}
+
+raylib::Shader &ResourceManager::getFragmentShader(const std::string &path)
+{
+    Resource &res = getResource(path);
+    if (!std::holds_alternative<std::shared_ptr<raylib::Shader>>(res))
+        throw std::runtime_error("Resource is not a fragment shader");
+    return *std::get<std::shared_ptr<raylib::Shader>>(res);
 }
