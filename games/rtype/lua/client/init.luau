@@ -1,6 +1,6 @@
 hook.Add("Tick", "testing", function(delta)
     if IsKeyJustPressed(65) then
-        net.Start("HelloTCP")
+        net.Start("Hello")
         net.SendToServer()
     end
 end)

@@ -1,14 +1,17 @@
-net.CreatePacket("HelloTCP", true)
 net.CreatePacket("Hello", false)
 
-target = nil
+local next_tick = false
+local next_ply = nil
 
-net.Receive("HelloTCP", function(len, ply)
-    target = ply
+net.Receive("Hello", function(len, ply)
+    info("Received hello from: " .. ply)
+    next_tick = true
+    next_ply = ply
 end)
 
-hook.Add("Tick", "test", function(delta)
-    if not target then return end
+hook.Add("Tick", "testing", function(delta: number)
+    if not next_tick then return end
     net.Start("Hello")
-    net.SendToClient(target)
+    net.SendToClient(next_ply)
+    next_tick = false
 end)

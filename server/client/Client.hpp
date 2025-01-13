@@ -24,10 +24,13 @@ class Client {
 
         [[nodiscard]] int getTcpFd() const { return _tcpFd; }
         [[nodiscard]] sockaddr_in *getAddress() { return &_address; }
+        [[nodiscard]] sockaddr_in *getUdpAddress() { return &_udpAddress; }
         [[nodiscard]] ConnectionStep getStep() const { return _step; }
         [[nodiscard]] const std::string &getUuid() const { return uuid; }
 
         void setStep(const ConnectionStep step) { _step = step; }
+
+        void updateUdpAddress(sockaddr_in *addr) { std::memcpy(&_udpAddress, addr, sizeof(sockaddr_in)); }
 
         void addTcpPacketInput(Packet *packet);
         void addUdpPacketInput(Packet *packet);
@@ -45,14 +48,18 @@ class Client {
         void disconnect() { _shouldDisconnect = true; }
         [[nodiscard]] bool shouldDisconnect() const { return _shouldDisconnect; }
 
+        char *getID() { return _id; }
+
     private:
         const std::string uuid;
         int _tcpFd;
         sockaddr_in _address;
+        sockaddr_in _udpAddress;
         ConnectionStep _step;
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _tcpQueues;
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _udpQueues;
         bool _shouldDisconnect;
+        char _id[16];
 };
 
 #endif //CLIENT_HPP

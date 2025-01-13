@@ -28,6 +28,9 @@
 
         bool isConnected() const { return _connected; }
 
+        void setID(const std::string &id) { std::memcpy(_id, id.data(), sizeof(char[16])); }
+        char *getID() { return _id; }
+
     private:
         void _loop();
         void _receiveLoop();
@@ -37,6 +40,7 @@
 
         std::string _ip;
         int _port;
+        char _id[16];
         std::atomic<bool> _connected = false;
 };
 

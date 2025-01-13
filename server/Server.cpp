@@ -109,6 +109,15 @@ void Server::handleNonePacket(Client *client, Packet* packet)
 {
 }
 
+static std::string idToString(char *id)
+{
+    std::string str;
+    for (int i = 0; i < 16; i++) {
+        str += id[i];
+    }
+    return str;
+}
+
 void Server::handleConnectPacket(Client *client, Packet *inPacket)
 {
     PacketBuilder readBuilder(inPacket);
@@ -133,7 +142,7 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
                         builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
                         client->addTcpPacketOutput(builder.build());
                     }
-                    builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED");
+                    builder.setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED").writeString(idToString(client->getID()));
                     client->addTcpPacketOutput(builder.build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
                 } else {

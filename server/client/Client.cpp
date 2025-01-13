@@ -30,11 +30,14 @@ Client::Client(const int srvTcpFd)
 {
     _step = ConnectionStep::UNVERIFIED;
     std::memset(&_address, 0, sizeof(_address));
+    std::memset(&_udpAddress, 0, sizeof(_udpAddress));
     socklen_t len = sizeof(_address);
     _tcpFd = accept(srvTcpFd, reinterpret_cast<sockaddr *>(&_address), &len);
     if (_tcpFd == -1) {
         throw std::runtime_error("Error accepting client");
     }
+    std::string tmpID = generateUUID();
+    std::memcpy(_id, tmpID.data(), sizeof(char[16]));
 }
 
 Client::~Client()

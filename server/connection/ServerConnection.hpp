@@ -46,6 +46,7 @@
             void _setClientFds(fd_set *set);
             int _getMaxFd();
             int _selectFd();
+            Client *_getClientByID(const char id[16]);
 
             int _port;
             std::atomic<bool> _running = false;

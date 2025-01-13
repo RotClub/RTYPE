@@ -123,11 +123,13 @@ Packet* ClientConnection::_tryReceiveUDP()
 
 void ClientConnection::sendToServerTCP(Packet *packet)
 {
+    std::memcpy(packet->id, _id, sizeof(char[16]));
     std::get<OUT>(_tcpQueues).enqueue(packet);
 }
 
 void ClientConnection::sendToServerUDP(Packet *packet)
 {
+    std::memcpy(packet->id, _id, sizeof(char[16]));
     std::get<OUT>(_udpQueues).enqueue(packet);
 }
 
@@ -164,6 +166,7 @@ void ClientConnection::_sendLoop()
             Packet *packet = std::get<OUT>(_tcpQueues).dequeue();
             auto tmpCmd = static_cast<unsigned short>(packet->cmd);
             write(_tcpFd, &tmpCmd, sizeof(unsigned short));
+            write(_tcpFd, &packet->id, sizeof(char[16]));
             write(_tcpFd, &packet->n, sizeof(size_t));
             if (packet->n > 0) {
                 write(_tcpFd, packet->data, packet->n);
@@ -177,6 +180,7 @@ void ClientConnection::_sendLoop()
             Packet *packet = std::get<OUT>(_udpQueues).dequeue();
             auto tmpCmd = static_cast<unsigned short>(packet->cmd);
             sendto(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
+            sendto(_udpFd, &packet->id, sizeof(char[16]), 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
             sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
             if (packet->n > 0) {
                 sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));

@@ -117,21 +117,17 @@ void Client::processIncomingPackets()
 
 void Client::handleConnectPacket(Packet *packet)
 {
-    spdlog::debug("Handling connect packet");
     PacketBuilder readBuilder(packet);
     PacketBuilder builder;
     switch (_step)
     {
         case Client::ConnectionStep::AUTH_CODE_RECEIVED:
             {
-                spdlog::debug("Received auth code from server");
                 std::string authCode = readBuilder.readString();
-                spdlog::debug("Auth code: {}", authCode);
                 if (authCode == SERVER_CHALLENGE) {
                     builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
                     Packet *packet = builder.build();
                     getClientConnection().sendToServerTCP(packet);
-                    spdlog::debug("Sent auth code verification to server: {}", packet->n);
                     _step = Client::ConnectionStep::AUTH_CODE_SENT;
                 } else {
                     throw std::runtime_error("Invalid auth code");
@@ -140,17 +136,17 @@ void Client::handleConnectPacket(Packet *packet)
             }
         case Client::ConnectionStep::AUTH_CODE_SENT:
             {
-                spdlog::debug("Received auth code verification from server");
                 std::string message = readBuilder.readString();
-                readBuilder.reset();
-                spdlog::debug("Auth code verification: {}", message);
                 if (message == "AUTHENTICATED") {
+                    std::string id = readBuilder.readString();
+                    getClientConnection().setID(id);
                     builder.setCmd(PacketCmd::CONNECT);
                     getClientConnection().sendToServerTCP(builder.build());
                     _step = Client::ConnectionStep::COMPLETE;
                 } else {
                     throw std::runtime_error("Failed to authenticate");
                 }
+                readBuilder.reset();
                 spdlog::debug("Connection established");
                 _connectionEstablished = true;
                 break;
@@ -178,7 +174,6 @@ void Client::handleLuaPacket(Packet *packet)
 
 void Client::handleNewMessagePacket(Packet *packet)
 {
-    spdlog::debug("Received new message packet");
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();
     int reliable = builder.readInt();

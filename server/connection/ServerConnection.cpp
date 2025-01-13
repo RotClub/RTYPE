@@ -92,28 +92,23 @@ void ServerConnection::_receiveLoop()
         sockaddr_in addr{};
         std::memset(&addr, 0, sizeof(addr));
         Packet *packet = _tryReceiveUDP(&addr);
-        for (auto &client : _clientConnections) {
-            if (client->shouldDisconnect())
-                continue;
-            if (client->getStep() != Client::ConnectionStep::COMPLETE)
-                continue;
-            if (client->getAddress()->sin_addr.s_addr == addr.sin_addr.s_addr
-                && client->getAddress()->sin_port == addr.sin_port) {
-                spdlog::debug("Received udp packet from client");
-                client->addUdpPacketInput(packet);
-                return;
-            }
+        Client *client = _getClientByID(packet->id);
+        if (client == nullptr) {
+            PacketBuilder(packet).reset();
+            delete packet;
+            return;
         }
-        PacketBuilder(packet).reset();
-        delete packet;
+        client->updateUdpAddress(&addr);
+        if (!client->shouldDisconnect())
+            client->addUdpPacketInput(packet);
     }
 }
 
 void ServerConnection::_sendLoop()
 {
     for (auto &client : _clientConnections) {
-        if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_writefds) && client->hasTcpPacketOutput()) {
-            while (client->hasTcpPacketOutput()) {
+        if (!client->shouldDisconnect()) {
+            if (client->hasTcpPacketOutput() && FD_ISSET(client->getTcpFd(), &_writefds)) {
                 Packet *packet = client->popTcpPacketOutput();
                 auto tmpCmd = static_cast<unsigned short>(packet->cmd);
                 write(client->getTcpFd(), &tmpCmd, sizeof(unsigned short));
@@ -124,13 +119,13 @@ void ServerConnection::_sendLoop()
                 PacketBuilder(packet).reset();
                 delete packet;
             }
-            while (client->hasUdpPacketOutput()) {
+            if (client->hasUdpPacketOutput()) {
                 Packet *packet = client->popUdpPacketOutput();
                 auto tmpCmd = static_cast<unsigned short>(packet->cmd);
-                sendto(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(client->getAddress()), sizeof(sockaddr_in));
-                sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(client->getAddress()), sizeof(sockaddr_in));
+                sendto(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()), sizeof(sockaddr_in));
+                sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()), sizeof(sockaddr_in));
                 if (packet->n > 0) {
-                    sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(client->getAddress()), sizeof(sockaddr_in));
+                    sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()), sizeof(sockaddr_in));
                 }
                 PacketBuilder(packet).reset();
                 delete packet;
@@ -156,6 +151,9 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
         throw std::runtime_error("Disconnect");
     }
     packet->cmd = static_cast<PacketCmd>(tmpCmd);
+    if (read(client->getTcpFd(), &packet->id, sizeof(char[16])) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
     if (read(client->getTcpFd(), &packet->n, sizeof(size_t)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
@@ -181,6 +179,9 @@ Packet *ServerConnection::_tryReceiveUDP(sockaddr_in *addr)
         throw std::runtime_error("Error receiving udp packet");
     }
     packet->cmd = static_cast<PacketCmd>(tmpCmd);
+    if (recvfrom(_udpFd, &packet->id, sizeof(char[16]), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+        throw std::runtime_error("Error receiving udp packet");
+    }
     if (recvfrom(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
@@ -255,4 +256,14 @@ int ServerConnection::_selectFd()
     int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
     retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, nullptr);
     return retval;
+}
+
+Client* ServerConnection::_getClientByID(const char id[16])
+{
+    for (auto client : _clientConnections) {
+        if (std::memcmp(client->getID(), id, sizeof(char[16])) == 0) {
+            return client;
+        }
+    }
+    return nullptr;
 }
