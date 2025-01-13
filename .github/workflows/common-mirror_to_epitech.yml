@@ -16,23 +16,19 @@ jobs:
       - name: Extract repository name
         id: repo_name
         run: |
-          echo "SOURCE_REPO_NAME=$(basename -s .git '${{ env.SRC_REPO }}')" >> $GITHUB_ENV
-
-      - name: Skip if in source repository
-        if: ${{ github.repository == env.SOURCE_REPO_NAME }}
-        run: echo "Triggered in source repository (${{ github.repository }}). Skipping mirroring process."
+          echo "DEST_REPO_NAME=$(basename -s .git '${{ env.DEST_REPO }}')" >> $GITHUB_ENV
 
       - name: Checkout source code
-        if: ${{ github.repository != env.SOURCE_REPO_NAME }}
+        if: ${{ github.repository != env.DEST_REPO_NAME }}
         uses: actions/checkout@v4
 
       - name: Extract branch name
-        if: ${{ github.repository != env.SOURCE_REPO_NAME }}
+        if: ${{ github.repository != env.DEST_REPO_NAME }}
         id: get_branch
         run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: Mirror to Destination Repository
-        if: ${{ github.repository != env.SOURCE_REPO_NAME }}
+        if: ${{ github.repository != env.DEST_REPO_NAME }}
         uses: wei/git-sync@v3
         with:
           source_repo: ${{ env.SRC_REPO }}
