@@ -31,11 +31,10 @@ Types::Vector2 Circle2D::getOrigin() const
 }
 
 
-void Circle2D::setOrigin(const Types::Vector2 &origin)
+void Circle2D::setOrigin(float x, float y)
 {
-    _origin = origin;
+	_origin = Types::Vector2(x, y);
 }
-
 
 bool Circle2D::_intersectsCircle(const Shape2D &other) const
 {
