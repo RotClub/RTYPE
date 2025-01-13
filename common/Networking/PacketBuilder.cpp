@@ -14,8 +14,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "spdlog/spdlog.h"
-
 PacketBuilder::PacketBuilder()
 {
     _n = 0;

@@ -18,6 +18,7 @@
     #include <queue>
     #include <string>
     #include <filesystem>
+    #include <stack>
     #include <map>
     #include "GameInfo/GameInfo.hpp"
     #include "Networking/PacketBuilder.hpp"

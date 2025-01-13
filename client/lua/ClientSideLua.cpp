@@ -21,3 +21,8 @@ LUA_API int luau_IsKeyJustPressed(lua_State *L)
     lua_pushboolean(L, isKeyJustPressed);
     return lua_gettop(L);
 }
+
+LUA_API int luau_EnableFpsCounter(lua_State *L)
+{
+    return lua_gettop(L);
+}
