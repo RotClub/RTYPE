@@ -14,16 +14,16 @@ Node::Node(const std::string &name)
     this->metatable = "NodeMetaTable";
 }
 
-const Node &Node::GetChild(const std::string &name) const
+Node *Node::GetChild(const std::string &name) const
 {
-    for (const auto &child : children) {
+    for (auto child : children) {
         if (child->name == name)
-            return *child;
+            return child;
     }
     throw std::runtime_error("Node not found");
 }
 
-const std::vector<Node *> &Node::GetChildren() const
+std::vector<Node *> Node::GetChildren() const
 {
     return children;
 }
