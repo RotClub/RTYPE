@@ -1,24 +1,42 @@
-name: Common - Mirror to Epitech Repository
-on: push
+name: Common - Mirror to Destination Repository
+
+on:
+  push:
+    branches:
+      - "**"
+
 env:
   DEST_REPO: git@github.com:EpitechPromo2027/B-CPP-500-TLS-5-2-rtype-theo.bary.git
   SRC_REPO: git@github.com:RotClub/RTYPE.git
 
 jobs:
-    mirror-push:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+  mirror-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract repository name
+        id: repo_name
+        run: |
+          echo "SOURCE_REPO_NAME=$(basename -s .git '${{ env.SRC_REPO }}')" >> $GITHUB_ENV
 
-        - name: Extract branches name
-          id: get_tag
-          run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      - name: Skip if in source repository
+        if: ${{ github.repository == env.SOURCE_REPO_NAME }}
+        run: echo "Triggered in source repository (${{ github.repository }}). Skipping mirroring process."
 
-        - name: Mirror to Epitech Repository
-          uses: wei/git-sync@v3
-          with:
-            source_repo: ${{ env.SRC_REPO }}
-            source_branch: ${{ env.BRANCH_NAME }}
-            destination_repo: ${{ env.DEST_REPO }}
-            destination_branch: ${{ env.BRANCH_NAME }}
-            ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Checkout source code
+        if: ${{ github.repository != env.SOURCE_REPO_NAME }}
+        uses: actions/checkout@v4
+
+      - name: Extract branch name
+        if: ${{ github.repository != env.SOURCE_REPO_NAME }}
+        id: get_branch
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Mirror to Destination Repository
+        if: ${{ github.repository != env.SOURCE_REPO_NAME }}
+        uses: wei/git-sync@v3
+        with:
+          source_repo: ${{ env.SRC_REPO }}
+          source_branch: ${{ env.BRANCH_NAME }}
+          destination_repo: ${{ env.DEST_REPO }}
+          destination_branch: ${{ env.BRANCH_NAME }}
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
