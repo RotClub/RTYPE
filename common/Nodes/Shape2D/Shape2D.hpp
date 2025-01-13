@@ -18,7 +18,7 @@ public:
 
 	virtual void setOrigin(float x, float y) = 0;
 
-	virtual bool intersects(const Shape2D& other) const = 0;
+	bool intersects(const Shape2D& other) const;
 
 	virtual Types::Rect2 getBoundingBox() const = 0;
 

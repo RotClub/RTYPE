@@ -9,10 +9,13 @@
 
 bool Shape2D::intersects(const Shape2D &other) const
 {
-    if (shape == ShapeType::RECTANGLE) {
-        return _intersectsRect(other);
-    } else if (shape == ShapeType::CIRCLE) {
-        return _intersectsCircle(other);
-    }
-    return false;
+    if (shape == ShapeType::RECTANGLE)
+	{
+		return _intersectsRect(other);
+	}
+	if (shape == ShapeType::CIRCLE)
+	{
+		return _intersectsCircle(other);
+	}
+	return false;
 }

@@ -27,9 +27,8 @@ public:
   float getHeight() const;
 
   Types::Vector2 getOrigin() const override;
-  void setOrigin(float x, float y) override;
 
-  bool intersects(const Shape2D& other) const override;
+  void setOrigin(float x, float y) override;
 
   Types::Rect2 getBoundingBox() const override;
 

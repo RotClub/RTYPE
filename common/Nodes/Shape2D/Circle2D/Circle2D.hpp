@@ -11,7 +11,6 @@
     #include "Nodes/Shape2D/Shape2D.hpp"
 
 class Circle2D : public Shape2D {
-    private:
         float _radius;
         Types::Vector2 _origin;
 
@@ -26,9 +25,9 @@ class Circle2D : public Shape2D {
 
         float getRadius() const;
 
-        Types::Vector2 getOrigin() const override;
+		void setOrigin(const Types::Vector2 &origin);
 
-        bool intersects(const Shape2D& other) const override;
+        Types::Vector2 getOrigin() const override;
 
         Types::Rect2 getBoundingBox() const override;
 };
