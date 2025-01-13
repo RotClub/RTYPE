@@ -3,7 +3,7 @@ hook.hooks = {}
 
 function hook.Add(eventName: string, hookName: string, callback: (...any) -> any)
     if not eventName or not hookName or not callback then
-        return
+        error("hook.Add: Invalid arguments")
     end
 
     if not hook[eventName] then
@@ -15,7 +15,7 @@ end
 
 function hook.Remove(eventName: string, hookName: string)
     if not eventName or not hookName then
-        return
+        error("hook.Remove: Invalid arguments")
     end
 
     if hook.hooks[eventName] then
@@ -25,7 +25,7 @@ end
 
 function hook.Call(eventName: string, ...)
     if not eventName then
-        return
+        error("hook.Call: Invalid arguments")
     end
 
     if hook.hooks[eventName] then

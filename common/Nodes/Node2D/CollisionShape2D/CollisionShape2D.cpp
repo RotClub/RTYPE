@@ -3,6 +3,7 @@
 //
 
 #include "CollisionShape2D.hpp"
+#include "spdlog/spdlog.h"
 
 
 CollisionShape2D::CollisionShape2D(const std::string &name)
@@ -10,12 +11,19 @@ CollisionShape2D::CollisionShape2D(const std::string &name)
     this->metatable = "CollisionShape2DMetaTable";
 }
 
+void CollisionShape2D::Update() {
+    Node2D::Update();
+    if (shape) {
+        shape->setOrigin(getGlobalPosition().x, getGlobalPosition().y);
+    }
+}
+
 void CollisionShape2D::setShape(Shape2D* new_shape) {
-    shape = new_shape;
+    shape.reset(new_shape);
 }
 
 Shape2D* CollisionShape2D::getShape() const {
-    return shape;
+    return shape.get();
 }
 
 void CollisionShape2D::toggleCollision() {

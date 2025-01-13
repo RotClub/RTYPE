@@ -39,6 +39,18 @@ Types::Vector2 Rectangle2D::getOrigin() const {
   return dimensions.origin;
 }
 
+void Rectangle2D::setOrigin(float x, float y) {
+  dimensions.origin.x = x;
+  dimensions.origin.y = y;
+}
+
+bool Rectangle2D::intersects(const Shape2D& other) const {
+	if (other.shape == ShapeType::RECTANGLE) {
+		return _intersectsRect(other);
+	}
+	return false;
+}
+
 Types::Rect2 Rectangle2D::getBoundingBox() const {
   return dimensions;
 }

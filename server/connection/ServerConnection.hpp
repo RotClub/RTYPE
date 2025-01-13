@@ -8,11 +8,11 @@
 #ifndef SERVERCONNECTION_HPP_
     #define SERVERCONNECTION_HPP_
 
-    #include "Networking/GlobalConnection.hpp"
     #include "Networking/Defines.hpp"
     #include "Networking/SafeQueue.hpp"
     #include "Networking/Packet.hpp"
     #include "Networking/PacketBuilder.hpp"
+    #include <unistd.h>
     #include <map>
     #include <thread>
     #include <set>
@@ -37,15 +37,16 @@
         private:
             void _loop();
             void _receiveLoop();
-            void _authFlow(Client *client);
             void _sendLoop();
             void _accept();
             void _disconnectClients();
             Packet *_tryReceiveTCP(Client *client);
+            Packet *_tryReceiveUDP(sockaddr_in *addr);
             void _createSocket();
             void _setClientFds(fd_set *set);
             int _getMaxFd();
             int _selectFd();
+            Client *_getClientByID(const char id[16]);
 
             int _port;
             std::atomic<bool> _running = false;

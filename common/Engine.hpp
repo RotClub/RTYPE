@@ -18,6 +18,7 @@
     #include <queue>
     #include <string>
     #include <filesystem>
+    #include <stack>
     #include <map>
     #include "GameInfo/GameInfo.hpp"
     #include "Networking/PacketBuilder.hpp"
@@ -58,13 +59,14 @@ class Engine {
         void callHook(const std::string &eventName, ...);
 
         std::string GetLibraryFileContents(const std::string &filename);
-        void loadLibraries() const;
+        void loadLibraries();
+        void lockLuaState();
 
         std::string GetLuaFileContents(const std::string &filename);
         bool LoadLuaFile(const std::string &filename);
         void execute();
 
-        [[nodiscard]] lua_State *getLuaState() const { return L; }
+        [[nodiscard]] lua_State *getLuaState() { return L; }
 
         [[nodiscard]] const std::unordered_map<std::string, bool> &getPacketsRegistry() const { return _packetsRegistry; }
         bool hasNewPacketToBroadcast() const { return !_newPacketsInRegistry.empty(); }
@@ -72,7 +74,7 @@ class Engine {
         std::queue<std::pair<std::string, Packet *>> &getBroadcastQueue() { return _broadcastQueue; }
         std::unordered_map<std::string, std::queue<std::pair<std::string, Packet *>>> &getSendToClientMap() { return _sendToClientQueue; }
 
-        PacketBuilder &getPacketBuilder() { return _builder; }
+        std::stack<PacketBuilder> &getPacketBuilders() { return _builders; }
         std::string &getLastStartedPacket() { return _lastStartedPacket; }
 
         void netCallback(const std::string &packetName, Packet *packet, const std::string &client);
@@ -104,7 +106,7 @@ class Engine {
         const GameInfo *_gameInfo;
         ResourceManager _resourceManager;
         std::string _lastStartedPacket;
-        PacketBuilder _builder;
+        std::stack<PacketBuilder> _builders;
 };
 
 #endif /* !ENGINE_HPP_ */

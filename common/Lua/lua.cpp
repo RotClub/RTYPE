@@ -3,8 +3,11 @@
 //
 
 #include "lua.hpp"
+#include "luaconf.h"
 
+#include <Nodes/Node.hpp>
 #include <Nodes/Node2D/Node2D.hpp>
+#include <Nodes/Node2D/CollisionNode2D/Area2D/Area2D.hpp>
 #include <Nodes/Node2D/CollisionShape2D/CollisionShape2D.hpp>
 #include <Nodes/Shape2D/Rectangle2D/Rectangle2D.hpp>
 #include <Nodes/Node2D/Sprite2D/Sprite2D.hpp>
@@ -51,6 +54,50 @@ LUA_API int luau_Include(lua_State *L)
     }
 }
 
+LUA_API int luau_Info(lua_State *L)
+{
+    const char *msg = lua_tostring(L, 1);
+    if (!msg) {
+        lua_pushstring(L, "Invalid info message provided.");
+        lua_error(L);
+    }
+    spdlog::info(msg);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_Error(lua_State *L)
+{
+    const char *msg = lua_tostring(L, 1);
+    if (!msg) {
+        lua_pushstring(L, "Invalid error message provided.");
+        lua_error(L);
+    }
+    spdlog::error(msg);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_Warn(lua_State *L)
+{
+    const char *msg = lua_tostring(L, 1);
+    if (!msg) {
+        lua_pushstring(L, "Invalid warn message provided.");
+        lua_error(L);
+    }
+    spdlog::warn(msg);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_Debug(lua_State *L)
+{
+    const char *msg = lua_tostring(L, 1);
+    if (!msg) {
+        lua_pushstring(L, "Invalid debug message provided.");
+        lua_error(L);
+    }
+    spdlog::debug(msg);
+    return lua_gettop(L);
+}
+
 /* NET LIBRARY */
     LUA_API int luau_NetCreatePacket(lua_State *L)
     {
@@ -79,11 +126,9 @@ LUA_API int luau_Include(lua_State *L)
             lua_pushstring(L, std::format("Packet \"{}\" has not been initialized. Try calling net.CreatePacket first.", packetName).c_str());
             lua_error(L);
         }
-        PacketBuilder &builder = Engine::GetInstance().getPacketBuilder();
-        builder.destroyPacket();
+        PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().emplace();
         builder.setCmd(PacketCmd::NET).writeString(packetName);
         Engine::GetInstance().getLastStartedPacket() = packetName;
-
         return lua_gettop(L);
     }
 
@@ -93,7 +138,8 @@ LUA_API int luau_Include(lua_State *L)
             lua_pushstring(L, "This function can only be called on the client.");
             lua_error(L);
         }
-        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
+        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilders().top().build());
+        Engine::GetInstance().getPacketBuilders().pop();
         return lua_gettop(L);
     }
 
@@ -109,7 +155,8 @@ LUA_API int luau_Include(lua_State *L)
             lua_pushstring(L, "Invalid client UUID provided.");
             lua_error(L);
         }
-        Engine::GetInstance().getSendToClientMap()[clientUUID].emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
+        Engine::GetInstance().getSendToClientMap()[clientUUID].emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilders().top().build());
+        Engine::GetInstance().getPacketBuilders().pop();
         return lua_gettop(L);
     }
 
@@ -120,7 +167,8 @@ LUA_API int luau_Include(lua_State *L)
             lua_error(L);
         }
 
-        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
+        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilders().top().build());
+        Engine::GetInstance().getPacketBuilders().pop();
         return lua_gettop(L);
     }
 
@@ -187,36 +235,48 @@ LUA_API int luau_Include(lua_State *L)
         return 0;
     }
 
+    LUA_API int lua_gcArea2D(lua_State* L)
+    {
+        Area2D* area2D = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        delete area2D;
+        return 0;
+    }
+
     /** __gc functions **/
 
     /** GetName functions **/
 
-    LUA_API int luau_NodeGetName(lua_State *L)
+    template <typename T>
+    LUA_API int luau_TemplateNodeGetName(lua_State *L, const char *metaTableName)
     {
-        Node* node = *static_cast<Node**>(luaL_checkudata(L, 1, "NodeMetaTable"));
+        T* node = *static_cast<T**>(luaL_checkudata(L, 1, metaTableName));
         lua_pushstring(L, node->name.c_str());
         return 1;
+    }
+
+    LUA_API int luau_NodeGetName(lua_State *L)
+    {
+        return luau_TemplateNodeGetName<Node>(L, "NodeMetaTable");
     }
 
     LUA_API int luau_Node2DGetName(lua_State *L)
     {
-        Node2D* node = *static_cast<Node2D**>(luaL_checkudata(L, 1, "Node2DMetaTable"));
-        lua_pushstring(L, node->name.c_str());
-        return 1;
+        return luau_TemplateNodeGetName<Node2D>(L, "Node2DMetaTable");
     }
 
     LUA_API int luau_CollisionShape2DGetName(lua_State *L)
     {
-        CollisionShape2D* node = *static_cast<CollisionShape2D**>(luaL_checkudata(L, 1, "CollisionShape2DMetaTable"));
-        lua_pushstring(L, node->name.c_str());
-        return 1;
+        return luau_TemplateNodeGetName<CollisionShape2D>(L, "CollisionShape2DMetaTable");
     }
 
     LUA_API int luau_Sprite2DGetName(lua_State *L)
     {
-        Sprite2D* sprite = *static_cast<Sprite2D**>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
-        lua_pushstring(L, sprite->name.c_str());
-        return 1;
+        return luau_TemplateNodeGetName<Sprite2D>(L, "Sprite2DMetaTable");
+    }
+
+    LUA_API int luau_Area2DGetName(lua_State *L)
+    {
+        return luau_TemplateNodeGetName<Area2D>(L, "Area2DMetaTable");
     }
 
     /** GetName functions **/
@@ -252,6 +312,14 @@ LUA_API int luau_Include(lua_State *L)
         Sprite2D* sprite = *static_cast<Sprite2D**>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
         const char *name = luaL_checkstring(L, 2);
         sprite->name = name;
+        return 0;
+    }
+
+    LUA_API int luau_Area2DSetName(lua_State *L)
+    {
+        Area2D* area2D = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        const char *name = luaL_checkstring(L, 2);
+        area2D->name = name;
         return 0;
     }
 
@@ -315,6 +383,20 @@ LUA_API int luau_Include(lua_State *L)
         return 1;
     }
 
+    LUA_API int luau_Area2DGetChildren(lua_State *L)
+    {
+        Area2D* node = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        std::vector<Node*> children = node->children;
+        lua_newtable(L);
+        for (size_t i = 0; i < children.size(); i++) {
+            *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = children[i];
+            luaL_getmetatable(L, children[i]->metatable.c_str());
+            lua_setmetatable(L, -2);
+            lua_rawseti(L, -2, i + 1);
+        }
+        return 1;
+    }
+
     /** GetChildren functions **/
 
     /** GetChild functions **/
@@ -345,6 +427,12 @@ LUA_API int luau_Include(lua_State *L)
 			}
 			child = new CollisionShape2D(name);
 			dynamic_cast<CollisionShape2D*>(child)->setShape(shape);
+        } else if (type == "Area2D") {
+        	double x = luaL_checknumber(L, 4);
+            double y = luaL_checknumber(L, 5);
+            double width = luaL_checknumber(L, 6);
+            double height = luaL_checknumber(L, 7);
+            child = new Area2D(name, Types::Vector2(x, y), Types::Vector2(width, height));
         } else {
             luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
         }
@@ -410,6 +498,25 @@ LUA_API int luau_Include(lua_State *L)
 
     LUA_API int luau_Sprite2DGetChild(lua_State* L) {
         Sprite2D* node = *static_cast<Sprite2D**>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+        const char* childName = luaL_checkstring(L, 2);
+        int find = 0;
+
+        std::vector<Node*> &children = node->children;
+        for (auto &child : children) {
+            if (child->name == childName) {
+                *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+                luaL_getmetatable(L, child->metatable.c_str());
+                lua_setmetatable(L, -2);
+                find = 1;
+            }
+        }
+        if (!find)
+            lua_pushnil(L);
+        return 1;
+    }
+
+    LUA_API int luau_Area2DGetChild(lua_State* L) {
+        Area2D* node = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
         const char* childName = luaL_checkstring(L, 2);
         int find = 0;
 
@@ -499,6 +606,23 @@ LUA_API int luau_Include(lua_State *L)
         return 1;
     }
 
+    LUA_API int luau_Area2DCreateChild(lua_State *L)
+    {
+        Area2D* node = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        const std::string type = luaL_checkstring(L, 2);
+
+        Node *child = luau_NodeFactory(L, type);
+        *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+        std::string metatableName = type + "MetaTable";
+        luaL_getmetatable(L, metatableName.c_str());
+        if (lua_isnil(L, -1)) {
+            luaL_error(L, "Metatable '%s' not found. Ensure it is registered before calling AddChild.", metatableName.c_str());
+        }
+        lua_setmetatable(L, -2);
+        node->addChild(*child);
+        return 1;
+    }
+
     /** CreateChild functions **/
 
     /** AddChild functions **/
@@ -535,6 +659,14 @@ LUA_API int luau_Include(lua_State *L)
         return 0;
     }
 
+    LUA_API int luau_Area2DAddChild(lua_State *L)
+    {
+        Area2D* node = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        Node* child = *static_cast<Node**>(luaL_checkudata(L, 2, "NodeMetaTable"));
+        node->addChild(*child);
+        return 0;
+    }
+
     /** AddChild functions **/
 
     /** Update functions **/
@@ -557,6 +689,13 @@ LUA_API int luau_Include(lua_State *L)
     {
         Sprite2D* sprite = *static_cast<Sprite2D**>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
         sprite->Update();
+        return 0;
+    }
+
+    LUA_API int luau_Area2DUpdate(lua_State *L)
+    {
+        Area2D* area2D = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        area2D->Update();
         return 0;
     }
 
@@ -588,6 +727,14 @@ LUA_API int luau_Include(lua_State *L)
         return 2;
     }
 
+    LUA_API int luau_Area2DGetPosition(lua_State *L)
+    {
+        Area2D* area2D = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        lua_pushnumber(L, area2D->position.x);
+        lua_pushnumber(L, area2D->position.y);
+        return 2;
+    }
+
     /** GetPosition functions **/
 
     /** SetPosition functions **/
@@ -616,6 +763,14 @@ LUA_API int luau_Include(lua_State *L)
         return 0;
     }
 
+    LUA_API int luau_Area2DSetPosition(lua_State *L)
+    {
+        Area2D* area2D = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        area2D->position.x = static_cast<float>(luaL_checknumber(L, 2));
+        area2D->position.y = static_cast<float>(luaL_checknumber(L, 3));
+        return 0;
+    }
+
     /** SetPosition functions **/
 
     /** SetTexture functions **/
@@ -641,6 +796,73 @@ LUA_API int luau_Include(lua_State *L)
 
     /** SetTexture functions **/
 
+    /** Collide functions **/
+
+    template<typename T>
+    LUA_API int luau_TemplateCollisionShape2DCollide(lua_State *L, const char *metaTableName)
+	{
+		T* node = *static_cast<T**>(luaL_checkudata(L, 1, metaTableName));
+		T* other = *static_cast<T**>(luaL_checkudata(L, 2, metaTableName));
+		lua_pushboolean(L, node->collidesWith(*other));
+		return 1;
+	}
+
+	LUA_API int luau_CollisionShape2DCollide(lua_State *L)
+	{
+		return luau_TemplateCollisionShape2DCollide<CollisionShape2D>(L, "CollisionShape2DMetaTable");
+	}
+
+    LUA_API int luau_Area2DCollide(lua_State *L)
+    {
+        return luau_TemplateCollisionShape2DCollide<Area2D>(L, "Area2DMetaTable");
+    }
+
+    /** Collide functions **/
+
+    /** ToggleCollision functions **/
+
+    template<typename T>
+	LUA_API int luau_TemplateCollisionShape2DToggleCollision(lua_State *L, const char *metaTableName)
+    {
+        T* node = *static_cast<T**>(luaL_checkudata(L, 1, metaTableName));
+        node->toggleCollision();
+        return 0;
+    }
+
+	LUA_API int luau_CollisionShape2DToggleCollision(lua_State *L)
+	{
+		return luau_TemplateCollisionShape2DToggleCollision<CollisionShape2D>(L, "CollisionShape2DMetaTable");
+    }
+
+    LUA_API int luau_Area2DToggleCollision(lua_State *L)
+    {
+        return luau_TemplateCollisionShape2DToggleCollision<Area2D>(L, "Area2DMetaTable");
+	}
+
+    /** ToggleCollision functions **/
+
+    /** IsCollisionEnabled functions **/
+
+    template<typename T>
+    LUA_API int luau_TemplateCollisionShape2DIsCollisionEnabled(lua_State *L, const char *metaTableName)
+	{
+		T* node = *static_cast<T**>(luaL_checkudata(L, 1, metaTableName));
+		lua_pushboolean(L, node->isCollisionEnabled());
+		return 1;
+	}
+
+	LUA_API int luau_CollisionShape2DIsCollisionEnabled(lua_State *L)
+	{
+		return luau_TemplateCollisionShape2DIsCollisionEnabled<CollisionShape2D>(L, "CollisionShape2DMetaTable");
+    }
+
+    LUA_API int luau_Area2DIsCollisionEnabled(lua_State *L)
+    {
+        return luau_TemplateCollisionShape2DIsCollisionEnabled<Area2D>(L, "Area2DMetaTable");
+	}
+
+    /** IsCollisionEnabled functions **/
+
 	/** CollisionShape2D functions **/
 
 	LUA_API int luau_CollisionShape2DGetBoundingBox(lua_State *L)
@@ -654,35 +876,33 @@ LUA_API int luau_Include(lua_State *L)
 		return 4;
 	}
 
-	LUA_API int luau_CollisionShape2DToggleCollision(lua_State *L)
-	{
-		CollisionShape2D* node = *static_cast<CollisionShape2D**>(luaL_checkudata(L, 1, "CollisionShape2DMetaTable"));
-		node->toggleCollision();
-		return 0;
-	}
-
-	LUA_API int luau_CollisionShape2DIsCollisionEnabled(lua_State *L)
-	{
-		CollisionShape2D* node = *static_cast<CollisionShape2D**>(luaL_checkudata(L, 1, "CollisionShape2DMetaTable"));
-		lua_pushboolean(L, node->isCollisionEnabled());
-		return 1;
-	}
-
-	LUA_API int luau_CollisionShape2DCollide(lua_State *L)
-	{
-		CollisionShape2D* node = *static_cast<CollisionShape2D**>(luaL_checkudata(L, 1, "CollisionShape2DMetaTable"));
-		CollisionShape2D* other = *static_cast<CollisionShape2D**>(luaL_checkudata(L, 2, "CollisionShape2DMetaTable"));
-		lua_pushboolean(L, node->collidesWith(*other));
-		return 1;
-	}
-
 	/** CollisionShape2D functions **/
+
+    /** Area2D functions **/
+
+    LUA_API int luau_Area2DGetSize(lua_State *L)
+    {
+        Area2D* node = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        lua_pushnumber(L, node->getSize().x);
+        lua_pushnumber(L, node->getSize().y);
+        return 2;
+    }
+
+    LUA_API int luau_Area2DSetSize(lua_State *L)
+    {
+        Area2D* node = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        node->setSize(Types::Vector2(luaL_checknumber(L, 2), luaL_checknumber(L, 3)));
+        return 0;
+    }
+
+    /** Area2D functions **/
+
 
 /* NODE LIBRARY */
 
 /* LUA API LIBRARY */
 
-    static void luau_ExposeGlobalFunction(lua_State *L, const lua_CFunction func, const char *name)
+    void luau_ExposeGlobalFunction(lua_State *L, const lua_CFunction func, const char *name)
     {
         lua_pushcfunction(L, func, name);
         lua_setglobal(L, name);
@@ -799,6 +1019,10 @@ LUA_API int luau_Include(lua_State *L)
     void luau_ExposeFunctions(lua_State *L)
     {
         luau_ExposeGlobalFunction(L, luau_Include, "include");
+        luau_ExposeGlobalFunction(L, luau_Info, "info");
+        luau_ExposeGlobalFunction(L, luau_Warn, "warn");
+        luau_ExposeGlobalFunction(L, luau_Error, "error");
+        luau_ExposeGlobalFunction(L, luau_Debug, "debug");
 
         /* NODE LIBRARY */
         constexpr luaL_Reg nodeLibrary[] = {
@@ -862,6 +1086,25 @@ LUA_API int luau_Include(lua_State *L)
             {nullptr, nullptr}
         };
         luau_ExposeFunctionsAsMetatable(L, collisionshape2DLibrary, "CollisionShape2DMetaTable");
+        constexpr luaL_Reg area2DLibrary[] = {
+            {"GetName", luau_Area2DGetName},
+            {"SetName", luau_Area2DSetName},
+            {"GetChildren", luau_Area2DGetChildren},
+            {"GetChild", luau_Area2DGetChild},
+            {"AddChild", luau_Area2DAddChild},
+            {"GetPosition", luau_Area2DGetPosition},
+            {"SetPosition", luau_Area2DSetPosition},
+            {"CreateChild", luau_Area2DCreateChild},
+            {"Update", luau_Area2DUpdate},
+        	{"ToggleCollision", luau_Area2DToggleCollision},
+        	{"IsCollisionEnabled", luau_Area2DIsCollisionEnabled},
+        	{"Collide", luau_Area2DCollide},
+            {"GetSize", luau_Area2DGetSize},
+            {"SetSize", luau_Area2DSetSize},
+            {"__gc", lua_gcArea2D},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
         /* NODE LIBRARY */
     }
 

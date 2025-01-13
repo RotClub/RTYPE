@@ -114,6 +114,8 @@ bool Engine::hasPacketRegistryEntry(const std::string &packetName) const
 
 bool Engine::isPacketReliable(const std::string &packetName) const
 {
+    if (!_packetsRegistry.contains(packetName))
+        return false;
     return _packetsRegistry.at(packetName);
 }
 
@@ -155,7 +157,7 @@ void Engine::callHook(const std::string &eventName, ...)
         if (strcmp(type, "int") == 0)
             lua_pushinteger(L, va_arg(args, int));
         else if (strcmp(type, "float") == 0)
-            lua_pushnumber(L, va_arg(args, float));
+            lua_pushnumber(L, static_cast<float>(va_arg(args, double)));
         else if (strcmp(type, "double") == 0)
             lua_pushnumber(L, va_arg(args, double));
         else if (strcmp(type, "string") == 0)
@@ -178,7 +180,7 @@ void Engine::callHook(const std::string &eventName, ...)
 
 void Engine::netCallback(const std::string &packetName, Packet *packet, const std::string &client)
 {
-    _builder.loadFromPacket(packet);
+    _builders.emplace(packet);
     lua_getglobal(L, "net");
     lua_getfield(L, -1, "Call");
 
@@ -250,7 +252,7 @@ static void loadLibrary(lua_State *L, const std::string &filePath)
     }
 }
 
-void Engine::loadLibraries() const
+void Engine::loadLibraries()
 {
     loadLibrary(L, "hook.luau");
     loadLibrary(L, "utils.luau");
@@ -270,8 +272,6 @@ void Engine::loadLibraries() const
     };
     luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
     /* NET LIBRARY */
-
-    luaL_sandbox(L);
 }
 
 int Engine::deltaTime()
@@ -281,6 +281,11 @@ int Engine::deltaTime()
 
     _deltaLast = currentTime;
     return elapsed.count();
+}
+
+void Engine::lockLuaState()
+{
+    luaL_sandbox(L);
 }
 
 std::string Engine::GetLuaFileContents(const std::string &filename)

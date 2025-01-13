@@ -17,15 +17,14 @@
         CONNECT,
         DISCONNECT,
         NET,
-        NEW_MESSAGE,
+        NEW_MESSAGE
     };
 
     using Packet = struct packet_s {
         size_t n;
         PacketCmd cmd;
+        char id[16];
         void *data;
     };
-
-    #define NULL_PACKET (Packet){0, PacketCmd::NONE, NULL}
 
 #endif /* !STRINGPACKET_HPP_ */

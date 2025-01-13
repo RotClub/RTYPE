@@ -1,9 +1,10 @@
--- hook.Add("RType:InitServer", "testing", function()
---     print("RType:InitServer called")
--- end)
+hook.Add("Tick", "testing", function(delta)
+    if IsKeyJustPressed(65) then
+        net.Start("Hello")
+        net.SendToServer()
+    end
+end)
 
--- hook.Add("RType:Tick", "test", function(delta)
---     print("delta time: " .. delta)
--- end)
-
-print("Hello from client")
+net.Receive("Hello", function(len, ply)
+    info("Hello from server")
+end)

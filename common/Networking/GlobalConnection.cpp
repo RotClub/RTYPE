@@ -8,31 +8,22 @@
 #include "GlobalConnection.hpp"
 #include "Networking/Packet.hpp"
 
-GlobalConnection::GlobalConnection(bool udp)
-    : _udp(udp)
+GlobalConnection::GlobalConnection()
 {
-    _createSocket();
 }
 
 GlobalConnection::~GlobalConnection()
 {
 }
 
-Packet *GlobalConnection::getLatestPacket()
+Packet* GlobalConnection::getLatestTCPPacket()
 {
-    Packet *pckt = std::get<IN>(_queues).dequeue();
-    if (pckt->n <= 0)
-        return nullptr;
-    if (pckt->data == nullptr)
-        return nullptr;
-    if (static_cast<int>(pckt->cmd) < 0 || static_cast<int>(pckt->cmd) > 4)
-        return nullptr;
-    return pckt;
+    return std::get<IN>(_tcpQueues).dequeue();
 }
 
-bool GlobalConnection::isUdp() const
+Packet* GlobalConnection::getLatestUDPPacket()
 {
-    return _udp;
+    return std::get<IN>(_udpQueues).dequeue();
 }
 
 int GlobalConnection::_selectFd()
@@ -41,9 +32,11 @@ int GlobalConnection::_selectFd()
 
     FD_ZERO(&_readfds);
     FD_ZERO(&_writefds);
-    FD_SET(_fd, &_readfds);
-    FD_SET(_fd, &_writefds);
-    retval = select(_fd + 1, &_readfds, &_writefds, nullptr, nullptr);
+    FD_SET(_tcpFd, &_readfds);
+    FD_SET(_tcpFd, &_writefds);
+    FD_SET(_udpFd, &_readfds);
+    FD_SET(_udpFd, &_writefds);
+    retval = select(std::max(_tcpFd, _udpFd) + 1, &_readfds, &_writefds, nullptr, nullptr);
     if (retval == -1) {
         throw std::runtime_error("Error selecting socket");
     }
@@ -52,12 +45,11 @@ int GlobalConnection::_selectFd()
 
 void GlobalConnection::_createSocket()
 {
-    if (_udp)
-        _fd = socket(AF_INET, SOCK_DGRAM, 0);
-    else
-        _fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_fd == -1) {
+    _tcpFd = socket(AF_INET, SOCK_STREAM, 0);
+    _udpFd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (_tcpFd == -1 || _udpFd == -1) {
         throw std::runtime_error("Error creating socket");
     }
+    std::memset(&_addr, 0, sizeof(_addr));
     _addr.sin_family = AF_INET;
 }
