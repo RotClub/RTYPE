@@ -6,13 +6,14 @@
 */
 
 #ifndef SERVER_HPP_
-#define SERVER_HPP_
+    #define SERVER_HPP_
 
-#include <iostream>
-#include "connection/ServerConnection.hpp"
-#include "client/Client.hpp"
-#include <vector>
-#include "Engine.hpp"
+    #include <iostream>
+    #include "connection/ServerConnection.hpp"
+    #include <signal.h>
+    #include "client/Client.hpp"
+    #include <vector>
+    #include "Engine.hpp"
 
 class Server {
     public:

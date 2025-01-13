@@ -14,29 +14,38 @@
     #include <string>
     #include <unordered_map>
 
-    class Client {
+class Client {
+
         public:
             Client(Client const &) = delete;
             void operator=(Client const &) = delete;
 
+            enum class ConnectionStep {
+                AUTH_CODE_RECEIVED,
+                AUTH_CODE_SENT,
+                COMPLETE
+            };
+
             static Client &InitiateInstance(std::string ip, int port);
             static Client &GetInstance();
 
-            static void handleConnectPacket(Packet *packet);
-            static void handleDisconnectPacket(Packet *packet);
-            static void handleLuaPacket(Packet *packet);
-            static void handleNewMessagePacket(Packet *packet);
+            void handleConnectPacket(Packet *packet);
+            void handleDisconnectPacket(Packet *packet);
+            void handleLuaPacket(Packet *packet);
+            void handleNewMessagePacket(Packet *packet);
 
-            std::unordered_map<PacketCmd, std::function<void(Packet *)>> packetHandlers = {
-                {PacketCmd::NONE, std::function<void(Packet *)>()},
-                {PacketCmd::CONNECT, handleConnectPacket},
-                {PacketCmd::DISCONNECT, handleDisconnectPacket},
-                {PacketCmd::NEW_MESSAGE, handleNewMessagePacket},
-                {PacketCmd::NET, handleLuaPacket},
+            const std::unordered_map<PacketCmd, void (Client::*)(Packet *)> PACKET_HANDLERS = {
+                {PacketCmd::NONE, (void (Client::*)(Packet *))nullptr},
+                {PacketCmd::CONNECT, &Client::handleConnectPacket},
+                {PacketCmd::DISCONNECT, &Client::handleDisconnectPacket},
+                {PacketCmd::NEW_MESSAGE, &Client::handleNewMessagePacket},
+                {PacketCmd::NET, &Client::handleLuaPacket},
             };
 
             void startGame();
             void setupLua();
+            void setupClientSideLua();
+            void loadLuaGame();
             std::string getIp() const;
             int getPort() const;
             ClientConnection &getClientConnectionTcp();
@@ -46,11 +55,16 @@
             void broadcastLuaPackets();
             void processIncomingPackets();
 
+            bool isConnectionEstablished() const { return _connectionEstablished; }
+
         protected:
             Client(std::string ip, int port);
             static Client *_instance;
 
         private:
+            ConnectionStep _step;
+            bool _connectionEstablished;
+
             std::string _ip;
             int _port;
             ClientConnection _clientConnectionTcp;

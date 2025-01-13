@@ -20,14 +20,7 @@ GlobalConnection::~GlobalConnection()
 
 Packet *GlobalConnection::getLatestPacket()
 {
-    Packet *pckt = std::get<IN>(_queues).dequeue();
-    if (pckt->n <= 0)
-        return nullptr;
-    if (pckt->data == nullptr)
-        return nullptr;
-    if (static_cast<int>(pckt->cmd) < 0 || static_cast<int>(pckt->cmd) > 4)
-        return nullptr;
-    return pckt;
+    return std::get<IN>(_queues).dequeue();
 }
 
 bool GlobalConnection::isUdp() const
