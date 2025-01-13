@@ -71,10 +71,10 @@ void Game::_accessibilityLoop()
     int shaderModeLoc = GetShaderLocation(accessibilityShader, "mode");
     int shaderIntensityLoc = GetShaderLocation(accessibilityShader, "intensity");
     const float shaderIntensity = 1.0f;
-    SetShaderValue(accessibilityShader, shaderModeLoc, Config::GetInstance().getColorBlindnessMode(), SHADER_UNIFORM_INT);
     SetShaderValue(accessibilityShader, shaderIntensityLoc, &shaderIntensity, SHADER_UNIFORM_FLOAT);
     while (!_shouldClose) {
         int dt = Engine::GetInstance().deltaTime();
+        SetShaderValue(accessibilityShader, shaderModeLoc, Config::GetInstance().getColorBlindnessMode(), SHADER_UNIFORM_INT);
         _update(dt);
         target.BeginMode();
         _draw(dt);

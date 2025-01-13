@@ -1,4 +1,7 @@
 hook.Add("Tick", "testing", function(delta)
+    if IsKeyJustPressed(67) then
+        CycleColorBlindnessShader()
+    end
     if IsKeyJustPressed(65) then
         net.Start("Hello")
         net.SendToServer()
