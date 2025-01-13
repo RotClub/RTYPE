@@ -157,7 +157,7 @@ void Engine::callHook(const std::string &eventName, ...)
         if (strcmp(type, "int") == 0)
             lua_pushinteger(L, va_arg(args, int));
         else if (strcmp(type, "float") == 0)
-            lua_pushnumber(L, va_arg(args, float));
+            lua_pushnumber(L, static_cast<float>(va_arg(args, double)));
         else if (strcmp(type, "double") == 0)
             lua_pushnumber(L, va_arg(args, double));
         else if (strcmp(type, "string") == 0)

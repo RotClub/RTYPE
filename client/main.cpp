@@ -20,6 +20,6 @@ int main(int argc, char **argv)
 	int port = static_cast<int>(std::strtol(argv[4], nullptr, 10));
     Engine &engine = Engine::StartInstance(Types::VMState::CLIENT, "rtype");
     Client &client = Client::InitiateInstance(ip, port);
-    client.getClientConnectionTcp().connectToServer();
+    client.getClientConnection().connectToServer();
     client.startGame();
 }
