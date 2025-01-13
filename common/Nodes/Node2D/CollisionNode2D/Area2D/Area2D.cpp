@@ -19,7 +19,7 @@ Area2D::Area2D(const std::string &name, Types::Vector2 position, Types::Vector2 
     Rectangle2D* rectangle = new Rectangle2D(position, size);
     CollisionShape2D* area2dCollision = new CollisionShape2D("area2d_collision");
     area2dCollision->setShape(rectangle);
-    CollisionNode2D::addCollisionShape(area2dCollision);
+	Node2D::addChild(*area2dCollision);
 }
 
 Types::Vector2 Area2D::getSize() const
@@ -29,10 +29,8 @@ Types::Vector2 Area2D::getSize() const
 
 void Area2D::setSize(const Types::Vector2 &size)
 {
-    _size = size;
-    CollisionShape2D* area2dCollision = CollisionNode2D::getCollisionShape("area2d_collision");
+    CollisionShape2D *area2dCollision = dynamic_cast<CollisionShape2D*>(GetChild("area2d_collision"));
     Rectangle2D* rectangle = new Rectangle2D(position, _size);
     area2dCollision->setShape(rectangle);
-    CollisionNode2D::removeCollisionShape("area2d_collision");
-    CollisionNode2D::addCollisionShape(area2dCollision);
+    _size = size;
 }

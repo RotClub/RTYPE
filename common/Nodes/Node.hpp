@@ -18,8 +18,8 @@ class Node {
         explicit Node(const std::string& name = "node");
 		virtual ~Node() = default;
 
-        const Node &GetChild(const std::string &name) const;
-        const std::vector<Node *> &GetChildren() const;
+        Node *GetChild(const std::string &name) const;
+        std::vector<Node *> GetChildren() const;
 
         Node* getParent() { return _parent; }
 
