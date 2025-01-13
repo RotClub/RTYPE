@@ -8,10 +8,12 @@
 #include "Nodes/Node2D/CollisionNode2D/CollisionNode2D.hpp"
 
 class Body2D : public CollisionNode2D {
-		Types::Vector2 velocity;
 	public:
+	    explicit Body2D(const std::string& name);
+
 		void Update() override;
 
+		Types::Vector2 velocity;
 };
 
 #endif //BODY2D_HPP
