@@ -49,7 +49,7 @@ target_link_libraries(${PROJECT_NAME}_engine PUBLIC
         Luau.VM
         spdlog::spdlog
 )
-target_include_directories(${PROJECT_NAME}_engine PUBLIC "./submodules/rlImGui/rlImGui.h")
+target_include_directories(${PROJECT_NAME}_engine PUBLIC "./submodules/rlImGui")
 target_link_libraries(${PROJECT_NAME}_client PRIVATE ${PROJECT_NAME}_engine)
 target_link_libraries(${PROJECT_NAME}_server PRIVATE ${PROJECT_NAME}_engine)
 set_target_properties(${PROJECT_NAME}_engine PROPERTIES

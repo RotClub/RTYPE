@@ -10,9 +10,14 @@
 #include "Networking/Packet.hpp"
 #include "Networking/PacketBuilder.hpp"
 #include "spdlog/spdlog.h"
+#include <cstring>
 #include <stdexcept>
+#include <thread>
+#include <iostream>
 #include <sys/select.h>
+#include <sys/socket.h>
 #include <unistd.h>
+#include <signal.h>
 
 ClientConnection::ClientConnection(const std::string &ip, int port)
     : _ip(ip), _port(port)
@@ -47,7 +52,7 @@ void ClientConnection::disconnectFromServer()
         if (_thread.joinable())
             _thread.join();
     } catch (const std::exception &e) {
-        std::cerr << "Thread Error: " + std::string(e.what()) << std::endl;
+        std::cerr << "Thread Error: " << e.what() << std::endl;
     }
     close(_tcpFd);
     close(_udpFd);

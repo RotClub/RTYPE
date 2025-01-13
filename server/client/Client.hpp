@@ -5,8 +5,10 @@
 #ifndef CLIENT_HPP
     #define CLIENT_HPP
 
+    #include <string>
     #include <tuple>
     #include <netinet/in.h>
+    #include <cstring>
     #include <Networking/Packet.hpp>
     #include <Networking/SafeQueue.hpp>
 
