@@ -25,7 +25,7 @@ class Circle2D : public Shape2D {
 
         float getRadius() const;
 
-		void setOrigin(const Types::Vector2 &origin);
+		void setOrigin(const Types::Vector2 &origin) override;
 
         Types::Vector2 getOrigin() const override;
 

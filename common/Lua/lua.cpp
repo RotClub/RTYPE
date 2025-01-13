@@ -10,6 +10,7 @@
 #include <Nodes/Node2D/CollisionNode2D/Area2D/Area2D.hpp>
 #include <Nodes/Node2D/CollisionShape2D/CollisionShape2D.hpp>
 #include <Nodes/Shape2D/Rectangle2D/Rectangle2D.hpp>
+#include <Nodes/Shape2D/Circle2D/Circle2D.hpp>
 #include <Nodes/Node2D/Sprite2D/Sprite2D.hpp>
 
 LUA_API int luau_Include(lua_State *L)
@@ -422,7 +423,12 @@ LUA_API int luau_Debug(lua_State *L)
 				double width = luaL_checknumber(L, 7);
 				double height = luaL_checknumber(L, 8);
 				shape = new Rectangle2D(Types::Vector2(x, y), Types::Vector2(width, height));
-			} else {
+			} else if (std::strcmp(shapeType, "Circle") == 0) {
+                double x = luaL_checknumber(L, 5);
+                double y = luaL_checknumber(L, 6);
+                double radius = luaL_checknumber(L, 7);
+                shape = new Circle2D(Types::Vector2(x, y), radius);
+            } else {
 				luaL_error(L, "Invalid shape type '%s' provided to AddChild in CollisionShape2D.", shapeType);
 			}
 			child = new CollisionShape2D(name);
