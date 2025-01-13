@@ -9,9 +9,8 @@
 
 class Body2D : public CollisionNode2D {
 		Types::Vector2 velocity;
-		float mass;
 	public:
-		explicit Body2D(const std::string &name, float mass);
+		void Update() override;
 
 };
 
