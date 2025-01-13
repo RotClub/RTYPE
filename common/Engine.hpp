@@ -73,7 +73,7 @@ class Engine {
         std::queue<std::pair<std::string, Packet *>> &getBroadcastQueue() { return _broadcastQueue; }
         std::unordered_map<std::string, std::queue<std::pair<std::string, Packet *>>> &getSendToClientMap() { return _sendToClientQueue; }
 
-        PacketBuilder &getPacketBuilder() { return _builder; }
+        std::stack<PacketBuilder> &getPacketBuilders() { return _builders; }
         std::string &getLastStartedPacket() { return _lastStartedPacket; }
 
         void netCallback(const std::string &packetName, Packet *packet, const std::string &client);
@@ -105,7 +105,7 @@ class Engine {
         const GameInfo *_gameInfo;
         ResourceManager _resourceManager;
         std::string _lastStartedPacket;
-        PacketBuilder _builder;
+        std::stack<PacketBuilder> _builders;
 };
 
 #endif /* !ENGINE_HPP_ */

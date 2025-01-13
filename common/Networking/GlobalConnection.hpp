@@ -28,24 +28,25 @@
         public:
             virtual ~GlobalConnection();
 
-            virtual Packet *getLatestPacket();
-            virtual bool isUdp() const;
+            virtual Packet *getLatestTCPPacket();
+            virtual Packet *getLatestUDPPacket();
 
         protected:
-            GlobalConnection(bool udp = false);
+            GlobalConnection();
 
             virtual int _selectFd();
             virtual void _createSocket();
             virtual void _loop() = 0;
 
             Packet *_packet;
-            std::tuple<SafeQueue<Packet*>, SafeQueue<Packet*>> _queues;
+            std::tuple<SafeQueue<Packet*>, SafeQueue<Packet*>> _tcpQueues;
+            std::tuple<SafeQueue<Packet*>, SafeQueue<Packet*>> _udpQueues;
             std::thread _thread;
-            int _fd = -1;
+            int _tcpFd = -1;
+            int _udpFd = -1;
             fd_set _readfds;
             fd_set _writefds;
             sockaddr_in _addr;
-            bool _udp;
     };
 
 #endif /* !GLOBALCONNECTION_HPP_ */

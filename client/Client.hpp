@@ -48,8 +48,7 @@ class Client {
             void loadLuaGame();
             std::string getIp() const;
             int getPort() const;
-            ClientConnection &getClientConnectionTcp();
-            ClientConnection &getClientConnectionUdp();
+            ClientConnection &getClientConnection();
             ResourceManager &getResourceManager();
 
             void broadcastLuaPackets();
@@ -67,8 +66,7 @@ class Client {
 
             std::string _ip;
             int _port;
-            ClientConnection _clientConnectionTcp;
-            ClientConnection _clientConnectionUdp;
+            ClientConnection _clientConnection;
             Game _game;
             // loadingScreen
     };

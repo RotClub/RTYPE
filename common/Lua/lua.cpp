@@ -126,11 +126,9 @@ LUA_API int luau_Debug(lua_State *L)
             lua_pushstring(L, std::format("Packet \"{}\" has not been initialized. Try calling net.CreatePacket first.", packetName).c_str());
             lua_error(L);
         }
-        PacketBuilder &builder = Engine::GetInstance().getPacketBuilder();
-        builder.reset();
+        PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().emplace();
         builder.setCmd(PacketCmd::NET).writeString(packetName);
         Engine::GetInstance().getLastStartedPacket() = packetName;
-
         return lua_gettop(L);
     }
 
@@ -140,7 +138,8 @@ LUA_API int luau_Debug(lua_State *L)
             lua_pushstring(L, "This function can only be called on the client.");
             lua_error(L);
         }
-        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
+        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilders().top().build());
+        Engine::GetInstance().getPacketBuilders().pop();
         return lua_gettop(L);
     }
 
@@ -156,7 +155,8 @@ LUA_API int luau_Debug(lua_State *L)
             lua_pushstring(L, "Invalid client UUID provided.");
             lua_error(L);
         }
-        Engine::GetInstance().getSendToClientMap()[clientUUID].emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
+        Engine::GetInstance().getSendToClientMap()[clientUUID].emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilders().top().build());
+        Engine::GetInstance().getPacketBuilders().pop();
         return lua_gettop(L);
     }
 
@@ -167,7 +167,8 @@ LUA_API int luau_Debug(lua_State *L)
             lua_error(L);
         }
 
-        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilder().build());
+        Engine::GetInstance().getBroadcastQueue().emplace(Engine::GetInstance().getLastStartedPacket(), Engine::GetInstance().getPacketBuilders().top().build());
+        Engine::GetInstance().getPacketBuilders().pop();
         return lua_gettop(L);
     }
 

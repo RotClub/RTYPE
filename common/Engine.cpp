@@ -180,7 +180,7 @@ void Engine::callHook(const std::string &eventName, ...)
 
 void Engine::netCallback(const std::string &packetName, Packet *packet, const std::string &client)
 {
-    _builder.loadFromPacket(packet);
+    _builders.emplace(packet);
     lua_getglobal(L, "net");
     lua_getfield(L, -1, "Call");
 
