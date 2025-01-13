@@ -17,6 +17,8 @@ class CollisionShape2D : public Node2D {
 public:
 	explicit CollisionShape2D(const std::string &name = "collisionshape2d");
 
+    void Update() override;
+
     void setShape(Shape2D* new_shape);
 
     Shape2D* getShape() const;
