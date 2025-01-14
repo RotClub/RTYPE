@@ -24,3 +24,7 @@
   - [Common]()
 
 ---
+
+# Games
+
+- [R-Type](./games/r-type.md)
