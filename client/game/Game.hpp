@@ -22,8 +22,11 @@ class Game {
 
     private:
         void _update(int dt);
+        void _loop();
+        void _accessibilityLoop();
         void _draw(int dt);
         void _updateNodes(Node &node);
+        void _drawNodes(Node &node);
         void _loadResources();
 
         raylib::Window _window;

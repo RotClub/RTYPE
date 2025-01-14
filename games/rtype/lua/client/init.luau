@@ -24,8 +24,16 @@ hook.Add("Tick", "testing", function(delta)
     if IsKeyPressed(83) then
         spriteA:SetPosition(x, y + 7 * dt)
     end
+    if IsKeyJustPressed(67) then
+        CycleColorBlindnessShader()
+    end
+    if IsKeyJustPressed(72) then
+        net.Start("Hello")
+        net.SendToServer()
+    end
 end)
 
 net.Receive("Hello", function(len, ply)
     info("Hello from server")
+    EnableFpsCounter()
 end)

@@ -14,15 +14,13 @@
     #include <variant>
     #include <memory>
 
-    #include "../submodules/raylib-cpp/include/Texture.hpp"
-    #include "../submodules/raylib-cpp/include/Image.hpp"
-    #include "../submodules/raylib-cpp/include/Font.hpp"
-    #include "../submodules/raylib-cpp/include/Sound.hpp"
+    #include "../submodules/raylib-cpp/include/raylib-cpp.hpp"
 
     using Resource = std::variant<
         std::shared_ptr<raylib::Texture>,
         std::shared_ptr<raylib::Font>,
         std::shared_ptr<raylib::Sound>,
+        std::shared_ptr<raylib::Shader>,
         std::shared_ptr<std::string>
     >;
 
@@ -30,7 +28,9 @@
         IMAGE,
         FONT,
         SOUND,
-        TEXT
+        TEXT,
+        VERTEX_SHADER,
+        FRAGMENT_SHADER
     };
 
     class ResourceManager {
@@ -48,6 +48,8 @@
             raylib::Texture &getTexture(const std::string &path);
             raylib::Font &getFont(const std::string &path);
             raylib::Sound &getSound(const std::string &path);
+            raylib::Shader &getVertexShader(const std::string &path);
+            raylib::Shader &getFragmentShader(const std::string &path);
 
             static const Resource &nullResourceRef;
 
