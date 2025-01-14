@@ -10,10 +10,6 @@ CollisionNode2D::CollisionNode2D(const std::string &name)
 	this->metatable = "CollisionNode2DMetaTable";
 }
 
-void CollisionNode2D::Update() {
-	Node2D::Update();
-}
-
 Types::Rect2 CollisionNode2D::getBoundingBox() const {
 	Types::Rect2 bounding_box;
 	for (const auto &shape : children) {

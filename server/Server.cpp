@@ -50,6 +50,7 @@ void Server::loop()
     Engine &engine = Engine::GetInstance();
 
     engine.callHook("Tick", "int", engine.deltaTime(), nullptr);
+	engine.updateNode(engine.root);
     for (auto client : _serverConnection.getClientConnections()) {
         if (!client->shouldDisconnect()) {
             broadcastNewPackets();
