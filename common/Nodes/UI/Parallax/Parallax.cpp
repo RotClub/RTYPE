@@ -31,8 +31,6 @@ void Parallax::setReferenceNode(Node2D* node) { _referenceNode = node; }
 
 void Parallax::addParallaxPosition(const Types::Vector2& pos) { _parallaxPos += pos; }
 
-void Parallax::Update() {}
-
 void Parallax::Draw()
 {
     float dt = Engine::GetInstance().getDeltaLast();
