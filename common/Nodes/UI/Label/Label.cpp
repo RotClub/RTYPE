@@ -18,8 +18,11 @@ Label::~Label()
 
 void Label::Draw()
 {
-    raylib::Font &font = Engine::GetInstance().getResourceManager().getFont(_font);
     raylib::Color color = raylib::Color(red, green, blue, alpha);
-
-    raylib::DrawTextEx(font, _text.c_str(), {getGlobalPosition().x, getGlobalPosition().y}, _fontSize, 0, color);
+    if (_font.empty())
+        raylib::DrawText(_text.c_str(), getGlobalPosition().x, getGlobalPosition().y, _fontSize, color);
+    else {
+        raylib::Font &font = Engine::GetInstance().getResourceManager().getFont(_font);
+        raylib::DrawTextEx(font, _text.c_str(), {getGlobalPosition().x, getGlobalPosition().y}, _fontSize, 0, color);
+    }
 }
