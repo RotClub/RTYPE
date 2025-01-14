@@ -52,6 +52,7 @@ void Client::setupClientSideLua()
     lua_State *L = Engine::GetInstance().getLuaState();
     luau_ExposeGlobalFunction(L, luau_IsKeyPressed, "IsKeyPressed");
     luau_ExposeGlobalFunction(L, luau_IsKeyJustPressed, "IsKeyJustPressed");
+    luau_ExposeGlobalFunction(L, luau_IsKeyReleased, "IsKeyReleased");
     luau_ExposeGlobalFunction(L, luau_EnableFpsCounter, "EnableFpsCounter");
     luau_ExposeGlobalFunction(L, luau_DisableFpsCounter, "DisableFpsCounter");
     luau_ExposeGlobalFunction(L, luau_DisableColorBlindnessShader, "DisableColorBlindnessShader");

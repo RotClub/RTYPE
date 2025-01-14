@@ -1,17 +1,41 @@
-net.CreatePacket("Hello", false)
+include("server/utils.luau")
+include("server/channels.luau")
 
-local next_tick = false
-local next_ply = nil
+spaceships = {
+    defaultSpaceship(),
+    defaultSpaceship(),
+    defaultSpaceship(),
+    defaultSpaceship()
+}
 
-net.Receive("Hello", function(len, ply)
-    info("Received hello from: " .. ply)
-    next_tick = true
-    next_ply = ply
+hook.Add("Tick", "main", function(delta)
+    local dt = delta / 100000000
+    for i = 1, #spaceships do
+        -- updateSpaceshipVelocities(spaceships[i], dt)
+        sendSpaceshipPosition(i)
+    end
 end)
 
-hook.Add("Tick", "testing", function(delta: number)
-    if not next_tick then return end
-    net.Start("Hello")
-    net.SendToClient(next_ply)
-    next_tick = false
+hook.Add("PlayerJoin", "main", function(ply)
+    syncNewPlayer(ply)
+    for i = 1, #spaceships do
+        if spaceships[i].bound_player == nil then
+            spaceships[i].bound_player = ply
+            net.Start("SpaceshipSpawn")
+            net.WriteInt(i)
+            net.Broadcast()
+            break
+        end
+    end
+end)
+
+hook.Add("PlayerLeave", "main", function(ply)
+    for i = 1, #spaceships do
+        if spaceships[i].bound_player == ply then
+            spaceships[i].bound_player = nil
+            net.Start("SpaceshipDespawn")
+            net.WriteInt(i)
+            net.Broadcast()
+        end
+    end
 end)

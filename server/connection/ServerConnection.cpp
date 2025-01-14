@@ -128,6 +128,8 @@ void ServerConnection::_sendLoop()
 
 void ServerConnection::_accept()
 {
+    if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers())
+        return;
     if (FD_ISSET(_tcpFd, &_readfds)) {
         _clientConnections.emplace_back(new Client(_tcpFd));
     }
