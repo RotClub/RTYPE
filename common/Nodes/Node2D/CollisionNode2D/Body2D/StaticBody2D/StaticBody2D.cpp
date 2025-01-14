@@ -4,7 +4,7 @@
 
 #include "StaticBody2D.hpp"
 
-StaticBody2D::StaticBody2D(const std::string& name, const Types::Vector2& position) : Body2D(name)
+StaticBody2D::StaticBody2D(const std::string &name, const Types::Vector2 &position) : Body2D(name)
 {
     this->metatable = "StaticBody2DMetaTable";
     this->position = position;

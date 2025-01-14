@@ -4,13 +4,13 @@
 
 #include "Rectangle2D.hpp"
 
-bool Rectangle2D::_intersectsRect(const Shape2D& other) const
+bool Rectangle2D::_intersectsRect(const Shape2D &other) const
 {
     Types::Rect2 other_bb = other.getBoundingBox();
     return dimensions.intersects(other_bb);
 }
 
-Rectangle2D::Rectangle2D(const Types::Vector2& origin, const Types::Vector2& size) :
+Rectangle2D::Rectangle2D(const Types::Vector2 &origin, const Types::Vector2 &size) :
     dimensions(Types::Rect2(origin, size))
 {
 }
@@ -35,7 +35,7 @@ void Rectangle2D::setOrigin(float x, float y)
     dimensions.origin.y = y;
 }
 
-bool Rectangle2D::intersects(const Shape2D& other) const
+bool Rectangle2D::intersects(const Shape2D &other) const
 {
     if (other.shape == ShapeType::RECTANGLE) {
         return _intersectsRect(other);

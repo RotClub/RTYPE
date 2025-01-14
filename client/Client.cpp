@@ -15,9 +15,9 @@
 #include "game/Game.hpp"
 #include "spdlog/spdlog.h"
 
-Client* Client::_instance = nullptr;
+Client *Client::_instance = nullptr;
 
-Client& Client::InitiateInstance(std::string ip, int port)
+Client &Client::InitiateInstance(std::string ip, int port)
 {
     if (_instance != nullptr)
         return Client::GetInstance();
@@ -25,7 +25,7 @@ Client& Client::InitiateInstance(std::string ip, int port)
     return *_instance;
 }
 
-Client& Client::GetInstance()
+Client &Client::GetInstance()
 {
     if (_instance == nullptr)
         throw std::runtime_error("Instance not initiated");
@@ -41,7 +41,7 @@ void Client::startGame() { _game.run(); }
 
 void Client::setupLua()
 {
-    Engine& engine = Engine::GetInstance();
+    Engine &engine = Engine::GetInstance();
     engine.loadLibraries();
     setupClientSideLua();
     engine.lockLuaState();
@@ -49,7 +49,7 @@ void Client::setupLua()
 
 void Client::setupClientSideLua()
 {
-    lua_State* L = Engine::GetInstance().getLuaState();
+    lua_State *L = Engine::GetInstance().getLuaState();
     luau_ExposeGlobalFunction(L, luau_IsKeyPressed, "IsKeyPressed");
     luau_ExposeGlobalFunction(L, luau_IsKeyJustPressed, "IsKeyJustPressed");
     luau_ExposeGlobalFunction(L, luau_EnableFpsCounter, "EnableFpsCounter");
@@ -61,7 +61,7 @@ void Client::setupClientSideLua()
 
 void Client::loadLuaGame()
 {
-    Engine& engine = Engine::GetInstance();
+    Engine &engine = Engine::GetInstance();
     engine.displayGameInfo();
     if (engine.LoadLuaFile("index.luau"))
         engine.execute();
@@ -72,12 +72,12 @@ std::string Client::getIp() const { return _ip; }
 
 int Client::getPort() const { return _port; }
 
-ClientConnection& Client::getClientConnection() { return _clientConnection; }
+ClientConnection &Client::getClientConnection() { return _clientConnection; }
 
 void Client::broadcastLuaPackets()
 {
     while (!Engine::GetInstance().getBroadcastQueue().empty()) {
-        std::pair<std::string, Packet*> newPacket = Engine::GetInstance().getBroadcastQueue().front();
+        std::pair<std::string, Packet *> newPacket = Engine::GetInstance().getBroadcastQueue().front();
         if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
             getClientConnection().sendToServerTCP(newPacket.second);
         }
@@ -91,7 +91,7 @@ void Client::broadcastLuaPackets()
 void Client::processIncomingPackets()
 {
     while (getClientConnection().hasPendingTCPPacket()) {
-        Packet* packet = getClientConnection().getLatestTCPPacket();
+        Packet *packet = getClientConnection().getLatestTCPPacket();
         if (packet == nullptr)
             return;
         (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
@@ -99,7 +99,7 @@ void Client::processIncomingPackets()
         delete packet;
     }
     while (getClientConnection().hasPendingUDPPacket()) {
-        Packet* packet = getClientConnection().getLatestUDPPacket();
+        Packet *packet = getClientConnection().getLatestUDPPacket();
         if (packet == nullptr)
             return;
         (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
@@ -108,62 +108,62 @@ void Client::processIncomingPackets()
     }
 }
 
-void Client::handleConnectPacket(Packet* packet)
+void Client::handleConnectPacket(Packet *packet)
 {
     PacketBuilder readBuilder(packet);
     PacketBuilder builder;
     switch (_step) {
-    case Client::ConnectionStep::AUTH_CODE_RECEIVED:
-        {
-            std::string authCode = readBuilder.readString();
-            if (authCode == SERVER_CHALLENGE) {
-                builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
-                Packet* packet = builder.build();
-                getClientConnection().sendToServerTCP(packet);
-                _step = Client::ConnectionStep::AUTH_CODE_SENT;
+        case Client::ConnectionStep::AUTH_CODE_RECEIVED:
+            {
+                std::string authCode = readBuilder.readString();
+                if (authCode == SERVER_CHALLENGE) {
+                    builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
+                    Packet *packet = builder.build();
+                    getClientConnection().sendToServerTCP(packet);
+                    _step = Client::ConnectionStep::AUTH_CODE_SENT;
+                }
+                else {
+                    throw std::runtime_error("Invalid auth code");
+                }
+                break;
             }
-            else {
-                throw std::runtime_error("Invalid auth code");
+        case Client::ConnectionStep::AUTH_CODE_SENT:
+            {
+                std::string message = readBuilder.readString();
+                if (message == "AUTHENTICATED") {
+                    std::string id = readBuilder.readString();
+                    getClientConnection().setID(id);
+                    builder.setCmd(PacketCmd::CONNECT);
+                    getClientConnection().sendToServerTCP(builder.build());
+                    _step = Client::ConnectionStep::COMPLETE;
+                }
+                else {
+                    throw std::runtime_error("Failed to authenticate");
+                }
+                readBuilder.reset();
+                spdlog::debug("Connection established");
+                _connectionEstablished = true;
+                break;
             }
+        case Client::ConnectionStep::COMPLETE:
+            {
+                break;
+            }
+        default:
             break;
-        }
-    case Client::ConnectionStep::AUTH_CODE_SENT:
-        {
-            std::string message = readBuilder.readString();
-            if (message == "AUTHENTICATED") {
-                std::string id = readBuilder.readString();
-                getClientConnection().setID(id);
-                builder.setCmd(PacketCmd::CONNECT);
-                getClientConnection().sendToServerTCP(builder.build());
-                _step = Client::ConnectionStep::COMPLETE;
-            }
-            else {
-                throw std::runtime_error("Failed to authenticate");
-            }
-            readBuilder.reset();
-            spdlog::debug("Connection established");
-            _connectionEstablished = true;
-            break;
-        }
-    case Client::ConnectionStep::COMPLETE:
-        {
-            break;
-        }
-    default:
-        break;
     }
 }
 
-void Client::handleDisconnectPacket(Packet* packet) { spdlog::debug("Disconnected from server"); }
+void Client::handleDisconnectPacket(Packet *packet) { spdlog::debug("Disconnected from server"); }
 
-void Client::handleLuaPacket(Packet* packet)
+void Client::handleLuaPacket(Packet *packet)
 {
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();
     Engine::GetInstance().netCallback(packetName, packet, packetName);
 }
 
-void Client::handleNewMessagePacket(Packet* packet)
+void Client::handleNewMessagePacket(Packet *packet)
 {
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();

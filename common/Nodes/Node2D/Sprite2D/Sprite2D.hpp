@@ -6,12 +6,13 @@
 */
 
 #ifndef SPRITE2D_HPP_
-    #define SPRITE2D_HPP_
+#define SPRITE2D_HPP_
 
-    #include "../Node2D.hpp"
-    #include "Engine.hpp"
+#include "../Node2D.hpp"
+#include "Engine.hpp"
 
-class Sprite2D : public Node2D {
+class Sprite2D : public Node2D
+{
     public:
         Sprite2D(const std::string &name = "sprite2d", const std::string &texture = "");
         ~Sprite2D();

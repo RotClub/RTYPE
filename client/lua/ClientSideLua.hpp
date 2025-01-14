@@ -3,9 +3,9 @@
 //
 
 #ifndef CLIENTSIDELUA_HPP
-    #define CLIENTSIDELUA_HPP
+#define CLIENTSIDELUA_HPP
 
-    #include "Lua/lua.hpp"
+#include "Lua/lua.hpp"
 
 
 LUA_API int luau_IsKeyPressed(lua_State *L);
@@ -15,4 +15,4 @@ LUA_API int luau_DisableFpsCounter(lua_State *L);
 LUA_API int luau_DisableColorBlindnessShader(lua_State *L);
 LUA_API int luau_CycleColorBlindnessShader(lua_State *L);
 
-#endif //CLIENTSIDELUA_HPP
+#endif // CLIENTSIDELUA_HPP

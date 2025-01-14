@@ -3,21 +3,23 @@
 //
 
 #ifndef CLIENT_HPP
-    #define CLIENT_HPP
+#define CLIENT_HPP
 
-    #include <string>
-    #include <tuple>
-    #include <netinet/in.h>
-    #include <cstring>
-    #include <Networking/Packet.hpp>
-    #include <Networking/SafeQueue.hpp>
+#include <Networking/Packet.hpp>
+#include <Networking/SafeQueue.hpp>
+#include <cstring>
+#include <netinet/in.h>
+#include <string>
+#include <tuple>
 
-class Client {
+class Client
+{
     public:
         Client(int srvTcpFd);
         ~Client();
 
-        enum class ConnectionStep {
+        enum class ConnectionStep
+        {
             UNVERIFIED,
             AUTH_CODE_SENT,
             AUTH_CODE_VERIFIED,
@@ -64,4 +66,4 @@ class Client {
         char _id[16];
 };
 
-#endif //CLIENT_HPP
+#endif // CLIENT_HPP

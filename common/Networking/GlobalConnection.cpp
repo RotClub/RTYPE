@@ -12,9 +12,9 @@ GlobalConnection::GlobalConnection() {}
 
 GlobalConnection::~GlobalConnection() {}
 
-Packet* GlobalConnection::getLatestTCPPacket() { return std::get<IN>(_tcpQueues).dequeue(); }
+Packet *GlobalConnection::getLatestTCPPacket() { return std::get<IN>(_tcpQueues).dequeue(); }
 
-Packet* GlobalConnection::getLatestUDPPacket() { return std::get<IN>(_udpQueues).dequeue(); }
+Packet *GlobalConnection::getLatestUDPPacket() { return std::get<IN>(_udpQueues).dequeue(); }
 
 int GlobalConnection::_selectFd()
 {

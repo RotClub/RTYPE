@@ -16,7 +16,7 @@
 
 #include "nlohmann/json.hpp"
 
-Engine::Engine(Types::VMState state, const std::string& gamePath) :
+Engine::Engine(Types::VMState state, const std::string &gamePath) :
     root(new Node("root")), L(luaL_newstate()), _gamePath("games/" + gamePath), _libPath("libs"), _state(state)
 {
     if (!L)
@@ -31,39 +31,39 @@ Engine::Engine(Types::VMState state, const std::string& gamePath) :
     try {
         _gameInfo = new GameInfo(manifestData);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e) {
         throw std::runtime_error("Failed to load manifest.json: " + std::string(e.what()));
     }
 
     std::vector<spdlog::sink_ptr> sinks;
     sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     switch (state) {
-    case Types::VMState::SERVER:
-        sinks.push_back(
-            std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/" + _gameInfo->getName() + "/server", 23, 59));
-        break;
-    case Types::VMState::CLIENT:
-        sinks.push_back(
-            std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/" + _gameInfo->getName() + "/client", 23, 59));
-        break;
+        case Types::VMState::SERVER:
+            sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>(
+                "logs/" + _gameInfo->getName() + "/server", 23, 59));
+            break;
+        case Types::VMState::CLIENT:
+            sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>(
+                "logs/" + _gameInfo->getName() + "/client", 23, 59));
+            break;
     }
     auto engineLogger = std::make_shared<spdlog::logger>("EngineLogger", begin(sinks), end(sinks));
     spdlog::set_default_logger(engineLogger);
     switch (state) {
-    case Types::VMState::SERVER:
+        case Types::VMState::SERVER:
 #ifdef RTYPE_DEBUG
-        spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] <%t> %v");
+            spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] <%t> %v");
 #else
-        spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] %v");
+            spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] %v");
 #endif
-        break;
-    case Types::VMState::CLIENT:
+            break;
+        case Types::VMState::CLIENT:
 #ifdef RTYPE_DEBUG
-        spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] <%t> %v");
+            spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] <%t> %v");
 #else
-        spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] %v");
+            spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] %v");
 #endif
-        break;
+            break;
     }
     spdlog::flush_every(std::chrono::seconds(5));
 #ifdef RTYPE_DEBUG
@@ -84,7 +84,7 @@ Engine::~Engine()
     delete _gameInfo;
 }
 
-Engine& Engine::StartInstance(Types::VMState state, const std::string& gamePath)
+Engine &Engine::StartInstance(Types::VMState state, const std::string &gamePath)
 {
     _instance = new Engine(state, gamePath);
     if (_instance->L != nullptr)
@@ -92,36 +92,36 @@ Engine& Engine::StartInstance(Types::VMState state, const std::string& gamePath)
     return *_instance;
 }
 
-Engine* Engine::_instance = nullptr;
+Engine *Engine::_instance = nullptr;
 
-void Engine::updateNode(Node* root)
+void Engine::updateNode(Node *root)
 {
     root->Update();
-    for (auto& child : root->GetChildren()) {
+    for (auto &child : root->GetChildren()) {
         Engine::updateNode(child);
     }
 }
 
-Engine& Engine::GetInstance()
+Engine &Engine::GetInstance()
 {
     if (_instance == nullptr)
         throw std::runtime_error("Engine instance not started");
     return *_instance;
 }
 
-void Engine::addPacketRegistryEntry(const std::string& packetName, const bool reliable)
+void Engine::addPacketRegistryEntry(const std::string &packetName, const bool reliable)
 {
     _packetsRegistry[packetName] = reliable;
     if (_state == Types::VMState::SERVER)
         _newPacketsInRegistry.push(packetName);
 }
 
-bool Engine::hasPacketRegistryEntry(const std::string& packetName) const
+bool Engine::hasPacketRegistryEntry(const std::string &packetName) const
 {
     return _packetsRegistry.contains(packetName);
 }
 
-bool Engine::isPacketReliable(const std::string& packetName) const
+bool Engine::isPacketReliable(const std::string &packetName) const
 {
     if (!_packetsRegistry.contains(packetName))
         return false;
@@ -135,7 +135,7 @@ void Engine::displayGameInfo()
     spdlog::info("Description: " + _gameInfo->getDescription());
     spdlog::info("Max players: " + std::to_string(_gameInfo->getMaxPlayers()));
     spdlog::info("Authors:");
-    for (const auto& author : _gameInfo->getAuthors()) {
+    for (const auto &author : _gameInfo->getAuthors()) {
         spdlog::info("  - " + author);
     }
     spdlog::info("Version: " + _gameInfo->getVersion());
@@ -145,7 +145,7 @@ void Engine::displayGameInfo()
 // The arguments must be in pairs of type and value
 // Accepted types are: "int", "float", "double", "string", "boolean"
 // Example: callHook("RType:InitServer", "int", 42, nullptr);
-void Engine::callHook(const std::string& eventName, ...)
+void Engine::callHook(const std::string &eventName, ...)
 {
     lua_getglobal(L, "hook");
     lua_getfield(L, -1, "Call");
@@ -160,7 +160,7 @@ void Engine::callHook(const std::string& eventName, ...)
     va_start(args, eventName);
     int argCount = 0;
     while (true) {
-        const char* type = va_arg(args, const char*);
+        const char *type = va_arg(args, const char *);
         if (type == nullptr)
             break;
         if (strcmp(type, "int") == 0)
@@ -170,7 +170,7 @@ void Engine::callHook(const std::string& eventName, ...)
         else if (strcmp(type, "double") == 0)
             lua_pushnumber(L, va_arg(args, double));
         else if (strcmp(type, "string") == 0)
-            lua_pushstring(L, va_arg(args, const char*));
+            lua_pushstring(L, va_arg(args, const char *));
         else if (strcmp(type, "boolean") == 0)
             lua_pushboolean(L, va_arg(args, int));
         else
@@ -187,7 +187,7 @@ void Engine::callHook(const std::string& eventName, ...)
     lua_pop(L, 1);
 }
 
-void Engine::netCallback(const std::string& packetName, Packet* packet, const std::string& client)
+void Engine::netCallback(const std::string &packetName, Packet *packet, const std::string &client)
 {
     _builders.emplace(packet);
     lua_getglobal(L, "net");
@@ -210,7 +210,7 @@ void Engine::netCallback(const std::string& packetName, Packet* packet, const st
     lua_pop(L, 1);
 }
 
-std::string Engine::GetLibraryFileContents(const std::string& filename)
+std::string Engine::GetLibraryFileContents(const std::string &filename)
 {
     const std::filesystem::path filePath = _libPath / filename;
     if (!std::filesystem::exists(filePath)) {
@@ -231,13 +231,13 @@ std::string Engine::GetLibraryFileContents(const std::string& filename)
     return contents;
 }
 
-static void loadLibrary(lua_State* L, const std::string& filePath)
+static void loadLibrary(lua_State *L, const std::string &filePath)
 {
     try {
-        const std::string& script = Engine::GetInstance().GetLibraryFileContents(filePath);
+        const std::string &script = Engine::GetInstance().GetLibraryFileContents(filePath);
 
         size_t bytecodeSize;
-        char* bytecode = luau_compile(script.c_str(), script.size(), nullptr, &bytecodeSize);
+        char *bytecode = luau_compile(script.c_str(), script.size(), nullptr, &bytecodeSize);
 
         if (!bytecode) {
             throw std::runtime_error("Failed to compile the Lua script.");
@@ -256,7 +256,7 @@ static void loadLibrary(lua_State* L, const std::string& filePath)
 
         spdlog::debug("Successfully loaded file: {}", filePath);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e) {
         lua_pushfstring(L, "Exception: %s", e.what());
         lua_error(L);
     }
@@ -290,7 +290,7 @@ int Engine::deltaTime()
 
 void Engine::lockLuaState() { luaL_sandbox(L); }
 
-std::string Engine::GetLuaFileContents(const std::string& filename)
+std::string Engine::GetLuaFileContents(const std::string &filename)
 {
     const std::filesystem::path filePath = _gamePath / LUA_PATH / filename;
     if (!std::filesystem::exists(filePath)) {
@@ -311,13 +311,13 @@ std::string Engine::GetLuaFileContents(const std::string& filename)
     return contents;
 }
 
-bool Engine::LoadLuaFile(const std::string& filename)
+bool Engine::LoadLuaFile(const std::string &filename)
 {
     std::string source = GetLuaFileContents(filename);
     if (source.empty())
         return false;
     size_t bytecodeSize = 0;
-    char* bytecode = luau_compile(source.c_str(), source.size(), nullptr, &bytecodeSize);
+    char *bytecode = luau_compile(source.c_str(), source.size(), nullptr, &bytecodeSize);
     const int result = luau_load(L, filename.c_str(), bytecode, bytecodeSize, 0);
     free(bytecode);
     if (result != 0) {

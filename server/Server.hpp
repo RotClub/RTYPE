@@ -6,16 +6,17 @@
 */
 
 #ifndef SERVER_HPP_
-    #define SERVER_HPP_
+#define SERVER_HPP_
 
-    #include <iostream>
-    #include "connection/ServerConnection.hpp"
-    #include <signal.h>
-    #include "client/Client.hpp"
-    #include <vector>
-    #include "Engine.hpp"
+#include <iostream>
+#include <signal.h>
+#include <vector>
+#include "Engine.hpp"
+#include "client/Client.hpp"
+#include "connection/ServerConnection.hpp"
 
-class Server {
+class Server
+{
     public:
         Server(int port);
         ~Server();

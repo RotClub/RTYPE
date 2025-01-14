@@ -26,7 +26,7 @@ void Game::run()
     if (_window.IsReady() == false)
         throw std::runtime_error("Window is not ready");
     Engine::GetInstance().clientStarted = true;
-    Client& client = Client::GetInstance();
+    Client &client = Client::GetInstance();
     client.getClientConnection().establishConnection();
     client.setupLua();
     while (!client.isConnectionEstablished()) {
@@ -96,11 +96,11 @@ void Game::_accessibilityLoop()
 
 void Game::_update(int dt)
 {
-    Client& client = Client::GetInstance();
+    Client &client = Client::GetInstance();
     Engine::GetInstance().callHook("Tick", "int", dt, nullptr);
     client.broadcastLuaPackets();
     client.processIncomingPackets();
-    Node* rootNode = Engine::GetInstance().root;
+    Node *rootNode = Engine::GetInstance().root;
     _updateNodes(*rootNode);
 }
 
@@ -110,7 +110,7 @@ void Game::_draw(int dt)
     _drawNodes(*Engine::GetInstance().root);
 }
 
-void Game::_updateNodes(Node& node)
+void Game::_updateNodes(Node &node)
 {
     if (&node == nullptr)
         return;
@@ -122,7 +122,7 @@ void Game::_updateNodes(Node& node)
     }
 }
 
-void Game::_drawNodes(Node& node)
+void Game::_drawNodes(Node &node)
 {
     if (&node == nullptr)
         return;
@@ -136,6 +136,6 @@ void Game::_drawNodes(Node& node)
 
 void Game::_loadResources()
 {
-    ResourceManager& resourceManager = Engine::GetInstance().getResourceManager();
+    ResourceManager &resourceManager = Engine::GetInstance().getResourceManager();
     resourceManager.loadAllPendingResources();
 }
