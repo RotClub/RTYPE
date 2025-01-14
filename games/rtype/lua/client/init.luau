@@ -2,6 +2,7 @@
 local parallax = root:CreateChild("Parallax", "parallaxBg", "assets/background.png", 3, nil)
 local spriteA = root:CreateChild("Sprite2D", "spriteA", "assets/a.png")
 local point = spriteA:CreateChild("Node2D", "point")
+root:CreateChild("Label", "label", 100, 100, "Hello World", "", 100)
 
 parallax:SetReferenceNode(point)
 
