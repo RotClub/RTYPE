@@ -7,15 +7,13 @@
 
 #include "ArgumentManager.hpp"
 
-ArgumentManager::ArgumentManager(int ac, char **av)
+ArgumentManager::ArgumentManager(int ac, char** av)
 {
     _ac = ac;
     _av = av;
 }
 
-ArgumentManager::~ArgumentManager()
-{
-}
+ArgumentManager::~ArgumentManager() {}
 
 bool ArgumentManager::checkArguments()
 {
@@ -41,10 +39,12 @@ bool ArgumentManager::checkArguments()
             spdlog::error("Port must be between 0 and 65535");
             return false;
         }
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument&) {
         spdlog::error("Invalid port: not a number");
         return false;
-    } catch (const std::out_of_range&) {
+    }
+    catch (const std::out_of_range&) {
         spdlog::error("Invalid port: out of range");
         return false;
     }
