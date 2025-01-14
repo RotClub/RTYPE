@@ -42,6 +42,7 @@ class Engine {
         static Engine &GetInstance();
 
         int deltaTime();
+        float getDeltaLast() const { return _deltaLast / 1000000000.0f; }
 
         void addPacketRegistryEntry(const std::string &packetName, bool reliable);
         [[nodiscard]] bool hasPacketRegistryEntry(const std::string &packetName) const;
@@ -58,7 +59,9 @@ class Engine {
 
         void callHook(const std::string &eventName, ...);
 
-        std::string GetLibraryFileContents(const std::string &filename);
+		void updateNode(Node* root);
+
+		std::string GetLibraryFileContents(const std::string& filename);
         void loadLibraries();
         void lockLuaState();
 
@@ -102,7 +105,8 @@ class Engine {
         std::filesystem::path _gamePath;
         std::filesystem::path _libPath;
         Types::VMState _state;
-        std::chrono::high_resolution_clock::time_point _deltaLast;
+        std::chrono::high_resolution_clock::time_point _timeLast;
+        float _deltaLast;
         const GameInfo *_gameInfo;
         ResourceManager _resourceManager;
         std::string _lastStartedPacket;

@@ -13,6 +13,7 @@
 #include <Nodes/Shape2D/Rectangle2D/Rectangle2D.hpp>
 #include <Nodes/Node2D/Sprite2D/Sprite2D.hpp>
 #include <Nodes/Node2D/CollisionNode2D/Body2D/RigidBody2D/RigidBody2D.hpp>
+#include <Nodes/Node2D/CollisionNode2D/Body2D/StaticBody2D/StaticBody2D.hpp>
 
 LUA_API int luau_Include(lua_State *L)
 {
@@ -251,6 +252,20 @@ LUA_API int luau_Debug(lua_State *L)
         return 0;
     }
 
+	LUA_API int lua_gcRigidBody2D(lua_State* L)
+	{
+		RigidBody2D* rigidBody2D = *static_cast<RigidBody2D**>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+		delete rigidBody2D;
+		return 0;
+	}
+
+	LUA_API int lua_gcStaticBody2D(lua_State* L)
+	{
+		StaticBody2D* staticBody2D = *static_cast<StaticBody2D**>(luaL_checkudata(L, 1, "StaticBody2DMetaTable"));
+		delete staticBody2D;
+		return 0;
+	}
+
     /** __gc functions **/
 
     /** GetName functions **/
@@ -292,6 +307,16 @@ LUA_API int luau_Debug(lua_State *L)
     {
         return luau_TemplateNodeGetName<Parallax>(L, "ParallaxMetaTable");
     }
+
+	LUA_API int luau_RigidBody2DGetName(lua_State *L)
+	{
+		return luau_TemplateNodeGetName<RigidBody2D>(L, "RigidBody2DMetaTable");
+	}
+
+	LUA_API int luau_StaticBody2DGetName(lua_State *L)
+	{
+		return luau_TemplateNodeGetName<StaticBody2D>(L, "StaticBody2DMetaTable");
+	}
 
     /** GetName functions **/
 
@@ -344,6 +369,21 @@ LUA_API int luau_Debug(lua_State *L)
         parallax->name = name;
         return 0;
     }
+	LUA_API int luau_RigidBody2DSetName(lua_State *L)
+	{
+		RigidBody2D* rgbd2D = *static_cast<RigidBody2D**>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+		const char *name = luaL_checkstring(L, 2);
+		rgbd2D->name = name;
+		return 0;
+	}
+
+	LUA_API int luau_StaticBody2DSetName(lua_State *L)
+	{
+		StaticBody2D* staticBody2D = *static_cast<StaticBody2D**>(luaL_checkudata(L, 1, "StaticBody2DMetaTable"));
+		const char *name = luaL_checkstring(L, 2);
+		staticBody2D->name = name;
+		return 0;
+	}
 
     /** SetName functions **/
 
@@ -394,6 +434,16 @@ LUA_API int luau_Debug(lua_State *L)
         return luau_TemplateNodeGetChildren<Parallax>(L, "ParallaxMetaTable");
     }
 
+	LUA_API int luau_RigidBody2DGetChildren(lua_State *L)
+	{
+        return luau_TemplateNodeGetChildren<RigidBody2D>(L, "RigidBody2DMetaTable");
+	}
+
+	LUA_API int luau_StaticBody2DGetChildren(lua_State *L)
+	{
+        return luau_TemplateNodeGetChildren<StaticBody2D>(L, "StaticBody2DMetaTable");
+	}
+
     /** GetChildren functions **/
 
     /** GetChild functions **/
@@ -433,11 +483,23 @@ LUA_API int luau_Debug(lua_State *L)
         } else if (type == "Parallax") {
             const char* texture = luaL_checkstring(L, 4);
             int zIndex = luaL_checkinteger(L, 5);
-                Node2D* referenceNode = nullptr;
+            Node2D* referenceNode = nullptr;
             if (!lua_isnil(L, 6)) {
                 Node2D* referenceNode = *static_cast<Node2D**>(luaL_checkudata(L, 6, "Node2DMetaTable"));
             }
             child = new Parallax(texture, name, zIndex, referenceNode);
+        } else if (type == "StaticBody2D")
+		{
+	        double x = luaL_checknumber(L, 4);
+			double y = luaL_checknumber(L, 5);
+			child = new StaticBody2D(name, Types::Vector2(x, y));
+        } else if (type == "RigidBody2D")
+		{
+	        double x = luaL_checknumber(L, 4);
+			double y = luaL_checknumber(L, 5);
+			double vel_x = luaL_checknumber(L, 6);
+			double vel_y = luaL_checknumber(L, 7);
+			child = new RigidBody2D(name, Types::Vector2(x, y), Types::Vector2(vel_x, vel_y));
         } else {
             luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
         }
@@ -541,6 +603,44 @@ LUA_API int luau_Debug(lua_State *L)
 
     LUA_API int luau_ParallaxGetChild(lua_State* L) {
         Parallax* node = *static_cast<Parallax**>(luaL_checkudata(L, 1, "ParallaxMetaTable"));
+        const char* childName = luaL_checkstring(L, 2);
+        int find = 0;
+
+        std::vector<Node*> &children = node->children;
+        for (auto &child : children) {
+            if (child->name == childName) {
+                *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+                luaL_getmetatable(L, child->metatable.c_str());
+                lua_setmetatable(L, -2);
+                find = 1;
+            }
+        }
+        if (!find)
+            lua_pushnil(L);
+        return 1;
+    }
+
+    LUA_API int luau_RigidBody2DGetChild(lua_State* L) {
+        RigidBody2D* node = *static_cast<RigidBody2D**>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+        const char* childName = luaL_checkstring(L, 2);
+        int find = 0;
+
+        std::vector<Node*> &children = node->children;
+        for (auto &child : children) {
+            if (child->name == childName) {
+                *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+                luaL_getmetatable(L, child->metatable.c_str());
+                lua_setmetatable(L, -2);
+                find = 1;
+            }
+        }
+        if (!find)
+            lua_pushnil(L);
+        return 1;
+    }
+
+    LUA_API int luau_StaticBody2DGetChild(lua_State* L) {
+        StaticBody2D* node = *static_cast<StaticBody2D**>(luaL_checkudata(L, 1, "StaticBody2DMetaTable"));
         const char* childName = luaL_checkstring(L, 2);
         int find = 0;
 
@@ -664,6 +764,40 @@ LUA_API int luau_Debug(lua_State *L)
         return 1;
     }
 
+    LUA_API int luau_RigidBody2DCreateChild(lua_State *L)
+    {
+        RigidBody2D* node = *static_cast<RigidBody2D**>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+        const std::string type = luaL_checkstring(L, 2);
+
+        Node *child = luau_NodeFactory(L, type);
+        *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+        std::string metatableName = type + "MetaTable";
+        luaL_getmetatable(L, metatableName.c_str());
+        if (lua_isnil(L, -1)) {
+            luaL_error(L, "Metatable '%s' not found. Ensure it is registered before calling AddChild.", metatableName.c_str());
+        }
+        lua_setmetatable(L, -2);
+        node->addChild(*child);
+        return 1;
+    }
+
+    LUA_API int luau_StaticBody2DCreateChild(lua_State *L)
+    {
+        StaticBody2D* node = *static_cast<StaticBody2D**>(luaL_checkudata(L, 1, "StaticBody2DMetaTable"));
+        const std::string type = luaL_checkstring(L, 2);
+
+        Node *child = luau_NodeFactory(L, type);
+        *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+        std::string metatableName = type + "MetaTable";
+        luaL_getmetatable(L, metatableName.c_str());
+        if (lua_isnil(L, -1)) {
+            luaL_error(L, "Metatable '%s' not found. Ensure it is registered before calling AddChild.", metatableName.c_str());
+        }
+        lua_setmetatable(L, -2);
+        node->addChild(*child);
+        return 1;
+    }
+
     /** CreateChild functions **/
 
     /** AddChild functions **/
@@ -716,6 +850,22 @@ LUA_API int luau_Debug(lua_State *L)
         return 0;
     }
 
+    LUA_API int luau_RigidBody2DAddChild(lua_State *L)
+    {
+        RigidBody2D* node = *static_cast<RigidBody2D**>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+        Node* child = *static_cast<Node**>(luaL_checkudata(L, 2, "NodeMetaTable"));
+        node->addChild(*child);
+        return 0;
+    }
+
+    LUA_API int luau_StaticBody2DAddChild(lua_State *L)
+    {
+        StaticBody2D* node = *static_cast<StaticBody2D**>(luaL_checkudata(L, 1, "StaticBody2DMetaTable"));
+        Node* child = *static_cast<Node**>(luaL_checkudata(L, 2, "NodeMetaTable"));
+        node->addChild(*child);
+        return 0;
+    }
+
     /** AddChild functions **/
 
     /** Update functions **/
@@ -763,6 +913,11 @@ LUA_API int luau_Debug(lua_State *L)
         return luau_TemplatedNodeUpdate<Node>(L, "NodeMetaTable");
     }
 
+    LUA_API int luau_StaticBody2DUpdate(lua_State *L)
+    {
+        return luau_TemplatedNodeUpdate<StaticBody2D>(L, "StaticBody2DMetaTable");
+    }
+
     /** Update functions **/
 
     /** GetPosition functions **/
@@ -796,6 +951,22 @@ LUA_API int luau_Debug(lua_State *L)
         Area2D* area2D = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
         lua_pushnumber(L, area2D->position.x);
         lua_pushnumber(L, area2D->position.y);
+        return 2;
+    }
+
+    LUA_API int luau_RigidBody2DGetPosition(lua_State *L)
+    {
+        RigidBody2D* rgbd2D = *static_cast<RigidBody2D**>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+        lua_pushnumber(L, rgbd2D->position.x);
+        lua_pushnumber(L, rgbd2D->position.y);
+        return 2;
+    }
+
+    LUA_API int luau_StaticBody2DGetPosition(lua_State *L)
+    {
+        StaticBody2D* stbd2D = *static_cast<StaticBody2D**>(luaL_checkudata(L, 1, "StaticBody2DMetaTable"));
+        lua_pushnumber(L, stbd2D->position.x);
+        lua_pushnumber(L, stbd2D->position.y);
         return 2;
     }
 
@@ -840,6 +1011,14 @@ LUA_API int luau_Debug(lua_State *L)
         RigidBody2D* rgbd2D = *static_cast<RigidBody2D**>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
         rgbd2D->position.x = static_cast<float>(luaL_checknumber(L, 2));
         rgbd2D->position.y = static_cast<float>(luaL_checknumber(L, 3));
+        return 0;
+    }
+
+    LUA_API int luau_StaticBody2DSetPosition(lua_State *L)
+    {
+        StaticBody2D* stbd2D = *static_cast<StaticBody2D**>(luaL_checkudata(L, 1, "StaticBody2DMetaTable"));
+        stbd2D->position.x = static_cast<float>(luaL_checknumber(L, 2));
+        stbd2D->position.y = static_cast<float>(luaL_checknumber(L, 3));
         return 0;
     }
 
@@ -894,6 +1073,11 @@ LUA_API int luau_Debug(lua_State *L)
         return luau_TemplateCollisionShape2DCollide<RigidBody2D>(L, "RigidBody2DMetaTable");
     }
 
+    LUA_API int luau_StaticBody2DCollide(lua_State *L)
+    {
+        return luau_TemplateCollisionShape2DCollide<StaticBody2D>(L, "StaticBody2DMetaTable");
+    }
+
     /** Collide functions **/
 
     /** ToggleCollision functions **/
@@ -921,6 +1105,11 @@ LUA_API int luau_Debug(lua_State *L)
         return luau_TemplateCollisionShape2DToggleCollision<RigidBody2D>(L, "RigidBody2DMetaTable");
 	}
 
+    LUA_API int luau_StaticBody2DToggleCollision(lua_State *L)
+    {
+        return luau_TemplateCollisionShape2DToggleCollision<StaticBody2D>(L, "StaticBody2DMetaTable");
+	}
+
     /** ToggleCollision functions **/
 
     /** IsCollisionEnabled functions **/
@@ -946,6 +1135,11 @@ LUA_API int luau_Debug(lua_State *L)
     LUA_API int luau_RigidBody2DIsCollisionEnabled(lua_State *L)
     {
         return luau_TemplateCollisionShape2DIsCollisionEnabled<RigidBody2D>(L, "RigidBody2DMetaTable");
+	}
+
+    LUA_API int luau_StaticBody2DIsCollisionEnabled(lua_State *L)
+    {
+        return luau_TemplateCollisionShape2DIsCollisionEnabled<StaticBody2D>(L, "StaticBody2DMetaTable");
 	}
 
     /** IsCollisionEnabled functions **/
@@ -1227,6 +1421,40 @@ LUA_API int luau_Debug(lua_State *L)
             {nullptr, nullptr}
         };
         luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
+        constexpr luaL_Reg rgbd2DLibrary[] = {
+            {"GetName", luau_RigidBody2DGetName},
+            {"SetName", luau_RigidBody2DSetName},
+            {"GetChildren", luau_RigidBody2DGetChildren},
+            {"GetChild", luau_RigidBody2DGetChild},
+            {"AddChild", luau_RigidBody2DAddChild},
+            {"GetPosition", luau_RigidBody2DGetPosition},
+            {"SetPosition", luau_RigidBody2DSetPosition},
+            {"CreateChild", luau_RigidBody2DCreateChild},
+            {"Update", luau_RigidBody2DUpdate},
+        	{"ToggleCollision", luau_RigidBody2DToggleCollision},
+        	{"IsCollisionEnabled", luau_RigidBody2DIsCollisionEnabled},
+        	{"Collide", luau_RigidBody2DCollide},
+            {"__gc", lua_gcRigidBody2D},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, rgbd2DLibrary, "RigidBody2DMetaTable");
+        constexpr luaL_Reg stbd2DLibrary[] = {
+            {"GetName", luau_StaticBody2DGetName},
+            {"SetName", luau_StaticBody2DSetName},
+            {"GetChildren", luau_StaticBody2DGetChildren},
+            {"GetChild", luau_StaticBody2DGetChild},
+            {"AddChild", luau_StaticBody2DAddChild},
+            {"GetPosition", luau_StaticBody2DGetPosition},
+            {"SetPosition", luau_StaticBody2DSetPosition},
+            {"CreateChild", luau_StaticBody2DCreateChild},
+            {"Update", luau_StaticBody2DUpdate},
+        	{"ToggleCollision", luau_StaticBody2DToggleCollision},
+        	{"IsCollisionEnabled", luau_StaticBody2DIsCollisionEnabled},
+        	{"Collide", luau_StaticBody2DCollide},
+            {"__gc", lua_gcStaticBody2D},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, stbd2DLibrary, "StaticBody2DMetaTable");
         /* NODE LIBRARY */
     }
 

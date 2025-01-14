@@ -4,10 +4,7 @@
 
 #include "Config.hpp"
 
-Config::Config()
-    : _fpsCount(false), _colorBlindnessMode(ColorBlindnessMode::NONE)
-{
-}
+Config::Config() : _fpsCount(false), _colorBlindnessMode(ColorBlindnessMode::NONE) {}
 
 Config& Config::GetInstance()
 {

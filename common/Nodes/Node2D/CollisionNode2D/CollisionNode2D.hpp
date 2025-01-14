@@ -16,8 +16,6 @@ class CollisionNode2D: public Node2D {
 public:
 	explicit CollisionNode2D(const std::string &name = "collisionnode2d");
 
-    void Update() override;
-
 	Types::Rect2 getBoundingBox() const;
 
     void toggleCollision();
