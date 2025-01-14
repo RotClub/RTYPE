@@ -24,6 +24,12 @@ Sprite2D &Sprite2D::SetTexture(const std::string &texture)
     return *this;
 }
 
+Sprite2D &Sprite2D::SetSize(const Types::Vector2 &size)
+{
+    _size = size;
+    return *this;
+}
+
 Sprite2D &Sprite2D::SetSource(const Types::Rect2 &source)
 {
     _source = source;
@@ -41,10 +47,13 @@ void Sprite2D::Draw()
     if (_source.size.x == 0 && _source.size.y == 0) {
         raylib::Rectangle tmp = {0, 0, width, height};
         src = tmp;
-    }
-    else {
+    } else {
         raylib::Rectangle tmp = {_source.origin.x, _source.origin.y, _source.size.x, _source.size.y};
         src = tmp;
     }
-    tex.Draw(src, {getGlobalPosition().x, getGlobalPosition().y, width, height}, {0, 0}, 0);
+    Types::Vector2 finalSize = _size;
+    if (finalSize.x == 0 && finalSize.y == 0) {
+        finalSize = {_source.size.x, _source.size.y};
+    }
+    tex.Draw(src, {getGlobalPosition().x, getGlobalPosition().y, finalSize.x, finalSize.y}, {0, 0}, 0);
 }
