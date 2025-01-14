@@ -72,6 +72,8 @@ void Server::broadcastLuaPackets()
     while (!Engine::GetInstance().getBroadcastQueue().empty()) {
         std::pair<std::string, Packet *> newPacket = Engine::GetInstance().getBroadcastQueue().front();
         for (auto &client : _serverConnection.getClientConnections()) {
+            if (client->getStep() != Client::ConnectionStep::COMPLETE)
+                continue;
             if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
                 client->addTcpPacketOutput(newPacket.second);
             }
@@ -154,7 +156,7 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
                 readBuilder.reset();
                 client->setStep(Client::ConnectionStep::COMPLETE);
                 spdlog::info("Client {} connected", client->getUuid());
-                Engine::GetInstance().callHook("ClientConnected", "string", client->getUuid().c_str(), nullptr);
+                Engine::GetInstance().callHook("PlayerJoin", "string", client->getUuid().c_str(), nullptr);
                 break;
             }
         default:

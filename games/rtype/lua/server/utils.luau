@@ -25,7 +25,7 @@ function syncNewPlayer(ply)
     for i = 1, #spaceships do
         net.Start("SpaceshipSpawn")
         net.WriteInt(i)
-        net.Send(ply)
+        net.SendToClient(ply)
     end
 end
 

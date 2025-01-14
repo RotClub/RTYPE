@@ -3,6 +3,8 @@
 //
 
 #include "Client.hpp"
+
+#include <Engine.hpp>
 #include <Networking/Defines.hpp>
 #include <cstring>
 #include <random>
@@ -44,6 +46,7 @@ Client::~Client()
 {
     close(_tcpFd);
     spdlog::info("Client {} disconnected", uuid);
+    Engine::GetInstance().callHook("PlayerLeave", "string", getUuid().c_str(), nullptr);
 }
 
 void Client::addTcpPacketInput(Packet *packet) { std::get<IN>(_tcpQueues).enqueue(packet); }

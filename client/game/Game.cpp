@@ -39,7 +39,7 @@ void Game::run()
 
     const bool accessibilityShaderExists =
         exists(Engine::GetInstance().getGamePath() / "assets/shaders/accessibility.fs");
-    if (accessibilityShaderExists)
+    if (accessibilityShaderExists && false)
         _accessibilityLoop();
     else
         _loop();

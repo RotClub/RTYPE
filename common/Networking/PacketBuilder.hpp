@@ -27,10 +27,12 @@ class PacketBuilder
         PacketBuilder &setCmd(PacketCmd cmd);
 
         PacketBuilder &writeInt(int nb);
+        PacketBuilder &writeFloat(float nb);
         PacketBuilder &writeString(const std::string &str);
 
-        int readInt();
-        std::string readString();
+        [[nodiscard]] int readInt();
+        [[nodiscard]] float readFloat();
+        [[nodiscard]] std::string readString();
 
         Packet *build();
         void reset();

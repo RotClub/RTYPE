@@ -273,7 +273,9 @@ void Engine::loadLibraries()
     constexpr luaL_Reg netLibrary[] = {{"CreatePacket", luau_NetCreatePacket}, {"Start", luau_NetStart},
                                        {"SendToServer", luau_NetSendToServer}, {"SendToClient", luau_NetSendToClient},
                                        {"Broadcast", luau_NetBroadcast},       {"WriteString", luau_NetWriteString},
-                                       {"ReadString", luau_NetReadString},     {nullptr, nullptr}};
+                                       {"ReadString", luau_NetReadString},     {"ReadInt", luau_NetReadInt},
+                                       {"WriteInt", luau_NetWriteInt},         {"ReadFloat", luau_NetReadFloat},
+                                       {"WriteFloat", luau_NetWriteFloat},     {nullptr, nullptr}};
     luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
     /* NET LIBRARY */
 }

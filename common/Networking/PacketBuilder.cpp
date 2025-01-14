@@ -43,7 +43,7 @@ PacketBuilder &PacketBuilder::setCmd(PacketCmd cmd)
     return *this;
 }
 
-PacketBuilder &PacketBuilder::writeInt(int nb)
+PacketBuilder &PacketBuilder::writeInt(const int nb)
 {
     void *rt = std::realloc(_data, _n + sizeof(int));
     if (rt == nullptr)
@@ -51,6 +51,17 @@ PacketBuilder &PacketBuilder::writeInt(int nb)
     _data = rt;
     std::memcpy(static_cast<char *>(_data) + _n, &nb, sizeof(int));
     _n += sizeof(int);
+    return *this;
+}
+
+PacketBuilder &PacketBuilder::writeFloat(const float nb)
+{
+    void *rt = std::realloc(_data, _n + sizeof(float));
+    if (rt == nullptr)
+        throw std::runtime_error("Error reallocating memory");
+    _data = rt;
+    std::memcpy(static_cast<char *>(_data) + _n, &nb, sizeof(float));
+    _n += sizeof(float);
     return *this;
 }
 
@@ -74,6 +85,17 @@ int PacketBuilder::readInt()
     std::memcpy(&nb, _data, sizeof(int));
     _data = static_cast<char *>(_data) + sizeof(int);
     _n -= sizeof(int);
+    return nb;
+}
+
+float PacketBuilder::readFloat()
+{
+    if (_n < sizeof(float))
+        throw std::runtime_error("Not enough data to read a float");
+    float nb = 0;
+    std::memcpy(&nb, _data, sizeof(float));
+    _data = static_cast<char *>(_data) + sizeof(float);
+    _n -= sizeof(float);
     return nb;
 }
 
