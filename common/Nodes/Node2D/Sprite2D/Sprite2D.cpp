@@ -8,16 +8,13 @@
 #include "Sprite2D.hpp"
 #include "Rectangle.hpp"
 
-Sprite2D::Sprite2D(const std::string &name, const std::string &texture)
-    : Node2D(name)
+Sprite2D::Sprite2D(const std::string &name, const std::string &texture) : Node2D(name)
 {
     SetTexture(texture);
     this->metatable = "Sprite2DMetaTable";
 }
 
-Sprite2D::~Sprite2D()
-{
-}
+Sprite2D::~Sprite2D() {}
 
 Sprite2D &Sprite2D::SetTexture(const std::string &texture)
 {

@@ -3,14 +3,15 @@
 //
 
 #include "Client.hpp"
-#include "spdlog/spdlog.h"
-#include <cstring>
-#include <stdexcept>
 #include <Networking/Defines.hpp>
+#include <cstring>
 #include <random>
+#include <stdexcept>
 #include <unistd.h>
+#include "spdlog/spdlog.h"
 
-static std::string generateUUID() {
+static std::string generateUUID()
+{
     static std::random_device dev;
     static std::mt19937 rng(dev());
 
@@ -25,8 +26,7 @@ static std::string generateUUID() {
     return str;
 }
 
-Client::Client(const int srvTcpFd)
-    : uuid(generateUUID()), _shouldDisconnect(false)
+Client::Client(const int srvTcpFd) : uuid(generateUUID()), _shouldDisconnect(false)
 {
     _step = ConnectionStep::UNVERIFIED;
     std::memset(&_address, 0, sizeof(_address));
@@ -46,62 +46,26 @@ Client::~Client()
     spdlog::info("Client {} disconnected", uuid);
 }
 
-void Client::addTcpPacketInput(Packet *packet)
-{
-    std::get<IN>(_tcpQueues).enqueue(packet);
-}
+void Client::addTcpPacketInput(Packet *packet) { std::get<IN>(_tcpQueues).enqueue(packet); }
 
-void Client::addUdpPacketInput(Packet *packet)
-{
-    std::get<IN>(_udpQueues).enqueue(packet);
-}
+void Client::addUdpPacketInput(Packet *packet) { std::get<IN>(_udpQueues).enqueue(packet); }
 
-Packet *Client::popTcpPacketInput()
-{
-    return std::get<IN>(_tcpQueues).dequeue();
-}
+Packet *Client::popTcpPacketInput() { return std::get<IN>(_tcpQueues).dequeue(); }
 
-Packet *Client::popUdpPacketInput()
-{
-    return std::get<IN>(_udpQueues).dequeue();
-}
+Packet *Client::popUdpPacketInput() { return std::get<IN>(_udpQueues).dequeue(); }
 
-void Client::addTcpPacketOutput(Packet *packet)
-{
-    std::get<OUT>(_tcpQueues).enqueue(packet);
-}
+void Client::addTcpPacketOutput(Packet *packet) { std::get<OUT>(_tcpQueues).enqueue(packet); }
 
-void Client::addUdpPacketOutput(Packet *packet)
-{
-    std::get<OUT>(_udpQueues).enqueue(packet);
-}
+void Client::addUdpPacketOutput(Packet *packet) { std::get<OUT>(_udpQueues).enqueue(packet); }
 
-Packet *Client::popTcpPacketOutput()
-{
-    return std::get<OUT>(_tcpQueues).dequeue();
-}
+Packet *Client::popTcpPacketOutput() { return std::get<OUT>(_tcpQueues).dequeue(); }
 
-Packet *Client::popUdpPacketOutput()
-{
-    return std::get<OUT>(_udpQueues).dequeue();
-}
+Packet *Client::popUdpPacketOutput() { return std::get<OUT>(_udpQueues).dequeue(); }
 
-bool Client::hasTcpPacketOutput()
-{
-    return !std::get<OUT>(_tcpQueues).empty();
-}
+bool Client::hasTcpPacketOutput() { return !std::get<OUT>(_tcpQueues).empty(); }
 
-bool Client::hasUdpPacketOutput()
-{
-    return !std::get<OUT>(_udpQueues).empty();
-}
+bool Client::hasUdpPacketOutput() { return !std::get<OUT>(_udpQueues).empty(); }
 
-bool Client::hasTcpPacketInput()
-{
-    return !std::get<IN>(_tcpQueues).empty();
-}
+bool Client::hasTcpPacketInput() { return !std::get<IN>(_tcpQueues).empty(); }
 
-bool Client::hasUdpPacketInput()
-{
-    return !std::get<IN>(_udpQueues).empty();
-}
+bool Client::hasUdpPacketInput() { return !std::get<IN>(_udpQueues).empty(); }

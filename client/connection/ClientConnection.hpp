@@ -6,14 +6,15 @@
 */
 
 #ifndef SERVERCONNECTION_HPP_
-    #define SERVERCONNECTION_HPP_
+#define SERVERCONNECTION_HPP_
 
-    #include "../common/Networking/GlobalConnection.hpp"
-    #include "../common/Networking/Packet.hpp"
+#include "../common/Networking/GlobalConnection.hpp"
+#include "../common/Networking/Packet.hpp"
 
-    #define KEYWORD "xMmM21B6dFdwJY39"
+#define KEYWORD "xMmM21B6dFdwJY39"
 
-    class ClientConnection : public GlobalConnection {
+class ClientConnection : public GlobalConnection
+{
     public:
         ClientConnection(const std::string &ip, int port);
         ~ClientConnection();

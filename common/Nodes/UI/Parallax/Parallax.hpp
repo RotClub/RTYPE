@@ -6,17 +6,19 @@
 */
 
 #ifndef PARALLAX_HPP_
-    #define PARALLAX_HPP_
+#define PARALLAX_HPP_
 
-    #include "Engine.hpp"
-    #include "Nodes/Node.hpp"
-    #include "Nodes/Node2D/Node2D.hpp"
-    #include "Types.hpp"
-    #include <string>
+#include <string>
+#include "Engine.hpp"
+#include "Nodes/Node.hpp"
+#include "Nodes/Node2D/Node2D.hpp"
+#include "Types.hpp"
 
-class Parallax : public Node {
+class Parallax : public Node
+{
     public:
-        Parallax(const std::string &texture, const std::string &name = "parallax", int zIndex = 0, Node2D *referenceNode = nullptr);
+        Parallax(const std::string &texture, const std::string &name = "parallax", int zIndex = 0,
+                 Node2D *referenceNode = nullptr);
         ~Parallax();
 
         void Update() override;

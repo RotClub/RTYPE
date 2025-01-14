@@ -31,7 +31,8 @@ int main(int argc, char **argv)
         sigHandler(-1, &srv);
 
         srv.start();
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e) {
         std::cerr << "Could not start server: " << e.what() << std::endl;
         return 84;
     }

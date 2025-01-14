@@ -6,14 +6,14 @@
 */
 
 #include "Client.hpp"
+#include <cstdlib>
+#include <lua/ClientSideLua.hpp>
+#include <string>
 #include "Engine.hpp"
 #include "Networking/Packet.hpp"
 #include "Networking/PacketBuilder.hpp"
 #include "game/Game.hpp"
 #include "spdlog/spdlog.h"
-#include <cstdlib>
-#include <string>
-#include <lua/ClientSideLua.hpp>
 
 Client *Client::_instance = nullptr;
 
@@ -32,16 +32,12 @@ Client &Client::GetInstance()
     return *_instance;
 }
 
-Client::Client(std::string ip, int port)
-    : _ip(ip), _port(port),
-    _clientConnection(ip, port), _step(ConnectionStep::AUTH_CODE_RECEIVED)
+Client::Client(std::string ip, int port) :
+    _ip(ip), _port(port), _clientConnection(ip, port), _step(ConnectionStep::AUTH_CODE_RECEIVED)
 {
 }
 
-void Client::startGame()
-{
-    _game.run();
-}
+void Client::startGame() { _game.run(); }
 
 void Client::setupLua()
 {
@@ -72,29 +68,22 @@ void Client::loadLuaGame()
     engine.callHook("InitClient", nullptr);
 }
 
-std::string Client::getIp() const
-{
-    return _ip;
-}
+std::string Client::getIp() const { return _ip; }
 
-int Client::getPort() const {
-    return _port;
-}
+int Client::getPort() const { return _port; }
 
-ClientConnection &Client::getClientConnection()
-{
-    return _clientConnection;
-}
+ClientConnection &Client::getClientConnection() { return _clientConnection; }
 
 void Client::broadcastLuaPackets()
 {
     while (!Engine::GetInstance().getBroadcastQueue().empty()) {
         std::pair<std::string, Packet *> newPacket = Engine::GetInstance().getBroadcastQueue().front();
-            if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
-                getClientConnection().sendToServerTCP(newPacket.second);
-            } else {
-                getClientConnection().sendToServerUDP(newPacket.second);
-            }
+        if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
+            getClientConnection().sendToServerTCP(newPacket.second);
+        }
+        else {
+            getClientConnection().sendToServerUDP(newPacket.second);
+        }
         Engine::GetInstance().getBroadcastQueue().pop();
     }
 }
@@ -123,8 +112,7 @@ void Client::handleConnectPacket(Packet *packet)
 {
     PacketBuilder readBuilder(packet);
     PacketBuilder builder;
-    switch (_step)
-    {
+    switch (_step) {
         case Client::ConnectionStep::AUTH_CODE_RECEIVED:
             {
                 std::string authCode = readBuilder.readString();
@@ -133,7 +121,8 @@ void Client::handleConnectPacket(Packet *packet)
                     Packet *packet = builder.build();
                     getClientConnection().sendToServerTCP(packet);
                     _step = Client::ConnectionStep::AUTH_CODE_SENT;
-                } else {
+                }
+                else {
                     throw std::runtime_error("Invalid auth code");
                 }
                 break;
@@ -147,7 +136,8 @@ void Client::handleConnectPacket(Packet *packet)
                     builder.setCmd(PacketCmd::CONNECT);
                     getClientConnection().sendToServerTCP(builder.build());
                     _step = Client::ConnectionStep::COMPLETE;
-                } else {
+                }
+                else {
                     throw std::runtime_error("Failed to authenticate");
                 }
                 readBuilder.reset();
@@ -164,10 +154,7 @@ void Client::handleConnectPacket(Packet *packet)
     }
 }
 
-void Client::handleDisconnectPacket(Packet *packet)
-{
-    spdlog::debug("Disconnected from server");
-}
+void Client::handleDisconnectPacket(Packet *packet) { spdlog::debug("Disconnected from server"); }
 
 void Client::handleLuaPacket(Packet *packet)
 {

@@ -8,11 +8,7 @@
 #include "Node.hpp"
 #include <raylib-cpp.hpp>
 
-Node::Node(const std::string &name)
-    : children(std::vector<Node*>()), name(name)
-{
-    this->metatable = "NodeMetaTable";
-}
+Node::Node(const std::string &name) : children(std::vector<Node *>()), name(name) { this->metatable = "NodeMetaTable"; }
 
 Node *Node::GetChild(const std::string &name) const
 {
@@ -23,10 +19,7 @@ Node *Node::GetChild(const std::string &name) const
     throw std::runtime_error("Node not found");
 }
 
-std::vector<Node *> Node::GetChildren() const
-{
-    return children;
-}
+std::vector<Node *> Node::GetChildren() const { return children; }
 
 void Node::addChild(Node &child)
 {
@@ -34,10 +27,6 @@ void Node::addChild(Node &child)
     child._parent = this;
 }
 
-void Node::Update()
-{
-}
+void Node::Update() {}
 
-void Node::Draw()
-{
-}
+void Node::Draw() {}

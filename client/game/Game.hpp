@@ -6,14 +6,15 @@
 */
 
 #ifndef GAME_HPP_
-    #define GAME_HPP_
+#define GAME_HPP_
 
-    #include "../../common/Engine.hpp"
-    #include "Networking/Packet.hpp"
+#include "../../common/Engine.hpp"
+#include "Networking/Packet.hpp"
 
-    #include <raylib-cpp.hpp>
+#include <raylib-cpp.hpp>
 
-class Game {
+class Game
+{
     public:
         Game();
         ~Game();

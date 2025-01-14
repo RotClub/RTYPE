@@ -5,33 +5,33 @@
 #ifndef RECTANGLE2D_HPP
 #define RECTANGLE2D_HPP
 
-  #include "Nodes/Shape2D/Shape2D.hpp"
+#include "Nodes/Shape2D/Shape2D.hpp"
 
-class Rectangle2D : public Shape2D {
-private:
-  Types::Rect2 dimensions;
+class Rectangle2D : public Shape2D
+{
+    private:
+        Types::Rect2 dimensions;
 
-  bool _intersectsRect(const Shape2D& other) const override;
+        bool _intersectsRect(const Shape2D &other) const override;
 
-public:
-  Rectangle2D(const Types::Vector2 &origin, const Types::Vector2 &size);
+    public:
+        Rectangle2D(const Types::Vector2 &origin, const Types::Vector2 &size);
 
-  void setDimensions(float w, float h);
+        void setDimensions(float w, float h);
 
-  Types::Rect2 getDimensions() const;
+        Types::Rect2 getDimensions() const;
 
-  float getWidth() const;
+        float getWidth() const;
 
-  float getHeight() const;
+        float getHeight() const;
 
-  Types::Vector2 getOrigin() const override;
-  void setOrigin(float x, float y) override;
+        Types::Vector2 getOrigin() const override;
+        void setOrigin(float x, float y) override;
 
-  bool intersects(const Shape2D& other) const override;
+        bool intersects(const Shape2D &other) const override;
 
-  Types::Rect2 getBoundingBox() const override;
-
+        Types::Rect2 getBoundingBox() const override;
 };
 
 
-#endif //RECTANGLE2D_HPP
+#endif // RECTANGLE2D_HPP

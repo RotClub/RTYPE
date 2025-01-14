@@ -8,11 +8,12 @@
 #ifndef CLIENTARGUMENTMANAGER_HPP_
 #define CLIENTARGUMENTMANAGER_HPP_
 
-    #include "spdlog/spdlog.h"
-    #include <regex>
+#include <regex>
+#include "spdlog/spdlog.h"
 
 
-class ClientArgumentManager {
+class ClientArgumentManager
+{
     public:
         ClientArgumentManager(int argc, char **argv);
         ~ClientArgumentManager();

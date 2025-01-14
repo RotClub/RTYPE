@@ -6,9 +6,9 @@
 */
 
 #ifndef DEFINES_HPP_
-    #define DEFINES_HPP_
+#define DEFINES_HPP_
 
-    #define IN 0
-    #define OUT 1
+#define IN 0
+#define OUT 1
 
 #endif /* !DEFINES_HPP_ */
