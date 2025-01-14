@@ -4,6 +4,7 @@
 
 #include "lua.hpp"
 #include "Nodes/UI/Parallax/Parallax.hpp"
+#include "Rectangle.hpp"
 #include "luaconf.h"
 
 #include <Nodes/Node.hpp>
@@ -1025,6 +1026,18 @@ LUA_API int luau_Sprite2DSetTexture(lua_State *L)
     return 0;
 }
 
+LUA_API int luau_Sprite2DSetSource(lua_State *L)
+{
+    Sprite2D* sprite = *static_cast<Sprite2D**>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    double x = luaL_checknumber(L, 2);
+    double y = luaL_checknumber(L, 3);
+    double width = luaL_checknumber(L, 4);
+    double height = luaL_checknumber(L, 5);
+    Types::Rect2 source = {Types::Vector2(x, y), Types::Vector2(width, height)};
+    sprite->SetSource(source);
+    return 0;
+}
+
 /** SetTexture functions **/
 
 /** SetTexture functions **/
@@ -1318,128 +1331,111 @@ void luau_ExposeConstants(lua_State *L, const Types::VMState state)
 #endif
 }
 
-void luau_ExposeFunctions(lua_State *L)
-{
-    luau_ExposeGlobalFunction(L, luau_Include, "include");
-    luau_ExposeGlobalFunction(L, luau_Info, "info");
-    luau_ExposeGlobalFunction(L, luau_Warn, "warn");
-    luau_ExposeGlobalFunction(L, luau_Error, "error");
-    luau_ExposeGlobalFunction(L, luau_Debug, "debug");
+    void luau_ExposeFunctions(lua_State *L)
+    {
+        luau_ExposeGlobalFunction(L, luau_Include, "include");
+        luau_ExposeGlobalFunction(L, luau_Info, "info");
+        luau_ExposeGlobalFunction(L, luau_Warn, "warn");
+        luau_ExposeGlobalFunction(L, luau_Error, "error");
+        luau_ExposeGlobalFunction(L, luau_Debug, "debug");
 
-    /* NODE LIBRARY */
-    constexpr luaL_Reg nodeLibrary[] = {{"GetName", luau_NodeGetName},
-                                        {"SetName", luau_NodeSetName},
-                                        {"GetChildren", luau_NodeGetChildren},
-                                        {"GetChild", luau_NodeGetChild},
-                                        {"AddChild", luau_NodeAddChild},
-                                        {"CreateChild", luau_NodeCreateChild},
-                                        {"__gc", lua_gcNode},
-                                        {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, nodeLibrary, "NodeMetaTable");
-    constexpr luaL_Reg node2DLibrary[] = {{"GetName", luau_Node2DGetName},
-                                          {"SetName", luau_Node2DSetName},
-                                          {"GetChildren", luau_Node2DGetChildren},
-                                          {"GetChild", luau_Node2DGetChild},
-                                          {"AddChild", luau_Node2DAddChild},
-                                          {"GetPosition", luau_Node2DGetPosition},
-                                          {"SetPosition", luau_Node2DSetPosition},
-                                          {"CreateChild", luau_Node2DCreateChild},
-                                          {"Update", luau_Node2DUpdate},
-                                          {"__gc", lua_gcNode2D},
-                                          {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, node2DLibrary, "Node2DMetaTable");
-    constexpr luaL_Reg sprite2DLibrary[] = {{"GetName", luau_Sprite2DGetName},
-                                            {"SetName", luau_Sprite2DSetName},
-                                            {"GetChildren", luau_Sprite2DGetChildren},
-                                            {"GetChild", luau_Sprite2DGetChild},
-                                            {"AddChild", luau_Sprite2DAddChild},
-                                            {"GetPosition", luau_Sprite2DGetPosition},
-                                            {"SetPosition", luau_Sprite2DSetPosition},
-                                            {"CreateChild", luau_Sprite2DCreateChild},
-                                            {"Update", luau_Sprite2DUpdate},
-                                            {"GetPosition", luau_Sprite2DGetPosition},
-                                            {"SetPosition", luau_Sprite2DSetPosition},
-                                            {"SetTexture", luau_Sprite2DSetTexture},
-                                            {"Draw", luau_Sprite2DDraw},
-                                            {"__gc", lua_gcSprite2D},
-                                            {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, sprite2DLibrary, "Sprite2DMetaTable");
-    constexpr luaL_Reg collisionshape2DLibrary[] = {{"GetName", luau_CollisionShape2DGetName},
-                                                    {"SetName", luau_CollisionShape2DSetName},
-                                                    {"GetChildren", luau_CollisionShape2DGetChildren},
-                                                    {"GetChild", luau_CollisionShape2DGetChild},
-                                                    {"AddChild", luau_CollisionShape2DAddChild},
-                                                    {"GetPosition", luau_CollisionShape2DGetPosition},
-                                                    {"SetPosition", luau_CollisionShape2DSetPosition},
-                                                    {"CreateChild", luau_CollisionShape2DCreateChild},
-                                                    {"Update", luau_CollisionShape2DUpdate},
-                                                    {"GetBoundingBox", luau_CollisionShape2DGetBoundingBox},
-                                                    {"ToggleCollision", luau_CollisionShape2DToggleCollision},
-                                                    {"IsCollisionEnabled", luau_CollisionShape2DIsCollisionEnabled},
-                                                    {"Collide", luau_CollisionShape2DCollide},
-                                                    {"__gc", lua_gcCollisionShape2D},
-                                                    {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, collisionshape2DLibrary, "CollisionShape2DMetaTable");
-    constexpr luaL_Reg area2DLibrary[] = {{"GetName", luau_Area2DGetName},
-                                          {"SetName", luau_Area2DSetName},
-                                          {"GetChildren", luau_Area2DGetChildren},
-                                          {"GetChild", luau_Area2DGetChild},
-                                          {"AddChild", luau_Area2DAddChild},
-                                          {"GetPosition", luau_Area2DGetPosition},
-                                          {"SetPosition", luau_Area2DSetPosition},
-                                          {"CreateChild", luau_Area2DCreateChild},
-                                          {"Update", luau_Area2DUpdate},
-                                          {"ToggleCollision", luau_Area2DToggleCollision},
-                                          {"IsCollisionEnabled", luau_Area2DIsCollisionEnabled},
-                                          {"Collide", luau_Area2DCollide},
-                                          {"GetSize", luau_Area2DGetSize},
-                                          {"SetSize", luau_Area2DSetSize},
-                                          {"__gc", lua_gcArea2D},
-                                          {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
-    constexpr luaL_Reg parallaxLibrary[] = {{"GetName", luau_ParallaxGetName},
-                                            {"SetName", luau_ParallaxSetName},
-                                            {"GetChildren", luau_ParallaxGetChildren},
-                                            {"GetChild", luau_ParallaxGetChild},
-                                            {"AddChild", luau_ParallaxAddChild},
-                                            {"Update", luau_ParallaxUpdate},
-                                            {"CreateChild", luau_ParallaxCreateChild},
-                                            {"SetReferenceNode", luau_ParallaxSetReferenceNode},
-                                            {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},
-                                            {"__gc", lua_gcParallax},
-                                            {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
-    constexpr luaL_Reg rgbd2DLibrary[] = {{"GetName", luau_RigidBody2DGetName},
-                                          {"SetName", luau_RigidBody2DSetName},
-                                          {"GetChildren", luau_RigidBody2DGetChildren},
-                                          {"GetChild", luau_RigidBody2DGetChild},
-                                          {"AddChild", luau_RigidBody2DAddChild},
-                                          {"GetPosition", luau_RigidBody2DGetPosition},
-                                          {"SetPosition", luau_RigidBody2DSetPosition},
-                                          {"CreateChild", luau_RigidBody2DCreateChild},
-                                          {"Update", luau_RigidBody2DUpdate},
-                                          {"ToggleCollision", luau_RigidBody2DToggleCollision},
-                                          {"IsCollisionEnabled", luau_RigidBody2DIsCollisionEnabled},
-                                          {"Collide", luau_RigidBody2DCollide},
-                                          {"__gc", lua_gcRigidBody2D},
-                                          {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, rgbd2DLibrary, "RigidBody2DMetaTable");
-    constexpr luaL_Reg stbd2DLibrary[] = {{"GetName", luau_StaticBody2DGetName},
-                                          {"SetName", luau_StaticBody2DSetName},
-                                          {"GetChildren", luau_StaticBody2DGetChildren},
-                                          {"GetChild", luau_StaticBody2DGetChild},
-                                          {"AddChild", luau_StaticBody2DAddChild},
-                                          {"GetPosition", luau_StaticBody2DGetPosition},
-                                          {"SetPosition", luau_StaticBody2DSetPosition},
-                                          {"CreateChild", luau_StaticBody2DCreateChild},
-                                          {"Update", luau_StaticBody2DUpdate},
-                                          {"ToggleCollision", luau_StaticBody2DToggleCollision},
-                                          {"IsCollisionEnabled", luau_StaticBody2DIsCollisionEnabled},
-                                          {"Collide", luau_StaticBody2DCollide},
-                                          {"__gc", lua_gcStaticBody2D},
-                                          {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, stbd2DLibrary, "StaticBody2DMetaTable");
-    /* NODE LIBRARY */
-}
+        /* NODE LIBRARY */
+        constexpr luaL_Reg nodeLibrary[] = {
+            {"GetName", luau_NodeGetName},
+            {"SetName", luau_NodeSetName},
+            {"GetChildren", luau_NodeGetChildren},
+            {"GetChild", luau_NodeGetChild},
+            {"AddChild", luau_NodeAddChild},
+            {"CreateChild", luau_NodeCreateChild},
+            {"__gc", lua_gcNode},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, nodeLibrary, "NodeMetaTable");
+        constexpr luaL_Reg node2DLibrary[] = {
+            {"GetName", luau_Node2DGetName},
+            {"SetName", luau_Node2DSetName},
+            {"GetChildren", luau_Node2DGetChildren},
+            {"GetChild", luau_Node2DGetChild},
+            {"AddChild", luau_Node2DAddChild},
+            {"GetPosition", luau_Node2DGetPosition},
+            {"SetPosition", luau_Node2DSetPosition},
+            {"CreateChild", luau_Node2DCreateChild},
+            {"Update", luau_Node2DUpdate},
+            {"__gc", lua_gcNode2D},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, node2DLibrary, "Node2DMetaTable");
+        constexpr luaL_Reg sprite2DLibrary[] = {
+            {"GetName", luau_Sprite2DGetName},
+            {"SetName", luau_Sprite2DSetName},
+            {"GetChildren", luau_Sprite2DGetChildren},
+            {"GetChild", luau_Sprite2DGetChild},
+            {"AddChild", luau_Sprite2DAddChild},
+            {"GetPosition", luau_Sprite2DGetPosition},
+            {"SetPosition", luau_Sprite2DSetPosition},
+            {"CreateChild", luau_Sprite2DCreateChild},
+            {"Update", luau_Sprite2DUpdate},
+            {"GetPosition", luau_Sprite2DGetPosition},
+            {"SetPosition", luau_Sprite2DSetPosition},
+            {"SetTexture", luau_Sprite2DSetTexture},
+            {"SetSource", luau_Sprite2DSetSource},
+            {"Draw", luau_Sprite2DDraw},
+            {"__gc", lua_gcSprite2D},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, sprite2DLibrary, "Sprite2DMetaTable");
+        constexpr luaL_Reg collisionshape2DLibrary[] = {
+            {"GetName", luau_CollisionShape2DGetName},
+            {"SetName", luau_CollisionShape2DSetName},
+            {"GetChildren", luau_CollisionShape2DGetChildren},
+            {"GetChild", luau_CollisionShape2DGetChild},
+            {"AddChild", luau_CollisionShape2DAddChild},
+            {"GetPosition", luau_CollisionShape2DGetPosition},
+            {"SetPosition", luau_CollisionShape2DSetPosition},
+            {"CreateChild", luau_CollisionShape2DCreateChild},
+            {"Update", luau_CollisionShape2DUpdate},
+        	{"GetBoundingBox", luau_CollisionShape2DGetBoundingBox},
+        	{"ToggleCollision", luau_CollisionShape2DToggleCollision},
+        	{"IsCollisionEnabled", luau_CollisionShape2DIsCollisionEnabled},
+        	{"Collide", luau_CollisionShape2DCollide},
+            {"__gc", lua_gcCollisionShape2D},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, collisionshape2DLibrary, "CollisionShape2DMetaTable");
+        constexpr luaL_Reg area2DLibrary[] = {
+            {"GetName", luau_Area2DGetName},
+            {"SetName", luau_Area2DSetName},
+            {"GetChildren", luau_Area2DGetChildren},
+            {"GetChild", luau_Area2DGetChild},
+            {"AddChild", luau_Area2DAddChild},
+            {"GetPosition", luau_Area2DGetPosition},
+            {"SetPosition", luau_Area2DSetPosition},
+            {"CreateChild", luau_Area2DCreateChild},
+            {"Update", luau_Area2DUpdate},
+        	{"ToggleCollision", luau_Area2DToggleCollision},
+        	{"IsCollisionEnabled", luau_Area2DIsCollisionEnabled},
+        	{"Collide", luau_Area2DCollide},
+            {"GetSize", luau_Area2DGetSize},
+            {"SetSize", luau_Area2DSetSize},
+            {"__gc", lua_gcArea2D},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
+        constexpr luaL_Reg parallaxLibrary[] = {
+            {"GetName", luau_ParallaxGetName},
+            {"SetName", luau_ParallaxSetName},
+            {"GetChildren", luau_ParallaxGetChildren},
+            {"GetChild", luau_ParallaxGetChild},
+            {"AddChild", luau_ParallaxAddChild},
+            {"Update", luau_ParallaxUpdate},
+            {"CreateChild", luau_ParallaxCreateChild},
+            {"SetReferenceNode", luau_ParallaxSetReferenceNode},
+            {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},
+            {"__gc", lua_gcParallax},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
+        /* NODE LIBRARY */
+    }
 
 /* LUA API LIBRARY */
