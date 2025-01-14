@@ -82,13 +82,9 @@ Resource &ResourceManager::loadResource(const std::string &path)
                 resource = std::make_shared<raylib::Sound>(path);
                 break;
             case ResourceType::FRAGMENT_SHADER:
-                if (!path.ends_with(".fs"))
-                    throw std::runtime_error("Invalid shader file");
                 resource = std::make_shared<raylib::Shader>(nullptr, path);
                 break;
             case ResourceType::VERTEX_SHADER:
-                if (!path.ends_with(".vs"))
-                    throw std::runtime_error("Invalid shader file");
                 resource = std::make_shared<raylib::Shader>(path, nullptr);
                 break;
         }
