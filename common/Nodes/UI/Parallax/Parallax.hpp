@@ -9,12 +9,11 @@
     #define PARALLAX_HPP_
 
     #include "Engine.hpp"
-    #include "Nodes/Node.hpp"
     #include "Nodes/Node2D/Node2D.hpp"
-    #include "Types.hpp"
+    #include "Nodes/UI/Ui.hpp"
     #include <string>
 
-class Parallax : public Node {
+class Parallax : public UI {
     public:
         Parallax(const std::string &texture, const std::string &name = "parallax", int zIndex = 0, Node2D *referenceNode = nullptr);
         ~Parallax();

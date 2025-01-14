@@ -12,7 +12,7 @@
 #include "spdlog/spdlog.h"
 
 Parallax::Parallax(const std::string& texture, const std::string& name, int zIndex, Node2D* referenceNode) :
-    Node(name), _referenceNode(referenceNode), _zIndex(zIndex)
+    UI(name, {0, 0}), _referenceNode(referenceNode), _zIndex(zIndex)
 {
     _zIndex = zIndex;
     setTexture(texture);
