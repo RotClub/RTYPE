@@ -12,13 +12,9 @@
 #include "../Client.hpp"
 #include "Networking/Packet.hpp"
 
-Game::Game()
-{
-}
+Game::Game() {}
 
-Game::~Game()
-{
-}
+Game::~Game() {}
 
 void Game::run()
 {
@@ -30,7 +26,7 @@ void Game::run()
     if (_window.IsReady() == false)
         throw std::runtime_error("Window is not ready");
     Engine::GetInstance().clientStarted = true;
-    Client &client = Client::GetInstance();
+    Client& client = Client::GetInstance();
     client.getClientConnection().establishConnection();
     client.setupLua();
     while (!client.isConnectionEstablished()) {
@@ -41,7 +37,8 @@ void Game::run()
     client.loadLuaGame();
     _loadResources();
 
-    const bool accessibilityShaderExists = exists(Engine::GetInstance().getGamePath() / "assets/shaders/accessibility.fs");
+    const bool accessibilityShaderExists =
+        exists(Engine::GetInstance().getGamePath() / "assets/shaders/accessibility.fs");
     if (accessibilityShaderExists)
         _accessibilityLoop();
     else
@@ -67,14 +64,16 @@ void Game::_loop()
 void Game::_accessibilityLoop()
 {
     raylib::RenderTexture2D target = raylib::RenderTexture2D(_window.GetWidth(), _window.GetHeight());
-    Shader accessibilityShader = LoadShader(nullptr, (Engine::GetInstance().getGamePath() / "assets/shaders/accessibility.fs").string().c_str());
+    Shader accessibilityShader =
+        LoadShader(nullptr, (Engine::GetInstance().getGamePath() / "assets/shaders/accessibility.fs").string().c_str());
     int shaderModeLoc = GetShaderLocation(accessibilityShader, "mode");
     int shaderIntensityLoc = GetShaderLocation(accessibilityShader, "intensity");
     const float shaderIntensity = 1.0f;
     SetShaderValue(accessibilityShader, shaderIntensityLoc, &shaderIntensity, SHADER_UNIFORM_FLOAT);
     while (!_shouldClose) {
         int dt = Engine::GetInstance().deltaTime();
-        SetShaderValue(accessibilityShader, shaderModeLoc, Config::GetInstance().getColorBlindnessMode(), SHADER_UNIFORM_INT);
+        SetShaderValue(accessibilityShader, shaderModeLoc, Config::GetInstance().getColorBlindnessMode(),
+                       SHADER_UNIFORM_INT);
         _update(dt);
         target.BeginMode();
         _draw(dt);
@@ -84,7 +83,8 @@ void Game::_accessibilityLoop()
         _window.BeginDrawing();
         _window.ClearBackground(raylib::Color::Black());
         BeginShaderMode(accessibilityShader);
-        DrawTextureRec(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, (float)-target.texture.height }, (Vector2){ 0, 0 }, WHITE);
+        DrawTextureRec(target.texture, (Rectangle){0, 0, (float)target.texture.width, (float)-target.texture.height},
+                       (Vector2){0, 0}, WHITE);
         EndShaderMode();
         _window.EndDrawing();
         if (_window.ShouldClose())
@@ -96,11 +96,11 @@ void Game::_accessibilityLoop()
 
 void Game::_update(int dt)
 {
-    Client &client = Client::GetInstance();
+    Client& client = Client::GetInstance();
     Engine::GetInstance().callHook("Tick", "int", dt, nullptr);
     client.broadcastLuaPackets();
     client.processIncomingPackets();
-    Node *rootNode = Engine::GetInstance().root;
+    Node* rootNode = Engine::GetInstance().root;
     _updateNodes(*rootNode);
 }
 
@@ -110,7 +110,7 @@ void Game::_draw(int dt)
     _drawNodes(*Engine::GetInstance().root);
 }
 
-void Game::_updateNodes(Node &node)
+void Game::_updateNodes(Node& node)
 {
     if (&node == nullptr)
         return;
@@ -122,7 +122,7 @@ void Game::_updateNodes(Node &node)
     }
 }
 
-void Game::_drawNodes(Node &node)
+void Game::_drawNodes(Node& node)
 {
     if (&node == nullptr)
         return;
@@ -136,6 +136,6 @@ void Game::_drawNodes(Node &node)
 
 void Game::_loadResources()
 {
-    ResourceManager &resourceManager = Engine::GetInstance().getResourceManager();
+    ResourceManager& resourceManager = Engine::GetInstance().getResourceManager();
     resourceManager.loadAllPendingResources();
 }

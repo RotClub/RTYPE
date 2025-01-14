@@ -106,7 +106,7 @@ print("Area2D2 Size : ", area2d2:GetSize())
 print("Should be true -> ", area2d:Collide(area2d2))
 
 -- Rigidbody2D
-local rb2d = root:CreateChild("RigidBody2D", "rb2d", 1, 0.5, 10, 50)
+local rb2d = root:CreateChild("RigidBody2D", "rb2d", 1, 0.5, 2, 2)
 print("Rigidbody2D position should be 1, 0.5 -> ", rb2d:GetPosition())
 
 for _ = 1, 10 do

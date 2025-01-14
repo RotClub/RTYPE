@@ -6,13 +6,13 @@
 */
 
 #include "PacketBuilder.hpp"
-#include "Networking/Packet.hpp"
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 #include <string>
+#include "Networking/Packet.hpp"
 
 #include "spdlog/spdlog.h"
 
@@ -23,7 +23,7 @@ PacketBuilder::PacketBuilder()
     _data = nullptr;
 }
 
-PacketBuilder::PacketBuilder(Packet *packet)
+PacketBuilder::PacketBuilder(Packet* packet)
 {
     _n = packet->n;
     _cmd = packet->cmd;
@@ -37,15 +37,15 @@ void PacketBuilder::loadFromPacket(Packet* packet)
     _n = packet->n;
 }
 
-PacketBuilder &PacketBuilder::setCmd(PacketCmd cmd)
+PacketBuilder& PacketBuilder::setCmd(PacketCmd cmd)
 {
     _cmd = cmd;
     return *this;
 }
 
-PacketBuilder &PacketBuilder::writeInt(int nb)
+PacketBuilder& PacketBuilder::writeInt(int nb)
 {
-    void *rt = std::realloc(_data, _n + sizeof(int));
+    void* rt = std::realloc(_data, _n + sizeof(int));
     if (rt == nullptr)
         throw std::runtime_error("Error reallocating memory");
     _data = rt;
@@ -54,10 +54,10 @@ PacketBuilder &PacketBuilder::writeInt(int nb)
     return *this;
 }
 
-PacketBuilder &PacketBuilder::writeString(const std::string &str)
+PacketBuilder& PacketBuilder::writeString(const std::string& str)
 {
     size_t len = str.length() + 1;
-    void *rt = std::realloc(_data, _n + len);
+    void* rt = std::realloc(_data, _n + len);
     if (rt == nullptr)
         throw std::runtime_error("Error reallocating memory");
     _data = rt;
@@ -88,9 +88,9 @@ std::string PacketBuilder::readString()
     return str;
 }
 
-Packet *PacketBuilder::build()
+Packet* PacketBuilder::build()
 {
-    Packet *packet = new Packet;
+    Packet* packet = new Packet;
     packet->n = _n;
     packet->cmd = _cmd;
     packet->data = _data;
@@ -150,7 +150,8 @@ void PacketBuilder::unpack(const PackedPacket* packed, Packet* packet)
         }
         std::memcpy(packet->data, *packed + offset, packet->n);
         offset += packet->n;
-    } else {
+    }
+    else {
         packet->data = nullptr;
     }
 }
