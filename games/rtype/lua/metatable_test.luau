@@ -94,11 +94,11 @@ local area2d = root:CreateChild("Area2D", "area" , 0, 0, 100, 100)
 print("Area2D position should be 0, 0 -> ", area2d:GetPosition())
 print("Area2D size should be 100, 100 -> ", area2d:GetSize())
 local area2d2 = root:CreateChild("Area2D", "area2" , 120, 120, 30, 30)
-updateNodes(root)
+--updateNodes(root)
 print("Should be false -> ", area2d:Collide(area2d2))
 area2d:SetPosition(80, 80)
 print("Area2D position should be 80, 80 -> ", area2d:GetPosition())
-updateNodes(root)
+--updateNodes(root)
 print("Area2D Pos : ", area2d:GetPosition())
 print("Area2D Size : ", area2d:GetSize())
 print("Area2D2 Pos : ", area2d2:GetPosition())
@@ -106,7 +106,7 @@ print("Area2D2 Size : ", area2d2:GetSize())
 print("Should be true -> ", area2d:Collide(area2d2))
 
 -- Rigidbody2D
-local rb2d = root:CreateChild("Rigidbody2D", "rb2d", 1, 0.5, 10, 50)
+local rb2d = root:CreateChild("RigidBody2D", "rb2d", 1, 0.5, 10, 50)
 print("Rigidbody2D position should be 1, 0.5 -> ", rb2d:GetPosition())
 
 for _ = 1, 10 do
