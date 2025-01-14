@@ -9,6 +9,7 @@
 #define SPRITE2D_HPP_
 
     #include "../Node2D.hpp"
+    #include "Engine.hpp"
     #include "Types.hpp"
 
 class Sprite2D : public Node2D
