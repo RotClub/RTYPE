@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "spdlog/spdlog.h"
+
 PacketBuilder::PacketBuilder()
 {
     _n = 0;
@@ -43,41 +45,31 @@ PacketBuilder &PacketBuilder::setCmd(PacketCmd cmd)
 
 PacketBuilder &PacketBuilder::writeInt(int nb)
 {
-    _n += sizeof(int);
-    void *rt = nullptr;
-    if (_data == nullptr)
-        rt = std::malloc(_n);
-    else
-        rt = std::realloc(_data, _n);
+    void *rt = std::realloc(_data, _n + sizeof(int));
     if (rt == nullptr)
         throw std::runtime_error("Error reallocating memory");
     _data = rt;
-    std::memcpy(static_cast<char*>(_data) + _n - sizeof(int), &nb, sizeof(int));
+    std::memcpy(static_cast<char*>(_data) + _n, &nb, sizeof(int));
+    _n += sizeof(int);
     return *this;
 }
 
 PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
-    const char *cstr = str.c_str();
-    _n += sizeof(char) * str.length() + 1;
-    if (_data == nullptr){
-        _data = std::malloc(_n);
-        if (_data == nullptr)
-            throw std::runtime_error("Error allocating memory");
-    }
-    else {
-        void *rt = std::realloc(_data, _n);
-        if (rt == nullptr)
-            throw std::runtime_error("Error reallocating memory");
-        _data = rt;
-    }
-    size_t len = sizeof(char) * str.length() + 1;
-    std::memcpy(static_cast<char*>(_data) + _n - len, cstr, len);
+    size_t len = str.length() + 1;
+    void *rt = std::realloc(_data, _n + len);
+    if (rt == nullptr)
+        throw std::runtime_error("Error reallocating memory");
+    _data = rt;
+    std::memcpy(static_cast<char*>(_data) + _n, str.c_str(), len);
+    _n += len;
     return *this;
 }
 
 int PacketBuilder::readInt()
 {
+    if (_n < sizeof(int))
+        throw std::runtime_error("Not enough data to read an int");
     int nb = 0;
     std::memcpy(&nb, _data, sizeof(int));
     _data = static_cast<char*>(_data) + sizeof(int);
@@ -87,9 +79,12 @@ int PacketBuilder::readInt()
 
 std::string PacketBuilder::readString()
 {
+    size_t len = std::strlen(static_cast<char*>(_data)) + 1;
+    if (_n < len)
+        throw std::runtime_error("Not enough data to read a string");
     std::string str(static_cast<char*>(_data));
-    _data = static_cast<char*>(_data) + sizeof(char) * (str.length() + 1);
-    _n -= sizeof(char) * (str.length() + 1);
+    _data = static_cast<char*>(_data) + len;
+    _n -= len;
     return str;
 }
 
@@ -99,6 +94,7 @@ Packet *PacketBuilder::build()
     packet->n = _n;
     packet->cmd = _cmd;
     packet->data = _data;
+    std::memset(packet->id, 0, sizeof(packet->id));
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;
@@ -112,4 +108,49 @@ void PacketBuilder::reset()
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;
+}
+
+void PacketBuilder::pack(PackedPacket* packed, const Packet* packet)
+{
+    std::memset(*packed, 0, PACKED_PACKET_SIZE);
+
+    size_t offset = 0;
+    std::memcpy(*packed + offset, &packet->n, sizeof(packet->n));
+    offset += sizeof(packet->n);
+
+    std::memcpy(*packed + offset, &packet->cmd, sizeof(packet->cmd));
+    offset += sizeof(packet->cmd);
+
+    std::memcpy(*packed + offset, packet->id, sizeof(packet->id));
+    offset += sizeof(packet->id);
+
+    if (packet->data != nullptr && packet->n > 0) {
+        std::memcpy(*packed + offset, packet->data, packet->n);
+        offset += packet->n;
+    }
+}
+
+void PacketBuilder::unpack(const PackedPacket* packed, Packet* packet)
+{
+    size_t offset = 0;
+
+    std::memcpy(&packet->n, *packed + offset, sizeof(packet->n));
+    offset += sizeof(packet->n);
+
+    std::memcpy(&packet->cmd, *packed + offset, sizeof(packet->cmd));
+    offset += sizeof(packet->cmd);
+
+    std::memcpy(packet->id, *packed + offset, sizeof(packet->id));
+    offset += sizeof(packet->id);
+
+    if (packet->n > 0) {
+        packet->data = malloc(packet->n);
+        if (!packet->data) {
+            throw std::runtime_error("Failed to allocate memory for packet data.");
+        }
+        std::memcpy(packet->data, *packed + offset, packet->n);
+        offset += packet->n;
+    } else {
+        packet->data = nullptr;
+    }
 }

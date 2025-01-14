@@ -8,6 +8,8 @@
 #ifndef PACKETUTILS_HPP_
     #define PACKETUTILS_HPP_
 
+    #define PACKED_PACKET_SIZE 4096
+
     #include "Packet.hpp"
 
     #include <cstddef>
@@ -31,6 +33,11 @@
 
             Packet *build();
             void reset();
+
+            using PackedPacket = char[PACKED_PACKET_SIZE];
+
+            static void pack(PackedPacket *packed, const Packet *packet);
+            static void unpack(const PackedPacket *packed, Packet *packet);
 
         private:
             size_t _n;
