@@ -10,13 +10,12 @@
 
     #include "Nodes/Node.hpp"
     #include "Nodes/Node2D/Node2D.hpp"
-#include "Types.hpp"
-    #include <memory>
+    #include "Types.hpp"
     #include <string>
 
 class Parallax : public Node {
     public:
-        Parallax(const std::string &texture, const std::string &name = "parallax", int zIndex = 0);
+        Parallax(const std::string &texture, const std::string &name = "parallax", int zIndex = 0, Node2D *referenceNode = nullptr);
         ~Parallax();
 
         void Update() override;
