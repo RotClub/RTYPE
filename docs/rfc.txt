@@ -103,8 +103,13 @@ RFC: RTYPE
         this command will be ignored and discarded.
 
     4.2 CONNECT
+        The CONNECT packet is used for the handshake between the server and
+        clients.
 
     4.3 DISCONNECT
+        The DISCONNECT packet is used to indicate that a client is
+        disconnecting from the server. The server will close the connection
+        with the client.
 
     4.4 NET
         The NET packet command is used to send messages between the server and
