@@ -244,6 +244,13 @@ LUA_API int luau_Debug(lua_State *L)
         return 0;
     }
 
+     LUA_API int lua_gcParallax(lua_State* L)
+    {
+        Parallax* parallax = *static_cast<Parallax**>(luaL_checkudata(L, 1, "ParallaxMetaTable"));
+        delete parallax;
+        return 0;
+    }
+
     /** __gc functions **/
 
     /** GetName functions **/
@@ -279,6 +286,11 @@ LUA_API int luau_Debug(lua_State *L)
     LUA_API int luau_Area2DGetName(lua_State *L)
     {
         return luau_TemplateNodeGetName<Area2D>(L, "Area2DMetaTable");
+    }
+
+    LUA_API int luau_ParallaxGetName(lua_State *L)
+    {
+        return luau_TemplateNodeGetName<Parallax>(L, "ParallaxMetaTable");
     }
 
     /** GetName functions **/
@@ -325,6 +337,14 @@ LUA_API int luau_Debug(lua_State *L)
         return 0;
     }
 
+    LUA_API int luau_ParallaxSetName(lua_State *L)
+    {
+        Parallax* parallax = *static_cast<Parallax**>(luaL_checkudata(L, 1, "ParallaxMetaTable"));
+        const char *name = luaL_checkstring(L, 2);
+        parallax->name = name;
+        return 0;
+    }
+
     /** SetName functions **/
 
     /** GetChildren functions **/
@@ -366,16 +386,12 @@ LUA_API int luau_Debug(lua_State *L)
 
     LUA_API int luau_Area2DGetChildren(lua_State *L)
     {
-        Area2D* node = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
-        std::vector<Node*> children = node->children;
-        lua_newtable(L);
-        for (size_t i = 0; i < children.size(); i++) {
-            *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = children[i];
-            luaL_getmetatable(L, children[i]->metatable.c_str());
-            lua_setmetatable(L, -2);
-            lua_rawseti(L, -2, i + 1);
-        }
-        return 1;
+        return luau_TemplateNodeGetChildren<Area2D>(L, "Area2DMetaTable");
+    }
+
+    LUA_API int luau_ParallaxGetChildren(lua_State *L)
+    {
+        return luau_TemplateNodeGetChildren<Parallax>(L, "ParallaxMetaTable");
     }
 
     /** GetChildren functions **/
@@ -414,6 +430,14 @@ LUA_API int luau_Debug(lua_State *L)
             double width = luaL_checknumber(L, 6);
             double height = luaL_checknumber(L, 7);
             child = new Area2D(name, Types::Vector2(x, y), Types::Vector2(width, height));
+        } else if (type == "Parallax") {
+            const char* texture = luaL_checkstring(L, 4);
+            int zIndex = luaL_checkinteger(L, 5);
+                Node2D* referenceNode = nullptr;
+            if (!lua_isnil(L, 6)) {
+                Node2D* referenceNode = *static_cast<Node2D**>(luaL_checkudata(L, 6, "Node2DMetaTable"));
+            }
+            child = new Parallax(texture, name, zIndex, referenceNode);
         } else {
             luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
         }
@@ -498,6 +522,25 @@ LUA_API int luau_Debug(lua_State *L)
 
     LUA_API int luau_Area2DGetChild(lua_State* L) {
         Area2D* node = *static_cast<Area2D**>(luaL_checkudata(L, 1, "Area2DMetaTable"));
+        const char* childName = luaL_checkstring(L, 2);
+        int find = 0;
+
+        std::vector<Node*> &children = node->children;
+        for (auto &child : children) {
+            if (child->name == childName) {
+                *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+                luaL_getmetatable(L, child->metatable.c_str());
+                lua_setmetatable(L, -2);
+                find = 1;
+            }
+        }
+        if (!find)
+            lua_pushnil(L);
+        return 1;
+    }
+
+    LUA_API int luau_ParallaxGetChild(lua_State* L) {
+        Parallax* node = *static_cast<Parallax**>(luaL_checkudata(L, 1, "ParallaxMetaTable"));
         const char* childName = luaL_checkstring(L, 2);
         int find = 0;
 
@@ -604,6 +647,23 @@ LUA_API int luau_Debug(lua_State *L)
         return 1;
     }
 
+    LUA_API int luau_ParallaxCreateChild(lua_State *L)
+    {
+        Parallax* node = *static_cast<Parallax**>(luaL_checkudata(L, 1, "ParallaxMetaTable"));
+        const std::string type = luaL_checkstring(L, 2);
+
+        Node *child = luau_NodeFactory(L, type);
+        *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+        std::string metatableName = type + "MetaTable";
+        luaL_getmetatable(L, metatableName.c_str());
+        if (lua_isnil(L, -1)) {
+            luaL_error(L, "Metatable '%s' not found. Ensure it is registered before calling AddChild.", metatableName.c_str());
+        }
+        lua_setmetatable(L, -2);
+        node->addChild(*child);
+        return 1;
+    }
+
     /** CreateChild functions **/
 
     /** AddChild functions **/
@@ -648,6 +708,14 @@ LUA_API int luau_Debug(lua_State *L)
         return 0;
     }
 
+    LUA_API int luau_ParallaxAddChild(lua_State *L)
+    {
+        Parallax* node = *static_cast<Parallax**>(luaL_checkudata(L, 1, "ParallaxMetaTable"));
+        Node* child = *static_cast<Node**>(luaL_checkudata(L, 2, "NodeMetaTable"));
+        node->addChild(*child);
+        return 0;
+    }
+
     /** AddChild functions **/
 
     /** Update functions **/
@@ -687,9 +755,12 @@ LUA_API int luau_Debug(lua_State *L)
 
     LUA_API int luau_RigidBody2DUpdate(lua_State *L)
     {
-        RigidBody2D* rgbd2D = *static_cast<RigidBody2D**>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
-        rgbd2D->Update();
-        return 0;
+        return luau_TemplatedNodeUpdate<RigidBody2D>(L, "RigidBody2DMetaTable");
+    }
+
+    LUA_API int luau_NodeUpdate(lua_State *L)
+    {
+        return luau_TemplatedNodeUpdate<Node>(L, "NodeMetaTable");
     }
 
     /** Update functions **/
@@ -923,6 +994,15 @@ LUA_API int luau_Debug(lua_State *L)
         return 0;
     }
 
+    LUA_API int luau_ParallaxAddParallaxPosition(lua_State *L)
+    {
+        Parallax* node = *static_cast<Parallax**>(luaL_checkudata(L, 1, "ParallaxMetaTable"));
+        double x = luaL_checknumber(L, 2);
+        double y = luaL_checknumber(L, 3);
+        node->addParallaxPosition(Types::Vector2(x, y));
+        return 0;
+    }
+
     /** Parallax functions **/
 
 
@@ -1133,6 +1213,20 @@ LUA_API int luau_Debug(lua_State *L)
             {nullptr, nullptr}
         };
         luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
+        constexpr luaL_Reg parallaxLibrary[] = {
+            {"GetName", luau_ParallaxGetName},
+            {"SetName", luau_ParallaxSetName},
+            {"GetChildren", luau_ParallaxGetChildren},
+            {"GetChild", luau_ParallaxGetChild},
+            {"AddChild", luau_ParallaxAddChild},
+            {"Update", luau_ParallaxUpdate},
+            {"CreateChild", luau_ParallaxCreateChild},
+            {"SetReferenceNode", luau_ParallaxSetReferenceNode},
+            {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},
+            {"__gc", lua_gcParallax},
+            {nullptr, nullptr}
+        };
+        luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
         /* NODE LIBRARY */
     }
 

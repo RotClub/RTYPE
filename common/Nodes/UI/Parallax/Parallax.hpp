@@ -8,6 +8,7 @@
 #ifndef PARALLAX_HPP_
     #define PARALLAX_HPP_
 
+    #include "Engine.hpp"
     #include "Nodes/Node.hpp"
     #include "Nodes/Node2D/Node2D.hpp"
     #include "Types.hpp"
@@ -23,12 +24,14 @@ class Parallax : public Node {
 
         Parallax &setTexture(const std::string &texture);
         void setReferenceNode(Node2D *node);
+        void addParallaxPosition(const Types::Vector2 &pos);
 
     private:
         std::string _texture;
         Node2D *_referenceNode;
         int _zIndex;
         Types::Vector2 _drawPos;
+        Types::Vector2 _parallaxPos;
 };
 
 #endif /* !PARALLAX_HPP_ */

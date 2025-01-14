@@ -8,21 +8,22 @@ parallax:SetReferenceNode(point)
 hook.Add("Tick", "testing", function(delta)
     local dt = delta / 100000000
     local x, y = spriteA:GetPosition()
+
     -- A
     if IsKeyPressed(65) then
-        spriteA:SetPosition(x - 7 * dt, y)
+        x -= 7 * dt
     end
     -- D
     if IsKeyPressed(68) then
-        spriteA:SetPosition(x + 7 * dt, y)
+        x += 7 * dt
     end
     -- W
     if IsKeyPressed(87) then
-        spriteA:SetPosition(x, y - 7 * dt)
+        y -= 7 * dt
     end
     -- S
     if IsKeyPressed(83) then
-        spriteA:SetPosition(x, y + 7 * dt)
+        y += 7 * dt
     end
     if IsKeyJustPressed(67) then
         CycleColorBlindnessShader()
@@ -31,6 +32,8 @@ hook.Add("Tick", "testing", function(delta)
         net.Start("Hello")
         net.SendToServer()
     end
+    spriteA:SetPosition(x, y)
+    parallax:AddParallaxPosition(0.1, 0)
 end)
 
 net.Receive("Hello", function(len, ply)
