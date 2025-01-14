@@ -10,6 +10,7 @@
 
     #include "../Node2D.hpp"
     #include "Engine.hpp"
+#include "Types.hpp"
 
 class Sprite2D : public Node2D {
     public:
@@ -17,11 +18,13 @@ class Sprite2D : public Node2D {
         ~Sprite2D();
 
         Sprite2D &SetTexture(const std::string &texture);
+        Sprite2D &SetSource(const Types::Rect2 &source);
 
         void Draw() override;
 
     private:
         std::string _texture;
+        Types::Rect2 _source;
 };
 
 #endif /* !SPRITE2D_HPP_ */

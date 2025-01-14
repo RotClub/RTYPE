@@ -4,6 +4,7 @@
 
 #include "lua.hpp"
 #include "Nodes/UI/Parallax/Parallax.hpp"
+#include "Rectangle.hpp"
 #include "luaconf.h"
 
 #include <Nodes/Node.hpp>
@@ -855,6 +856,18 @@ LUA_API int luau_Debug(lua_State *L)
         return 0;
     }
 
+    LUA_API int luau_Sprite2DSetSource(lua_State *L)
+    {
+        Sprite2D* sprite = *static_cast<Sprite2D**>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+        double x = luaL_checknumber(L, 2);
+        double y = luaL_checknumber(L, 3);
+        double width = luaL_checknumber(L, 4);
+        double height = luaL_checknumber(L, 5);
+        Types::Rect2 source = {Types::Vector2(x, y), Types::Vector2(width, height)};
+        sprite->SetSource(source);
+        return 0;
+    }
+
     /** SetTexture functions **/
 
     /** SetTexture functions **/
@@ -1171,6 +1184,7 @@ LUA_API int luau_Debug(lua_State *L)
             {"GetPosition", luau_Sprite2DGetPosition},
             {"SetPosition", luau_Sprite2DSetPosition},
             {"SetTexture", luau_Sprite2DSetTexture},
+            {"SetSource", luau_Sprite2DSetSource},
             {"Draw", luau_Sprite2DDraw},
             {"__gc", lua_gcSprite2D},
             {nullptr, nullptr}
