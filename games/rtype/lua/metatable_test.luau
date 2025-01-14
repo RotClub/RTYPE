@@ -109,16 +109,6 @@ print("Should be true -> ", area2d:Collide(area2d2))
 local rb2d = root:CreateChild("RigidBody2D", "rb2d", 1, 0.5, 2, 2)
 print("Rigidbody2D position should be 1, 0.5 -> ", rb2d:GetPosition())
 
-for _ = 1, 10 do
-    rb2d:Update()
-    print("Rigidbody2D position are now ", rb2d:GetPosition())
-end
-
 -- Staticbody2D
 local st2d = root:CreateChild("StaticBody2D", "st2d", 1, 0.5)
 print("Staticbody2D position should be 1, 0.5 -> ", st2d:GetPosition())
-
-for _ = 1, 5 do
-    st2d:Update()
-    print("Staticbody2D position are now ", st2d:GetPosition())
-end

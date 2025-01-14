@@ -14,9 +14,9 @@ public:
 
     void Draw() override;
 
-    const std::string &getText() const { return _text; }
-    int getFontSize() const { return _fontSize; }
-    const std::string &getFont() const { return _font; }
+    [[nodiscard]] const std::string &getText() const { return _text; }
+    [[nodiscard]] int getFontSize() const { return _fontSize; }
+    [[nodiscard]] const std::string &getFont() const { return _font; }
 
     void setText(const std::string &text);
     void setFontSize(int fontSize);

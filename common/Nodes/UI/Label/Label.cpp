@@ -26,3 +26,14 @@ void Label::Draw()
         raylib::DrawTextEx(font, _text.c_str(), {getGlobalPosition().x, getGlobalPosition().y}, _fontSize, 0, color);
     }
 }
+
+void Label::setText(const std::string &text) { _text = text; }
+
+void Label::setFontSize(int fontSize) { _fontSize = fontSize; }
+
+void Label::setFont(const std::string &font)
+{
+    if (!font.empty())
+        _font = Engine::GetInstance().getGamePath() / font;
+        Engine::GetInstance().getResourceManager().loadResource(_font);
+}
