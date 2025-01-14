@@ -79,50 +79,25 @@ bool ClientConnection::hasPendingUDPPacket()
 
 Packet *ClientConnection::_tryReceiveTCP()
 {
+    PacketBuilder::PackedPacket packed = {0};
+    if (read(_tcpFd, &packed, PACKED_PACKET_SIZE) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
     Packet *packet = new Packet;
-
-    std::memset(packet, 0, sizeof(Packet));
-    unsigned short tmpCmd = -1;
-    if (read(_tcpFd, &tmpCmd, sizeof(unsigned short)) <= 0) {
-        return nullptr;
-    }
-    packet->cmd = static_cast<PacketCmd>(tmpCmd);
-    if (read(_tcpFd, &packet->n, sizeof(size_t)) <= 0) {
-        return nullptr;
-    }
-    if (packet->n > 0) {
-        packet->data = std::malloc(packet->n);
-        if (read(_tcpFd, packet->data, packet->n) <= 0) {
-            return nullptr;
-        }
-    } else {
-        packet->data = nullptr;
-    }
+    PacketBuilder::unpack(&packed, packet);
     return packet;
 }
 
 Packet* ClientConnection::_tryReceiveUDP()
 {
-    Packet *packet = new Packet;
+    PacketBuilder::PackedPacket packed = {0};
 
-    std::memset(packet, 0, sizeof(Packet));
-    unsigned short tmpCmd = -1;
     socklen_t len = sizeof(_addr);
-    if (recvfrom(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(&_addr), &len) <= 0) {
-        return nullptr;
+    if (recvfrom(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(&_addr), &len) <= 0) {
+        throw std::runtime_error("Error receiving udp packet");
     }
-    packet->cmd = static_cast<PacketCmd>(tmpCmd);
-    if (recvfrom(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(&_addr), &len) <= 0) {
-        return nullptr;
-    }
-    if (packet->n > 0) {
-        packet->data = std::malloc(packet->n);
-        if (recvfrom(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(&_addr), &len) <= 0) {
-            return nullptr;
-        }
-    } else {
-        packet->data = nullptr;
-    }
+    Packet *packet = new Packet;
+    PacketBuilder::unpack(&packed, packet);
     return packet;
 }
 
@@ -169,13 +144,9 @@ void ClientConnection::_sendLoop()
     if (FD_ISSET(_tcpFd, &_writefds)) {
         while (!std::get<OUT>(_tcpQueues).empty()) {
             Packet *packet = std::get<OUT>(_tcpQueues).dequeue();
-            auto tmpCmd = static_cast<unsigned short>(packet->cmd);
-            write(_tcpFd, &tmpCmd, sizeof(unsigned short));
-            write(_tcpFd, &packet->id, sizeof(char[16]));
-            write(_tcpFd, &packet->n, sizeof(size_t));
-            if (packet->n > 0) {
-                write(_tcpFd, packet->data, packet->n);
-            }
+            PacketBuilder::PackedPacket packed = {0};
+            PacketBuilder::pack(&packed, packet);
+            write(_tcpFd, &packed, PACKED_PACKET_SIZE);
             PacketBuilder(packet).reset();
             delete packet;
         }
@@ -183,13 +154,9 @@ void ClientConnection::_sendLoop()
     if (FD_ISSET(_udpFd, &_writefds)) {
         while (!std::get<OUT>(_udpQueues).empty()) {
             Packet *packet = std::get<OUT>(_udpQueues).dequeue();
-            auto tmpCmd = static_cast<unsigned short>(packet->cmd);
-            sendto(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
-            sendto(_udpFd, &packet->id, sizeof(char[16]), 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
-            sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
-            if (packet->n > 0) {
-                sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
-            }
+            PacketBuilder::PackedPacket packed = {0};
+            PacketBuilder::pack(&packed, packet);
+            sendto(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
             PacketBuilder(packet).reset();
             delete packet;
         }

@@ -3,3 +3,14 @@
 //
 
 #include "Config.hpp"
+
+Config::Config()
+    : _fpsCount(false), _colorBlindnessMode(ColorBlindnessMode::NONE)
+{
+}
+
+Config& Config::GetInstance()
+{
+    static Config instance;
+    return instance;
+}

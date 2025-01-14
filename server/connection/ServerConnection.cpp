@@ -110,23 +110,17 @@ void ServerConnection::_sendLoop()
         if (!client->shouldDisconnect()) {
             if (client->hasTcpPacketOutput() && FD_ISSET(client->getTcpFd(), &_writefds)) {
                 Packet *packet = client->popTcpPacketOutput();
-                auto tmpCmd = static_cast<unsigned short>(packet->cmd);
-                write(client->getTcpFd(), &tmpCmd, sizeof(unsigned short));
-                write(client->getTcpFd(), &packet->n, sizeof(size_t));
-                if (packet->n > 0) {
-                    write(client->getTcpFd(), packet->data, packet->n);
-                }
+                PacketBuilder::PackedPacket packed = {0};
+                PacketBuilder::pack(&packed, packet);
+                write(client->getTcpFd(), &packed, PACKED_PACKET_SIZE);
                 PacketBuilder(packet).reset();
                 delete packet;
             }
             if (client->hasUdpPacketOutput()) {
                 Packet *packet = client->popUdpPacketOutput();
-                auto tmpCmd = static_cast<unsigned short>(packet->cmd);
-                sendto(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()), sizeof(sockaddr_in));
-                sendto(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()), sizeof(sockaddr_in));
-                if (packet->n > 0) {
-                    sendto(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()), sizeof(sockaddr_in));
-                }
+                PacketBuilder::PackedPacket packed = {0};
+                PacketBuilder::pack(&packed, packet);
+                sendto(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()), sizeof(sockaddr_in));
                 PacketBuilder(packet).reset();
                 delete packet;
             }
@@ -143,56 +137,25 @@ void ServerConnection::_accept()
 
 Packet *ServerConnection::_tryReceiveTCP(Client *client)
 {
+    PacketBuilder::PackedPacket packed = {0};
+    if (read(client->getTcpFd(), &packed, PACKED_PACKET_SIZE) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
     Packet *packet = new Packet;
-
-    std::memset(packet, 0, sizeof(Packet));
-    unsigned short tmpCmd = -1;
-    if (read(client->getTcpFd(), &tmpCmd, sizeof(unsigned short)) <= 0) {
-        throw std::runtime_error("Disconnect");
-    }
-    packet->cmd = static_cast<PacketCmd>(tmpCmd);
-    if (read(client->getTcpFd(), &packet->id, sizeof(char[16])) <= 0) {
-        throw std::runtime_error("Disconnect");
-    }
-    if (read(client->getTcpFd(), &packet->n, sizeof(size_t)) <= 0) {
-        throw std::runtime_error("Disconnect");
-    }
-    if (packet->n > 0) {
-        packet->data = std::malloc(packet->n);
-        if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
-            throw std::runtime_error("Disconnect");
-        }
-    } else {
-        packet->data = nullptr;
-    }
+    PacketBuilder::unpack(&packed, packet);
     return packet;
 }
 
 Packet *ServerConnection::_tryReceiveUDP(sockaddr_in *addr)
 {
-    Packet *packet = new Packet;
+    PacketBuilder::PackedPacket packed = {0};
 
-    std::memset(packet, 0, sizeof(Packet));
-    unsigned short tmpCmd = -1;
     socklen_t len = sizeof(*addr);
-    if (recvfrom(_udpFd, &tmpCmd, sizeof(unsigned short), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+    if (recvfrom(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
-    packet->cmd = static_cast<PacketCmd>(tmpCmd);
-    if (recvfrom(_udpFd, &packet->id, sizeof(char[16]), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
-        throw std::runtime_error("Error receiving udp packet");
-    }
-    if (recvfrom(_udpFd, &packet->n, sizeof(size_t), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
-        throw std::runtime_error("Error receiving udp packet");
-    }
-    if (packet->n > 0) {
-        packet->data = std::malloc(packet->n);
-        if (recvfrom(_udpFd, packet->data, packet->n, 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
-            throw std::runtime_error("Error receiving udp packet");
-        }
-    } else {
-        packet->data = nullptr;
-    }
+    Packet *packet = new Packet;
+    PacketBuilder::unpack(&packed, packet);
     return packet;
 }
 
