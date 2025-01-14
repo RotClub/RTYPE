@@ -35,25 +35,28 @@ RFC: RTYPE
     this order:
         - Integer: represents the size of the packet.
         - Packet:
-            - Integer: represents the size of the data.
-            - Data: the actual data being sent.
-                The data contains serialized string or/and an integer, so the
-                data content is in binary. The data will be read in the same
-                order it was written.
+            - Unsigned long: represents the size of the data.
             - Integer: represents the type of the packet:
                 - NONE = 0 (No action will be taken, this packet is ignored)
                 - CONNECT = 1 (A new client is connecting to the server)
                 - DISCONNECT = 2 (A client is disconnecting from the server)
                 - NET = 3 (Message will be handled by the lua virtual machine)
                 - NEW_MESSAGE = 4 (Create a new channel for the NET messages)
+            - Char[16]: Token used to identify the client.
+            - Data: the actual data being sent.
+                The data contains serialized string or/and an integer, so the
+                data content is in binary. The data will be read in the same
+                order it was written.
 
-            +-------------------------+
-            | Integer (Data Size)     |
-            +-------------------------+
-            | Binary Data             |
-            +-------------------------+
-            | Integer (Packet Type)   |
-            +-------------------------+
+            +---------------------------+
+            | Unsigned long (Data Size) |
+            +---------------------------+
+            | Integer (Packet Type)     |
+            +---------------------------+
+            | Char[16] (Token)          |
+            +---------------------------+
+            | Binary Data               |
+            +---------------------------+
 
 3.2 Handshake
     Clients establish a TCP connection to the server using the server's IP
