@@ -5,7 +5,7 @@
 #include "Label.hpp"
 #include "Engine.hpp"
 
-Label::Label(const std::string &name, const std::string &text, const std::string &font, int fontSize) : UI(name, {0, 0}), _text(text), _fontSize(fontSize)
+Label::Label(const std::string &name, const Types::Vector2 &position, const std::string &text, const std::string &font, int fontSize) : UI(name, position), _text(text), _fontSize(fontSize)
 {
     if (!font.empty())
         _font = Engine::GetInstance().getGamePath() / font;

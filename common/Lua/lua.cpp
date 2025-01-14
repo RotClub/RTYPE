@@ -494,10 +494,12 @@ static Node* luau_NodeFactory(lua_State* L, const std::string& type)
         child = new RigidBody2D(name, Types::Vector2(x, y), Types::Vector2(vel_x, vel_y));
     }
     else if (type == "Label") {
-        const char* text = luaL_checkstring(L, 4);
-        const char* font = luaL_checkstring(L, 5);
-        int fontSize = luaL_checkinteger(L, 6);
-        child = new Label(name, text, font, fontSize);
+        double x = luaL_checknumber(L, 4);
+        double y = luaL_checknumber(L, 5);
+        const char* text = luaL_checkstring(L, 6);
+        const char* font = luaL_checkstring(L, 7);
+        int fontSize = luaL_checkinteger(L, 8);
+        child = new Label(name, Types::Vector2(x, y), text, font, fontSize);
     }
     else {
         luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
@@ -1006,16 +1008,14 @@ LUA_API int luau_LabelGetFontSize(lua_State* L)
 LUA_API int luau_LabelSetColor(lua_State* L)
 {
     Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
-    node->red = luaL_checknumber(L, 2);
-    node->green = luaL_checknumber(L, 3);
-    node->blue = luaL_checknumber(L, 4);
+    node->setRGB(luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
     return 0;
 }
 
 LUA_API int luau_LabelSetAlpha(lua_State* L)
 {
     Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
-    node->alpha = luaL_checknumber(L, 2);
+    node->setAlpha(luaL_checknumber(L, 2));
     return 0;
 }
 

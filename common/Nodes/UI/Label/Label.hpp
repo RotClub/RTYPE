@@ -9,7 +9,7 @@
 
 class Label : public UI {
 public:
-    explicit Label(const std::string &name = "label", const std::string &text = "Label", const std::string &font = nullptr, int fontSize = 20);
+    explicit Label(const std::string &name = "label", const Types::Vector2 &position = {0, 0}, const std::string &text = "Label", const std::string &font = nullptr, int fontSize = 20);
     ~Label();
 
     void Draw() override;
