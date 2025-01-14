@@ -1,10 +1,10 @@
 -- Action system
 local ACTIONS = {
-    ["MOVE_LEFT"],
-    ["MOVE_RIGHT"],
-    ["MOVE_UP"],
-    ["MOVE_DOWN"],
-    ["SHOOT"]
+    "MOVE_LEFT",
+    "MOVE_RIGHT",
+    "MOVE_UP",
+    "MOVE_DOWN",
+    "SHOOT"
 }
 
 local function handleActionChange(ply: string, action: number, state: boolean)
