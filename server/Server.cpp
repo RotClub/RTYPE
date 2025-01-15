@@ -121,14 +121,11 @@ static std::string idToString(char *id)
 void Server::handleConnectPacket(Client *client, Packet *inPacket)
 {
     PacketBuilder readBuilder(inPacket);
-    PacketBuilder builder;
     switch (client->getStep()) {
         case Client::ConnectionStep::UNVERIFIED:
             {
-                spdlog::debug("Client {} connecting", client->getUuid());
                 readBuilder.reset();
-                builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
-                Packet *packet = builder.build();
+                Packet *packet = PacketBuilder().setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE).build();
                 client->addTcpPacketOutput(packet);
                 client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
                 Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
@@ -139,15 +136,10 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
                 std::string clientChallengeCode = readBuilder.readString();
                 if (clientChallengeCode == CLIENT_CHALLENGE) {
                     for (const auto &[packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
-                        builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
-                        client->addTcpPacketOutput(builder.build());
+                        client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable).build());
                     }
-                    builder.setCmd(PacketCmd::CONNECT)
-                        .writeString("AUTHENTICATED")
-                        .writeString(idToString(client->getID()));
-                    client->addTcpPacketOutput(builder.build());
+                    client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED").writeString(idToString(client->getID())).build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
-                    spdlog::debug("Client {} authenticated", client->getUuid());
                 }
                 else {
                     client->disconnect();

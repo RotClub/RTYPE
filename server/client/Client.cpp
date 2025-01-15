@@ -56,9 +56,20 @@ Packet *Client::popTcpPacketInput() { return std::get<IN>(_tcpQueues).dequeue();
 
 Packet *Client::popUdpPacketInput() { return std::get<IN>(_udpQueues).dequeue(); }
 
-void Client::addTcpPacketOutput(Packet *packet) { std::get<OUT>(_tcpQueues).enqueue(packet); }
+void Client::addTcpPacketOutput(Packet *packet)
+{
+    spdlog::debug("New tcp packet of cmd: {} to client {}", (int)packet->cmd, uuid);
+    if (packet->cmd == PacketCmd::NET) {
+        throw std::runtime_error("Cannot send NET packet to client");
+    }
+    std::get<OUT>(_tcpQueues).enqueue(packet);
+}
 
-void Client::addUdpPacketOutput(Packet *packet) { std::get<OUT>(_udpQueues).enqueue(packet); }
+void Client::addUdpPacketOutput(Packet *packet)
+{
+    spdlog::debug("New udp packet of cmd: {} to client {}", (int)packet->cmd, uuid);
+    std::get<OUT>(_udpQueues).enqueue(packet);
+}
 
 Packet *Client::popTcpPacketOutput() { return std::get<OUT>(_tcpQueues).dequeue(); }
 
