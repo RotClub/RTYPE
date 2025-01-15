@@ -623,7 +623,11 @@ LUA_API int luau_TemplateCreateChild(lua_State *L, const char *metatable)
                    metatableName.c_str());
     }
     lua_setmetatable(L, -2);
-    node->addChild(*child);
+    try {
+        node->addChild(*child);
+    } catch (const std::runtime_error &e) {
+        luaL_error(L, e.what());
+    }
     return 1;
 }
 
@@ -671,7 +675,11 @@ LUA_API int luau_TemplateAddChild(lua_State *L, const char *metatable)
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metatable));
     Node *child = *static_cast<Node **>(luaL_checkudata(L, 2, "NodeMetaTable"));
-    node->addChild(*child);
+    try {
+        node->addChild(*child);
+    } catch (const std::runtime_error &e) {
+        luaL_error(L, e.what());
+    }
     return 0;
 }
 
