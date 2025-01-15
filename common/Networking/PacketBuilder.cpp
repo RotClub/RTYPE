@@ -16,7 +16,7 @@
 
 #include "spdlog/spdlog.h"
 
-const std::string PacketBuilder::_integrityChallenge = "Y4DrMrLiwlli79jzU9v8AHLH1IaNyBo4";
+const std::string PacketBuilder::integrityChallenge = "Y4DrMrLiwlli79jzU9v8AHLH1IaNyBo4";
 
 PacketBuilder::PacketBuilder()
 {
@@ -136,8 +136,8 @@ void PacketBuilder::reset()
 
 void PacketBuilder::pack(PackedPacket *packed, const Packet *packet)
 {
-    std::memset(*packed, 0, PACKED_PACKET_SIZE);
-    std::memcpy(*packed, _integrityChallenge.c_str(), sizeof(char) * 32);
+    std::memset(*packed, 0, sizeof(PackedPacket));
+    std::memcpy(*packed, integrityChallenge.c_str(), sizeof(char) * 32);
 
     size_t offset = 32;
     std::memcpy(*packed + offset, &packet->n, sizeof(packet->n));
@@ -159,7 +159,7 @@ void PacketBuilder::unpack(const PackedPacket *packed, Packet *packet)
 {
     size_t offset = 32;
 
-    if (std::memcmp(*packed, _integrityChallenge.c_str(), sizeof(char) * 32) != 0) {
+    if (std::memcmp(*packed, integrityChallenge.c_str(), sizeof(char) * 32) != 0) {
         spdlog::error("Invalid packet integrity challenge.");
         throw std::runtime_error("Invalid packet integrity challenge.");
     }
@@ -178,7 +178,12 @@ void PacketBuilder::unpack(const PackedPacket *packed, Packet *packet)
         if (!packet->data) {
             throw std::runtime_error("Failed to allocate memory for packet data.");
         }
-        std::memcpy(packet->data, *packed + offset, packet->n);
+        try {
+            std::memcpy(packet->data, *packed + offset, packet->n);
+        } catch (...) {
+            std::free(packet->data);
+            throw;
+        }
         offset += packet->n;
     }
     else {
