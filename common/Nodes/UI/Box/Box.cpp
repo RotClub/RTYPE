@@ -13,5 +13,7 @@ Box::Box(const std::string &name, const Types::Vector2 &position, const Types::V
 void Box::Draw()
 {
     raylib::Color color = raylib::Color(red, green, blue, alpha);
+    std::cout << "my color: " << red << " " << green << " " << blue << " " << alpha << std::endl;
+    std::cout << "color: " << color.r << " " << color.g << " " << color.b << " " << color.a << std::endl;
     DrawRectangle(getGlobalPosition().x, getGlobalPosition().y, _size.x, _size.y, color);
 }
