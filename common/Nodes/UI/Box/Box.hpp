@@ -15,6 +15,7 @@ class Box : public UI
 
         [[nodiscard]] const Types::Vector2 &getSize() const { return _size; }
         void setSize(const Types::Vector2 &size) { _size = size; }
+
     private:
         Types::Vector2 _size;
 };

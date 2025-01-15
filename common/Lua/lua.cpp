@@ -3,8 +3,8 @@
 //
 
 #include "lua.hpp"
-#include "Nodes/UI/Label/Label.hpp"
 #include "Nodes/UI/Box/Box.hpp"
+#include "Nodes/UI/Label/Label.hpp"
 #include "Nodes/UI/Parallax/Parallax.hpp"
 #include "luaconf.h"
 
@@ -1326,21 +1326,21 @@ void luau_ExposeFunctions(lua_State *L)
                                          {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, labelLibrary, "LabelMetaTable");
     constexpr luaL_Reg boxLibrary[] = {{"GetName", luau_BoxGetName},
-                                         {"SetName", luau_BoxSetName},
-                                         {"GetChildren", luau_BoxGetChildren},
-                                         {"GetChild", luau_BoxGetChild},
-                                         {"AddChild", luau_BoxAddChild},
-                                         {"GetPosition", luau_BoxGetPosition},
-                                         {"SetPosition", luau_BoxSetPosition},
-                                         {"CreateChild", luau_BoxCreateChild},
-                                         {"SetColor", luau_BoxSetColor},
-                                         {"SetAlpha", luau_BoxSetAlpha},
-                                         {"GetColor", luau_BoxGetColor},
-                                         {"GetAlpha", luau_BoxGetAlpha},
-                                         {"SetSize", luau_BoxSetSize},
-                                         {"GetSize", luau_BoxGetSize},
-                                         {"__gc", lua_gcBox},
-                                         {nullptr, nullptr}};
+                                       {"SetName", luau_BoxSetName},
+                                       {"GetChildren", luau_BoxGetChildren},
+                                       {"GetChild", luau_BoxGetChild},
+                                       {"AddChild", luau_BoxAddChild},
+                                       {"GetPosition", luau_BoxGetPosition},
+                                       {"SetPosition", luau_BoxSetPosition},
+                                       {"CreateChild", luau_BoxCreateChild},
+                                       {"SetColor", luau_BoxSetColor},
+                                       {"SetAlpha", luau_BoxSetAlpha},
+                                       {"GetColor", luau_BoxGetColor},
+                                       {"GetAlpha", luau_BoxGetAlpha},
+                                       {"SetSize", luau_BoxSetSize},
+                                       {"GetSize", luau_BoxGetSize},
+                                       {"__gc", lua_gcBox},
+                                       {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, boxLibrary, "BoxMetaTable");
     /* NODE LIBRARY */
 }
