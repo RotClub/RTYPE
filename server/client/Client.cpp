@@ -59,9 +59,6 @@ Packet *Client::popUdpPacketInput() { return std::get<IN>(_udpQueues).dequeue();
 void Client::addTcpPacketOutput(Packet *packet)
 {
     spdlog::debug("New tcp packet of cmd: {} to client {}", (int)packet->cmd, uuid);
-    if (packet->cmd == PacketCmd::NET) {
-        throw std::runtime_error("Cannot send NET packet to client");
-    }
     std::get<OUT>(_tcpQueues).enqueue(packet);
 }
 

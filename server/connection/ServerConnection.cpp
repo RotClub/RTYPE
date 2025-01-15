@@ -115,10 +115,7 @@ void ServerConnection::_sendLoop()
                 Packet *packet = client->popTcpPacketOutput();
                 PacketBuilder::PackedPacket packed = {0};
                 PacketBuilder::pack(&packed, packet);
-                if (packed[0] == 0) {
-                    throw std::runtime_error("Invalid packet");
-                }
-                write(client->getTcpFd(), &packed, PACKED_PACKET_SIZE);
+                write(client->getTcpFd(), &packed, sizeof(PacketBuilder::PackedPacket));
                 PacketBuilder(packet).reset();
                 delete packet;
             }
@@ -126,7 +123,7 @@ void ServerConnection::_sendLoop()
                 Packet *packet = client->popUdpPacketOutput();
                 PacketBuilder::PackedPacket packed = {0};
                 PacketBuilder::pack(&packed, packet);
-                sendto(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()),
+                sendto(_udpFd, &packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()),
                        sizeof(sockaddr_in));
                 PacketBuilder(packet).reset();
                 delete packet;
@@ -147,7 +144,7 @@ void ServerConnection::_accept()
 Packet *ServerConnection::_tryReceiveTCP(Client *client)
 {
     PacketBuilder::PackedPacket packed = {0};
-    if (read(client->getTcpFd(), &packed, PACKED_PACKET_SIZE) <= 0) {
+    if (read(client->getTcpFd(), &packed, sizeof(PacketBuilder::PackedPacket)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
     Packet *packet = new Packet;
@@ -166,11 +163,12 @@ Packet *ServerConnection::_tryReceiveUDP(sockaddr_in *addr)
     PacketBuilder::PackedPacket packed = {0};
 
     socklen_t len = sizeof(*addr);
-    if (recvfrom(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+    if (recvfrom(_udpFd, &packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
     Packet *packet = new Packet;
     try {
+        spdlog::debug("Received udp packet");
         PacketBuilder::unpack(&packed, packet);
     }
     catch (const std::exception &e) {

@@ -9,7 +9,7 @@ spaceships = {
 }
 
 hook.Add("Tick", "main", function(delta)
-    local dt = delta / 100000000
+    -- local dt = delta / 100000000
     -- for i = 1, #spaceships do
         -- updateSpaceshipVelocities(spaceships[i], dt)
         -- sendSpaceshipPosition(i)
