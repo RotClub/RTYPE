@@ -10,7 +10,7 @@
 #include <Engine.hpp>
 #include <raylib-cpp.hpp>
 
-Node::Node(const std::string &name) : children(std::vector<Node *>())
+Node::Node(const std::string &name) : children(std::vector<Node *>()), name(name)
 {
     if (Engine::isInstanceStarted()) {
         Engine &engine = Engine::GetInstance();
