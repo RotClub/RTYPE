@@ -80,6 +80,9 @@ print("Should be new_name -> ", node:GetName())  -- Works as expected (prints "n
 ---- Add a Node2D child
 local sprite = root:CreateChild("Node2D", "sprite")
 
+---- Add a Node2D duplicate child
+--local sprite_dup = root:CreateChild("Node2D", "sprite") -- Should crash
+
 -- Directly call Node2DMetaTable methods
 print("Should be 0, 0 -> ", sprite:GetPosition())  -- Works as expected (prints 0, 0)
 sprite:SetPosition(100, 200)
