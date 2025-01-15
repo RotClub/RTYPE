@@ -9,27 +9,32 @@
 
 class UI : public Node
 {
-public:
-    explicit UI(const std::string &name = "ui", const Types::Vector2 &position={0, 0});
-    ~UI() override = default;
+    public:
+        explicit UI(const std::string &name = "ui", const Types::Vector2 &position = {0, 0});
+        ~UI() override = default;
 
-    Types::Vector2 position;
+        Types::Vector2 position;
 
-    Types::Vector2 getGlobalPosition() const { return _globalPosition; }
+        Types::Vector2 getGlobalPosition() const { return _globalPosition; }
 
-    void addChild(Node &child) override;
+        void addChild(Node &child) override;
 
-    void Update() override;
+        void Update() override;
 
-    virtual void setRGB(float red, float green, float blue) { this->red = red; this->green = green; this->blue = blue; }
-    virtual void setAlpha(float alpha) { this->alpha = alpha; }
+        virtual void setRGB(float red, float green, float blue)
+        {
+            this->red = red;
+            this->green = green;
+            this->blue = blue;
+        }
+        virtual void setAlpha(float alpha) { this->alpha = alpha; }
 
-    float red, green, blue, alpha;
+        float red, green, blue, alpha;
 
-private:
-    Types::Vector2 _globalPosition;
+    private:
+        Types::Vector2 _globalPosition;
 
-    void _updateGlobalPosition();
+        void _updateGlobalPosition();
 };
 
 

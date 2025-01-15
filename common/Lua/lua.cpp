@@ -3,8 +3,8 @@
 //
 
 #include "lua.hpp"
-#include "Nodes/UI/Parallax/Parallax.hpp"
 #include "Nodes/UI/Label/Label.hpp"
+#include "Nodes/UI/Parallax/Parallax.hpp"
 #include "luaconf.h"
 
 #include <Nodes/Node.hpp>
@@ -274,9 +274,9 @@ LUA_API int lua_gcStaticBody2D(lua_State *L)
     return 0;
 }
 
-LUA_API int lua_gcLabel(lua_State* L)
+LUA_API int lua_gcLabel(lua_State *L)
 {
-    Label* label = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *label = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     delete label;
     return 0;
 }
@@ -318,65 +318,47 @@ LUA_API int luau_StaticBody2DGetName(lua_State *L)
     return luau_TemplateNodeGetName<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
-LUA_API int luau_LabelGetName(lua_State* L) { return luau_TemplateNodeGetName<Label>(L, "LabelMetaTable"); }
+LUA_API int luau_LabelGetName(lua_State *L) { return luau_TemplateNodeGetName<Label>(L, "LabelMetaTable"); }
 
 /** GetName functions **/
 
 /** SetName functions **/
 
 template <typename T>
-LUA_API int luau_TemplateNodeSetName(lua_State* L, const char* metaTableName)
+LUA_API int luau_TemplateNodeSetName(lua_State *L, const char *metaTableName)
 {
-    T* node = *static_cast<T**>(luaL_checkudata(L, 1, metaTableName));
-    const char* name = luaL_checkstring(L, 2);
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    const char *name = luaL_checkstring(L, 2);
     node->name = name;
     return 0;
 }
 
-LUA_API int luau_NodeSetName(lua_State* L)
-{
-    return luau_TemplateNodeSetName<Node>(L, "NodeMetaTable");
-}
+LUA_API int luau_NodeSetName(lua_State *L) { return luau_TemplateNodeSetName<Node>(L, "NodeMetaTable"); }
 
-LUA_API int luau_Node2DSetName(lua_State* L)
-{
-    return luau_TemplateNodeSetName<Node2D>(L, "Node2DMetaTable");
-}
+LUA_API int luau_Node2DSetName(lua_State *L) { return luau_TemplateNodeSetName<Node2D>(L, "Node2DMetaTable"); }
 
-LUA_API int luau_CollisionShape2DSetName(lua_State* L)
+LUA_API int luau_CollisionShape2DSetName(lua_State *L)
 {
     return luau_TemplateNodeSetName<CollisionShape2D>(L, "CollisionShape2DMetaTable");
 }
 
-LUA_API int luau_Sprite2DSetName(lua_State* L)
-{
-    return luau_TemplateNodeSetName<Sprite2D>(L, "Sprite2DMetaTable");
-}
+LUA_API int luau_Sprite2DSetName(lua_State *L) { return luau_TemplateNodeSetName<Sprite2D>(L, "Sprite2DMetaTable"); }
 
-LUA_API int luau_Area2DSetName(lua_State* L)
-{
-    return luau_TemplateNodeSetName<Area2D>(L, "Area2DMetaTable");
-}
+LUA_API int luau_Area2DSetName(lua_State *L) { return luau_TemplateNodeSetName<Area2D>(L, "Area2DMetaTable"); }
 
-LUA_API int luau_ParallaxSetName(lua_State* L)
-{
-    return luau_TemplateNodeSetName<Parallax>(L, "ParallaxMetaTable");
-}
+LUA_API int luau_ParallaxSetName(lua_State *L) { return luau_TemplateNodeSetName<Parallax>(L, "ParallaxMetaTable"); }
 
-LUA_API int luau_RigidBody2DSetName(lua_State* L)
+LUA_API int luau_RigidBody2DSetName(lua_State *L)
 {
     return luau_TemplateNodeSetName<RigidBody2D>(L, "RigidBody2DMetaTable");
 }
 
-LUA_API int luau_StaticBody2DSetName(lua_State* L)
+LUA_API int luau_StaticBody2DSetName(lua_State *L)
 {
     return luau_TemplateNodeSetName<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
-LUA_API int luau_LabelSetName(lua_State* L)
-{
-    return luau_TemplateNodeSetName<Label>(L, "LabelMetaTable");
-}
+LUA_API int luau_LabelSetName(lua_State *L) { return luau_TemplateNodeSetName<Label>(L, "LabelMetaTable"); }
 
 /** SetName functions **/
 
@@ -428,7 +410,7 @@ LUA_API int luau_StaticBody2DGetChildren(lua_State *L)
     return luau_TemplateNodeGetChildren<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
-LUA_API int luau_LabelGetChildren(lua_State* L) { return luau_TemplateNodeGetChildren<Label>(L, "LabelMetaTable"); }
+LUA_API int luau_LabelGetChildren(lua_State *L) { return luau_TemplateNodeGetChildren<Label>(L, "LabelMetaTable"); }
 
 /** GetChildren functions **/
 
@@ -496,8 +478,8 @@ static Node *luau_NodeFactory(lua_State *L, const std::string &type)
     else if (type == "Label") {
         double x = luaL_checknumber(L, 4);
         double y = luaL_checknumber(L, 5);
-        const char* text = luaL_checkstring(L, 6);
-        const char* font = luaL_checkstring(L, 7);
+        const char *text = luaL_checkstring(L, 6);
+        const char *font = luaL_checkstring(L, 7);
         int fontSize = luaL_checkinteger(L, 8);
         child = new Label(name, Types::Vector2(x, y), text, font, fontSize);
     }
@@ -508,10 +490,10 @@ static Node *luau_NodeFactory(lua_State *L, const std::string &type)
 }
 
 template <typename T>
-LUA_API int luau_TemplateGetChild(lua_State* L, const char *metatable)
+LUA_API int luau_TemplateGetChild(lua_State *L, const char *metatable)
 {
-    T* node = *static_cast<T**>(luaL_checkudata(L, 1, metatable));
-    const char* childName = luaL_checkstring(L, 2);
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metatable));
+    const char *childName = luaL_checkstring(L, 2);
     int find = 0;
 
     std::vector<Node *> &children = node->children;
@@ -528,63 +510,45 @@ LUA_API int luau_TemplateGetChild(lua_State* L, const char *metatable)
     return 1;
 }
 
-LUA_API int luau_NodeGetChild(lua_State* L)
-{
-    return luau_TemplateGetChild<Node>(L, "NodeMetaTable");
-}
+LUA_API int luau_NodeGetChild(lua_State *L) { return luau_TemplateGetChild<Node>(L, "NodeMetaTable"); }
 
-LUA_API int luau_Node2DGetChild(lua_State* L)
-{
-    return luau_TemplateGetChild<Node2D>(L, "Node2DMetaTable");
-}
+LUA_API int luau_Node2DGetChild(lua_State *L) { return luau_TemplateGetChild<Node2D>(L, "Node2DMetaTable"); }
 
-LUA_API int luau_CollisionShape2DGetChild(lua_State* L)
+LUA_API int luau_CollisionShape2DGetChild(lua_State *L)
 {
     return luau_TemplateGetChild<CollisionShape2D>(L, "CollisionShape2DMetaTable");
 }
 
-LUA_API int luau_Sprite2DGetChild(lua_State* L)
-{
-    return luau_TemplateGetChild<Sprite2D>(L, "Sprite2DMetaTable");
-}
+LUA_API int luau_Sprite2DGetChild(lua_State *L) { return luau_TemplateGetChild<Sprite2D>(L, "Sprite2DMetaTable"); }
 
-LUA_API int luau_Area2DGetChild(lua_State* L)
-{
-    return luau_TemplateGetChild<Area2D>(L, "Area2DMetaTable");
-}
+LUA_API int luau_Area2DGetChild(lua_State *L) { return luau_TemplateGetChild<Area2D>(L, "Area2DMetaTable"); }
 
-LUA_API int luau_ParallaxGetChild(lua_State* L)
-{
-    return luau_TemplateGetChild<Parallax>(L, "ParallaxMetaTable");
-}
+LUA_API int luau_ParallaxGetChild(lua_State *L) { return luau_TemplateGetChild<Parallax>(L, "ParallaxMetaTable"); }
 
-LUA_API int luau_RigidBody2DGetChild(lua_State* L)
+LUA_API int luau_RigidBody2DGetChild(lua_State *L)
 {
     return luau_TemplateGetChild<RigidBody2D>(L, "RigidBody2DMetaTable");
 }
 
-LUA_API int luau_StaticBody2DGetChild(lua_State* L)
+LUA_API int luau_StaticBody2DGetChild(lua_State *L)
 {
     return luau_TemplateGetChild<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
-LUA_API int luau_LabelGetChild(lua_State* L)
-{
-    return luau_TemplateGetChild<Label>(L, "LabelMetaTable");
-}
+LUA_API int luau_LabelGetChild(lua_State *L) { return luau_TemplateGetChild<Label>(L, "LabelMetaTable"); }
 
 /** GetChild functions **/
 
 /** CreateChild functions **/
 
 template <typename T>
-LUA_API int luau_TemplateCreateChild(lua_State* L, const char *metatable)
+LUA_API int luau_TemplateCreateChild(lua_State *L, const char *metatable)
 {
-    T* node = *static_cast<T**>(luaL_checkudata(L, 1, metatable));
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metatable));
     const std::string type = luaL_checkstring(L, 2);
 
-    Node* child = luau_NodeFactory(L, type);
-    *static_cast<Node**>(lua_newuserdata(L, sizeof(Node*))) = child;
+    Node *child = luau_NodeFactory(L, type);
+    *static_cast<Node **>(lua_newuserdata(L, sizeof(Node *))) = child;
     std::string metatableName = type + "MetaTable";
     luaL_getmetatable(L, metatableName.c_str());
     if (lua_isnil(L, -1)) {
@@ -596,204 +560,168 @@ LUA_API int luau_TemplateCreateChild(lua_State* L, const char *metatable)
     return 1;
 }
 
-LUA_API int luau_NodeCreateChild(lua_State* L)
-{
-    return luau_TemplateCreateChild<Node>(L, "NodeMetaTable");
-}
+LUA_API int luau_NodeCreateChild(lua_State *L) { return luau_TemplateCreateChild<Node>(L, "NodeMetaTable"); }
 
-LUA_API int luau_Node2DCreateChild(lua_State* L)
-{
-    return luau_TemplateCreateChild<Node2D>(L, "Node2DMetaTable");
-}
+LUA_API int luau_Node2DCreateChild(lua_State *L) { return luau_TemplateCreateChild<Node2D>(L, "Node2DMetaTable"); }
 
-LUA_API int luau_CollisionShape2DCreateChild(lua_State* L)
+LUA_API int luau_CollisionShape2DCreateChild(lua_State *L)
 {
     return luau_TemplateCreateChild<CollisionShape2D>(L, "CollisionShape2DMetaTable");
 }
 
-LUA_API int luau_Sprite2DCreateChild(lua_State* L)
+LUA_API int luau_Sprite2DCreateChild(lua_State *L)
 {
     return luau_TemplateCreateChild<Sprite2D>(L, "Sprite2DMetaTable");
 }
 
-LUA_API int luau_Area2DCreateChild(lua_State* L)
-{
-    return luau_TemplateCreateChild<Area2D>(L, "Area2DMetaTable");
-}
+LUA_API int luau_Area2DCreateChild(lua_State *L) { return luau_TemplateCreateChild<Area2D>(L, "Area2DMetaTable"); }
 
-LUA_API int luau_ParallaxCreateChild(lua_State* L)
+LUA_API int luau_ParallaxCreateChild(lua_State *L)
 {
     return luau_TemplateCreateChild<Parallax>(L, "ParallaxMetaTable");
 }
 
-LUA_API int luau_RigidBody2DCreateChild(lua_State* L)
+LUA_API int luau_RigidBody2DCreateChild(lua_State *L)
 {
     return luau_TemplateCreateChild<RigidBody2D>(L, "RigidBody2DMetaTable");
 }
 
-LUA_API int luau_StaticBody2DCreateChild(lua_State* L)
+LUA_API int luau_StaticBody2DCreateChild(lua_State *L)
 {
     return luau_TemplateCreateChild<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
-LUA_API int luau_LabelCreateChild(lua_State* L)
-{
-    return luau_TemplateCreateChild<Label>(L, "LabelMetaTable");
-}
+LUA_API int luau_LabelCreateChild(lua_State *L) { return luau_TemplateCreateChild<Label>(L, "LabelMetaTable"); }
 
 /** CreateChild functions **/
 
 /** AddChild functions **/
 
 template <typename T>
-LUA_API int luau_TemplateAddChild(lua_State* L, const char *metatable)
+LUA_API int luau_TemplateAddChild(lua_State *L, const char *metatable)
 {
-    T* node = *static_cast<T**>(luaL_checkudata(L, 1, metatable));
-    Node* child = *static_cast<Node**>(luaL_checkudata(L, 2, "NodeMetaTable"));
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metatable));
+    Node *child = *static_cast<Node **>(luaL_checkudata(L, 2, "NodeMetaTable"));
     node->addChild(*child);
     return 0;
 }
 
-LUA_API int luau_NodeAddChild(lua_State* L)
-{
-    return luau_TemplateAddChild<Node>(L, "NodeMetaTable");
-}
+LUA_API int luau_NodeAddChild(lua_State *L) { return luau_TemplateAddChild<Node>(L, "NodeMetaTable"); }
 
-LUA_API int luau_Node2DAddChild(lua_State* L)
-{
-    return luau_TemplateAddChild<Node2D>(L, "Node2DMetaTable");
-}
+LUA_API int luau_Node2DAddChild(lua_State *L) { return luau_TemplateAddChild<Node2D>(L, "Node2DMetaTable"); }
 
-LUA_API int luau_CollisionShape2DAddChild(lua_State* L)
+LUA_API int luau_CollisionShape2DAddChild(lua_State *L)
 {
     return luau_TemplateAddChild<CollisionShape2D>(L, "CollisionShape2DMetaTable");
 }
 
-LUA_API int luau_Sprite2DAddChild(lua_State* L)
-{
-    return luau_TemplateAddChild<Sprite2D>(L, "Sprite2DMetaTable");
-}
+LUA_API int luau_Sprite2DAddChild(lua_State *L) { return luau_TemplateAddChild<Sprite2D>(L, "Sprite2DMetaTable"); }
 
-LUA_API int luau_Area2DAddChild(lua_State* L)
-{
-    return luau_TemplateAddChild<Area2D>(L, "Area2DMetaTable");
-}
+LUA_API int luau_Area2DAddChild(lua_State *L) { return luau_TemplateAddChild<Area2D>(L, "Area2DMetaTable"); }
 
-LUA_API int luau_ParallaxAddChild(lua_State* L)
-{
-    return luau_TemplateAddChild<Parallax>(L, "ParallaxMetaTable");
-}
+LUA_API int luau_ParallaxAddChild(lua_State *L) { return luau_TemplateAddChild<Parallax>(L, "ParallaxMetaTable"); }
 
-LUA_API int luau_RigidBody2DAddChild(lua_State* L)
+LUA_API int luau_RigidBody2DAddChild(lua_State *L)
 {
     return luau_TemplateAddChild<RigidBody2D>(L, "RigidBody2DMetaTable");
 }
 
-LUA_API int luau_StaticBody2DAddChild(lua_State* L)
+LUA_API int luau_StaticBody2DAddChild(lua_State *L)
 {
     return luau_TemplateAddChild<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
-LUA_API int luau_LabelAddChild(lua_State* L)
-{
-    return luau_TemplateAddChild<Label>(L, "LabelMetaTable");
-}
+LUA_API int luau_LabelAddChild(lua_State *L) { return luau_TemplateAddChild<Label>(L, "LabelMetaTable"); }
 
 /** AddChild functions **/
 
 /** GetPosition functions **/
 
 template <typename T>
-LUA_API int luau_TemplateNode2DGetPosition(lua_State* L, const char* metaTableName)
+LUA_API int luau_TemplateNode2DGetPosition(lua_State *L, const char *metaTableName)
 {
-    T* node = *static_cast<T**>(luaL_checkudata(L, 1, metaTableName));
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
     lua_pushnumber(L, node->position.x);
     lua_pushnumber(L, node->position.y);
     return 2;
 }
 
-LUA_API int luau_Node2DGetPosition(lua_State* L)
+LUA_API int luau_Node2DGetPosition(lua_State *L)
 {
     return luau_TemplateNode2DGetPosition<Node2D>(L, "Node2DMetaTable");
 }
 
-LUA_API int luau_CollisionShape2DGetPosition(lua_State* L)
+LUA_API int luau_CollisionShape2DGetPosition(lua_State *L)
 {
     return luau_TemplateNode2DGetPosition<CollisionShape2D>(L, "CollisionShape2DMetaTable");
 }
 
-LUA_API int luau_Sprite2DGetPosition(lua_State* L)
+LUA_API int luau_Sprite2DGetPosition(lua_State *L)
 {
     return luau_TemplateNode2DGetPosition<Sprite2D>(L, "Sprite2DMetaTable");
 }
 
-LUA_API int luau_Area2DGetPosition(lua_State* L)
+LUA_API int luau_Area2DGetPosition(lua_State *L)
 {
     return luau_TemplateNode2DGetPosition<Area2D>(L, "Area2DMetaTable");
 }
 
-LUA_API int luau_RigidBody2DGetPosition(lua_State* L)
+LUA_API int luau_RigidBody2DGetPosition(lua_State *L)
 {
     return luau_TemplateNode2DGetPosition<RigidBody2D>(L, "RigidBody2DMetaTable");
 }
 
-LUA_API int luau_StaticBody2DGetPosition(lua_State* L)
+LUA_API int luau_StaticBody2DGetPosition(lua_State *L)
 {
     return luau_TemplateNode2DGetPosition<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
-LUA_API int luau_LabelGetPosition(lua_State* L)
-{
-    return luau_TemplateNode2DGetPosition<Label>(L, "LabelMetaTable");
-}
+LUA_API int luau_LabelGetPosition(lua_State *L) { return luau_TemplateNode2DGetPosition<Label>(L, "LabelMetaTable"); }
 
 /** GetPosition functions **/
 
 /** SetPosition functions **/
 
 template <typename T>
-LUA_API int luau_TemplateNode2DSetPosition(lua_State* L, const char* metaTableName)
+LUA_API int luau_TemplateNode2DSetPosition(lua_State *L, const char *metaTableName)
 {
-    T* node = *static_cast<T**>(luaL_checkudata(L, 1, metaTableName));
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
     node->position.x = static_cast<float>(luaL_checknumber(L, 2));
     node->position.y = static_cast<float>(luaL_checknumber(L, 3));
     return 0;
 }
 
-LUA_API int luau_Node2DSetPosition(lua_State* L)
+LUA_API int luau_Node2DSetPosition(lua_State *L)
 {
     return luau_TemplateNode2DSetPosition<Node2D>(L, "Node2DMetaTable");
 }
 
-LUA_API int luau_CollisionShape2DSetPosition(lua_State* L)
+LUA_API int luau_CollisionShape2DSetPosition(lua_State *L)
 {
     return luau_TemplateNode2DSetPosition<CollisionShape2D>(L, "CollisionShape2DMetaTable");
 }
 
-LUA_API int luau_Sprite2DSetPosition(lua_State* L)
+LUA_API int luau_Sprite2DSetPosition(lua_State *L)
 {
     return luau_TemplateNode2DSetPosition<Sprite2D>(L, "Sprite2DMetaTable");
 }
 
-LUA_API int luau_Area2DSetPosition(lua_State* L)
+LUA_API int luau_Area2DSetPosition(lua_State *L)
 {
     return luau_TemplateNode2DSetPosition<Area2D>(L, "Area2DMetaTable");
 }
 
-LUA_API int luau_RigidBody2DSetPosition(lua_State* L)
+LUA_API int luau_RigidBody2DSetPosition(lua_State *L)
 {
     return luau_TemplateNode2DSetPosition<RigidBody2D>(L, "RigidBody2DMetaTable");
 }
 
-LUA_API int luau_StaticBody2DSetPosition(lua_State* L)
+LUA_API int luau_StaticBody2DSetPosition(lua_State *L)
 {
     return luau_TemplateNode2DSetPosition<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
-LUA_API int luau_LabelSetPosition(lua_State* L)
-{
-    return luau_TemplateNode2DSetPosition<Label>(L, "LabelMetaTable");
-}
+LUA_API int luau_LabelSetPosition(lua_State *L) { return luau_TemplateNode2DSetPosition<Label>(L, "LabelMetaTable"); }
 
 /** SetPosition functions **/
 
@@ -809,7 +737,7 @@ LUA_API int luau_Sprite2DSetTexture(lua_State *L)
 
 LUA_API int luau_Sprite2DSetSource(lua_State *L)
 {
-    Sprite2D* sprite = *static_cast<Sprite2D**>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
     double x = luaL_checknumber(L, 2);
     double y = luaL_checknumber(L, 3);
     double width = luaL_checknumber(L, 4);
@@ -975,58 +903,58 @@ LUA_API int luau_ParallaxAddParallaxPosition(lua_State *L)
 
 /** Label functions **/
 
-LUA_API int luau_LabelSetText(lua_State* L)
+LUA_API int luau_LabelSetText(lua_State *L)
 {
-    Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     node->setText(luaL_checkstring(L, 2));
     return 0;
 }
 
-LUA_API int luau_LabelSetFont(lua_State* L)
+LUA_API int luau_LabelSetFont(lua_State *L)
 {
-    Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     node->setFont(luaL_checkstring(L, 2));
     return 0;
 }
 
-LUA_API int luau_LabelSetFontSize(lua_State* L)
+LUA_API int luau_LabelSetFontSize(lua_State *L)
 {
-    Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     node->setFontSize(luaL_checkinteger(L, 2));
     return 0;
 }
 
-LUA_API int luau_LabelGetText(lua_State* L)
+LUA_API int luau_LabelGetText(lua_State *L)
 {
-    Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     lua_pushstring(L, node->getText().c_str());
     return 1;
 }
 
-LUA_API int luau_LabelGetFont(lua_State* L)
+LUA_API int luau_LabelGetFont(lua_State *L)
 {
-    Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     lua_pushstring(L, node->getFont().c_str());
     return 1;
 }
 
-LUA_API int luau_LabelGetFontSize(lua_State* L)
+LUA_API int luau_LabelGetFontSize(lua_State *L)
 {
-    Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     lua_pushinteger(L, node->getFontSize());
     return 1;
 }
 
-LUA_API int luau_LabelSetColor(lua_State* L)
+LUA_API int luau_LabelSetColor(lua_State *L)
 {
-    Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     node->setRGB(luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
     return 0;
 }
 
-LUA_API int luau_LabelSetAlpha(lua_State* L)
+LUA_API int luau_LabelSetAlpha(lua_State *L)
 {
-    Label* node = *static_cast<Label**>(luaL_checkudata(L, 1, "LabelMetaTable"));
+    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
     node->setAlpha(luaL_checknumber(L, 2));
     return 0;
 }
@@ -1160,13 +1088,13 @@ void luau_ExposeConstants(lua_State *L, const Types::VMState state)
 #endif
 }
 
-    void luau_ExposeFunctions(lua_State *L)
-    {
-        luau_ExposeGlobalFunction(L, luau_Include, "include");
-        luau_ExposeGlobalFunction(L, luau_Info, "info");
-        luau_ExposeGlobalFunction(L, luau_Warn, "warn");
-        luau_ExposeGlobalFunction(L, luau_Error, "error");
-        luau_ExposeGlobalFunction(L, luau_Debug, "debug");
+void luau_ExposeFunctions(lua_State *L)
+{
+    luau_ExposeGlobalFunction(L, luau_Include, "include");
+    luau_ExposeGlobalFunction(L, luau_Info, "info");
+    luau_ExposeGlobalFunction(L, luau_Warn, "warn");
+    luau_ExposeGlobalFunction(L, luau_Error, "error");
+    luau_ExposeGlobalFunction(L, luau_Debug, "debug");
 
     /* NODE LIBRARY */
     constexpr luaL_Reg nodeLibrary[] = {{"GetName", luau_NodeGetName},
@@ -1274,23 +1202,23 @@ void luau_ExposeConstants(lua_State *L, const Types::VMState state)
                                           {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, stbd2DLibrary, "StaticBody2DMetaTable");
     constexpr luaL_Reg labelLibrary[] = {{"GetName", luau_LabelGetName},
-                                          {"SetName", luau_LabelSetName},
-                                          {"GetChildren", luau_LabelGetChildren},
-                                          {"GetChild", luau_LabelGetChild},
-                                          {"AddChild", luau_LabelAddChild},
-                                          {"GetPosition", luau_LabelGetPosition},
-                                          {"SetPosition", luau_LabelSetPosition},
-                                          {"CreateChild", luau_LabelCreateChild},
-                                          {"SetColor", luau_LabelSetColor},
-                                          {"SetAlpha", luau_LabelSetAlpha},
-                                          {"SetFont", luau_LabelSetFont},
-                                          {"GetFont", luau_LabelGetFont},
-                                          {"SetText", luau_LabelSetText},
-                                          {"GetText", luau_LabelGetText},
-                                          {"SetFontSize", luau_LabelSetFontSize},
-                                          {"GetFontSize", luau_LabelGetFontSize},
-                                          {"__gc", lua_gcLabel},
-                                          {nullptr, nullptr}};
+                                         {"SetName", luau_LabelSetName},
+                                         {"GetChildren", luau_LabelGetChildren},
+                                         {"GetChild", luau_LabelGetChild},
+                                         {"AddChild", luau_LabelAddChild},
+                                         {"GetPosition", luau_LabelGetPosition},
+                                         {"SetPosition", luau_LabelSetPosition},
+                                         {"CreateChild", luau_LabelCreateChild},
+                                         {"SetColor", luau_LabelSetColor},
+                                         {"SetAlpha", luau_LabelSetAlpha},
+                                         {"SetFont", luau_LabelSetFont},
+                                         {"GetFont", luau_LabelGetFont},
+                                         {"SetText", luau_LabelSetText},
+                                         {"GetText", luau_LabelGetText},
+                                         {"SetFontSize", luau_LabelSetFontSize},
+                                         {"GetFontSize", luau_LabelGetFontSize},
+                                         {"__gc", lua_gcLabel},
+                                         {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, labelLibrary, "LabelMetaTable");
     /* NODE LIBRARY */
 }
