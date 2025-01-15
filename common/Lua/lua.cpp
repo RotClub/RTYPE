@@ -339,6 +339,9 @@ LUA_API int luau_TemplateNodeSetName(lua_State *L, const char *metaTableName)
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
     const char *name = luaL_checkstring(L, 2);
+    if (std::strcmp(name, "root") == 0) {
+        luaL_error(L, "Cannot set node name to 'root'.");
+    }
     node->name = name;
     return 0;
 }

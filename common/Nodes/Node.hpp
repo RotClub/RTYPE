@@ -29,6 +29,8 @@ class Node
         virtual void Update();
         virtual void Draw();
 
+        void Destroy();
+
         std::vector<Node *> children;
         std::string name;
         std::string metatable;
