@@ -31,6 +31,7 @@ class ServerConnection
         ~ServerConnection();
 
         std::vector<Client *> &getClientConnections() { return _clientConnections; }
+        SafeQueue<std::string> &getDisconnectedClients() { return _disconnectedClients; }
 
         void start();
         void stop();
@@ -57,6 +58,7 @@ class ServerConnection
         int _tcpFd = -1;
         int _udpFd = -1;
         std::vector<Client *> _clientConnections;
+        SafeQueue<std::string> _disconnectedClients;
         sockaddr_in _addr;
 };
 

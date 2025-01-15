@@ -46,7 +46,6 @@ Client::~Client()
 {
     close(_tcpFd);
     spdlog::info("Client {} disconnected", uuid);
-    Engine::GetInstance().callHook("PlayerLeave", "string", getUuid().c_str(), nullptr);
 }
 
 void Client::addTcpPacketInput(Packet *packet) { std::get<IN>(_tcpQueues).enqueue(packet); }

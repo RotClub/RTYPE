@@ -44,6 +44,8 @@ void Server::loop()
 {
     Engine &engine = Engine::GetInstance();
 
+    while (!_serverConnection.getDisconnectedClients().empty())
+        Engine::GetInstance().callHook("PlayerLeave", "string", _serverConnection.getDisconnectedClients().dequeue().c_str(), nullptr);
     engine.callHook("Tick", "int", engine.deltaTime(), nullptr);
     engine.updateNode(engine.root);
     for (auto client : _serverConnection.getClientConnections()) {

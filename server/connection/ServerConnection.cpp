@@ -36,6 +36,7 @@ void ServerConnection::stop()
         _networkThread.join();
     }
     for (const auto *client : _clientConnections) {
+        _disconnectedClients.enqueue(client->getUuid());
         delete client;
     }
     close(_tcpFd);
@@ -68,6 +69,7 @@ void ServerConnection::_disconnectClients()
     if (it != _clientConnections.end()) {
         Client *client = *it;
         _clientConnections.erase(it, _clientConnections.end());
+        _disconnectedClients.enqueue(client->getUuid());
         delete client;
     }
 }
