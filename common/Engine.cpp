@@ -96,7 +96,8 @@ bool Engine::isInstanceStarted()
 {
     try {
         GetInstance();
-    } catch (const std::runtime_error &) {
+    }
+    catch (const std::runtime_error &) {
         return false;
     }
     return true;
