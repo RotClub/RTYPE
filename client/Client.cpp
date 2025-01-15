@@ -121,15 +121,12 @@ void Client::processIncomingPackets()
 void Client::handleConnectPacket(Packet *packet)
 {
     PacketBuilder readBuilder(packet);
-    PacketBuilder builder;
     switch (_step) {
         case Client::ConnectionStep::AUTH_CODE_RECEIVED:
             {
                 std::string authCode = readBuilder.readString();
                 if (authCode == SERVER_CHALLENGE) {
-                    builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
-                    Packet *packet = builder.build();
-                    getClientConnection().sendToServerTCP(packet);
+                    getClientConnection().sendToServerTCP(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE).build());
                     _step = Client::ConnectionStep::AUTH_CODE_SENT;
                 }
                 else {
@@ -143,8 +140,7 @@ void Client::handleConnectPacket(Packet *packet)
                 if (message == "AUTHENTICATED") {
                     std::string id = readBuilder.readString();
                     getClientConnection().setID(id);
-                    builder.setCmd(PacketCmd::CONNECT);
-                    getClientConnection().sendToServerTCP(builder.build());
+                    getClientConnection().sendToServerTCP(PacketBuilder().setCmd(PacketCmd::CONNECT).build());
                     _step = Client::ConnectionStep::COMPLETE;
                 }
                 else {
@@ -177,7 +173,7 @@ void Client::handleNewMessagePacket(Packet *packet)
 {
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();
-    int reliable = builder.readInt();
+    bool reliable = builder.readBool();
     spdlog::debug("Packet name: {}, reliable: {}", packetName, reliable);
-    Engine::GetInstance().addPacketRegistryEntry(packetName, static_cast<bool>(reliable));
+    Engine::GetInstance().addPacketRegistryEntry(packetName, reliable);
 }
