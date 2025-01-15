@@ -17,7 +17,7 @@
 class Parallax : public Node
 {
     public:
-        Parallax(const std::string &texture, const std::string &name = "parallax", int zIndex = 0,
+        Parallax(const std::string &texture, const std::string &name = "parallax", float zIndex = 0,
                  Node2D *referenceNode = nullptr);
         ~Parallax();
 
@@ -31,7 +31,7 @@ class Parallax : public Node
     private:
         std::string _texture;
         Node2D *_referenceNode;
-        int _zIndex;
+        float _zIndex;
         Types::Vector2 _drawPos;
         Types::Vector2 _parallaxPos;
 };

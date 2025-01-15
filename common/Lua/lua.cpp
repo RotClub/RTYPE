@@ -1051,7 +1051,16 @@ LUA_API int luau_StaticBody2DSetPosition(lua_State *L)
 
 /** SetPosition functions **/
 
-/** SetTexture functions **/
+/** Sprite2D functions **/
+
+LUA_API int luau_Sprite2DSetSize(lua_State *L)
+{
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    float x = static_cast<float>(luaL_checknumber(L, 2));
+    float y = static_cast<float>(luaL_checknumber(L, 3));
+    sprite->SetSize(Types::Vector2(x, y));
+    return 0;
+}
 
 LUA_API int luau_Sprite2DSetTexture(lua_State *L)
 {
@@ -1073,10 +1082,6 @@ LUA_API int luau_Sprite2DSetSource(lua_State *L)
     return 0;
 }
 
-/** SetTexture functions **/
-
-/** SetTexture functions **/
-
 LUA_API int luau_Sprite2DDraw(lua_State *L)
 {
     Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
@@ -1084,7 +1089,7 @@ LUA_API int luau_Sprite2DDraw(lua_State *L)
     return 0;
 }
 
-/** SetTexture functions **/
+/** Sprite2D functions **/
 
 /** Collide functions **/
 
@@ -1407,6 +1412,7 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"Update", luau_Sprite2DUpdate},
                                             {"GetPosition", luau_Sprite2DGetPosition},
                                             {"SetPosition", luau_Sprite2DSetPosition},
+                                            {"SetSize", luau_Sprite2DSetSize},
                                             {"SetTexture", luau_Sprite2DSetTexture},
                                             {"SetSource", luau_Sprite2DSetSource},
                                             {"Draw", luau_Sprite2DDraw},
