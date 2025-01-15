@@ -3,6 +3,7 @@
 //
 
 #include "lua.hpp"
+#include "Nodes/UI/Box/Box.hpp"
 #include "Nodes/UI/Label/Label.hpp"
 #include "Nodes/UI/Parallax/Parallax.hpp"
 #include "luaconf.h"
@@ -281,6 +282,13 @@ LUA_API int lua_gcLabel(lua_State *L)
     return 0;
 }
 
+LUA_API int lua_gcBox(lua_State *L)
+{
+    Box *box = *static_cast<Box **>(luaL_checkudata(L, 1, "BoxMetaTable"));
+    delete box;
+    return 0;
+}
+
 /** __gc functions **/
 
 /** GetName functions **/
@@ -319,6 +327,8 @@ LUA_API int luau_StaticBody2DGetName(lua_State *L)
 }
 
 LUA_API int luau_LabelGetName(lua_State *L) { return luau_TemplateNodeGetName<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxGetName(lua_State *L) { return luau_TemplateNodeGetName<Box>(L, "BoxMetaTable"); }
 
 /** GetName functions **/
 
@@ -359,6 +369,8 @@ LUA_API int luau_StaticBody2DSetName(lua_State *L)
 }
 
 LUA_API int luau_LabelSetName(lua_State *L) { return luau_TemplateNodeSetName<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxSetName(lua_State *L) { return luau_TemplateNodeSetName<Box>(L, "BoxMetaTable"); }
 
 /** SetName functions **/
 
@@ -411,6 +423,8 @@ LUA_API int luau_StaticBody2DGetChildren(lua_State *L)
 }
 
 LUA_API int luau_LabelGetChildren(lua_State *L) { return luau_TemplateNodeGetChildren<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxGetChildren(lua_State *L) { return luau_TemplateNodeGetChildren<Box>(L, "BoxMetaTable"); }
 
 /** GetChildren functions **/
 
@@ -483,6 +497,13 @@ static Node *luau_NodeFactory(lua_State *L, const std::string &type)
         int fontSize = luaL_checkinteger(L, 8);
         child = new Label(name, Types::Vector2(x, y), text, font, fontSize);
     }
+    else if (type == "Box") {
+        double x = luaL_checknumber(L, 4);
+        double y = luaL_checknumber(L, 5);
+        double size_x = luaL_checknumber(L, 6);
+        double size_y = luaL_checknumber(L, 7);
+        child = new Box(name, Types::Vector2(x, y), Types::Vector2(size_x, size_y));
+    }
     else {
         luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
     }
@@ -536,6 +557,8 @@ LUA_API int luau_StaticBody2DGetChild(lua_State *L)
 }
 
 LUA_API int luau_LabelGetChild(lua_State *L) { return luau_TemplateGetChild<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxGetChild(lua_State *L) { return luau_TemplateGetChild<Box>(L, "BoxMetaTable"); }
 
 /** GetChild functions **/
 
@@ -593,6 +616,8 @@ LUA_API int luau_StaticBody2DCreateChild(lua_State *L)
 
 LUA_API int luau_LabelCreateChild(lua_State *L) { return luau_TemplateCreateChild<Label>(L, "LabelMetaTable"); }
 
+LUA_API int luau_BoxCreateChild(lua_State *L) { return luau_TemplateCreateChild<Box>(L, "BoxMetaTable"); }
+
 /** CreateChild functions **/
 
 /** AddChild functions **/
@@ -632,6 +657,8 @@ LUA_API int luau_StaticBody2DAddChild(lua_State *L)
 }
 
 LUA_API int luau_LabelAddChild(lua_State *L) { return luau_TemplateAddChild<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxAddChild(lua_State *L) { return luau_TemplateAddChild<Box>(L, "BoxMetaTable"); }
 
 /** AddChild functions **/
 
@@ -678,6 +705,8 @@ LUA_API int luau_StaticBody2DGetPosition(lua_State *L)
 
 LUA_API int luau_LabelGetPosition(lua_State *L) { return luau_TemplateNode2DGetPosition<Label>(L, "LabelMetaTable"); }
 
+LUA_API int luau_BoxGetPosition(lua_State *L) { return luau_TemplateNode2DGetPosition<Box>(L, "BoxMetaTable"); }
+
 /** GetPosition functions **/
 
 /** SetPosition functions **/
@@ -722,6 +751,8 @@ LUA_API int luau_StaticBody2DSetPosition(lua_State *L)
 }
 
 LUA_API int luau_LabelSetPosition(lua_State *L) { return luau_TemplateNode2DSetPosition<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxSetPosition(lua_State *L) { return luau_TemplateNode2DSetPosition<Box>(L, "BoxMetaTable"); }
 
 /** SetPosition functions **/
 
@@ -901,6 +932,73 @@ LUA_API int luau_ParallaxAddParallaxPosition(lua_State *L)
 
 /** Parallax functions **/
 
+/** SetColor functions **/
+
+template <typename T>
+LUA_API int luau_TemplateSetColor(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    node->setRGB(luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
+    return 0;
+}
+
+LUA_API int luau_LabelSetColor(lua_State *L) { return luau_TemplateSetColor<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxSetColor(lua_State *L) { return luau_TemplateSetColor<Box>(L, "BoxMetaTable"); }
+
+/** SetColor functions **/
+
+/** SetAlpha functions **/
+
+template <typename T>
+LUA_API int luau_TemplateSetAlpha(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    node->setAlpha(luaL_checknumber(L, 2));
+    return 0;
+}
+
+LUA_API int luau_LabelSetAlpha(lua_State *L) { return luau_TemplateSetAlpha<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxSetAlpha(lua_State *L) { return luau_TemplateSetAlpha<Box>(L, "BoxMetaTable"); }
+
+/** SetAlpha functions **/
+
+/** GetColor functions **/
+
+template <typename T>
+LUA_API int luau_TemplateGetColor(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    Types::Vector3 color = node->getRGB();
+    lua_pushnumber(L, color.x);
+    lua_pushnumber(L, color.y);
+    lua_pushnumber(L, color.z);
+    return 3;
+}
+
+LUA_API int luau_LabelGetColor(lua_State *L) { return luau_TemplateGetColor<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxGetColor(lua_State *L) { return luau_TemplateGetColor<Box>(L, "BoxMetaTable"); }
+
+/** GetColor functions **/
+
+/** GetAlpha functions **/
+
+template <typename T>
+LUA_API int luau_TemplateGetAlpha(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    lua_pushnumber(L, node->getAlpha());
+    return 1;
+}
+
+LUA_API int luau_LabelGetAlpha(lua_State *L) { return luau_TemplateGetAlpha<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxGetAlpha(lua_State *L) { return luau_TemplateGetAlpha<Box>(L, "BoxMetaTable"); }
+
+/** GetAlpha functions **/
+
 /** Label functions **/
 
 LUA_API int luau_LabelSetText(lua_State *L)
@@ -945,21 +1043,26 @@ LUA_API int luau_LabelGetFontSize(lua_State *L)
     return 1;
 }
 
-LUA_API int luau_LabelSetColor(lua_State *L)
-{
-    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
-    node->setRGB(luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
-    return 0;
-}
-
-LUA_API int luau_LabelSetAlpha(lua_State *L)
-{
-    Label *node = *static_cast<Label **>(luaL_checkudata(L, 1, "LabelMetaTable"));
-    node->setAlpha(luaL_checknumber(L, 2));
-    return 0;
-}
-
 /** Label functions **/
+
+/** Box functions **/
+
+LUA_API int luau_BoxSetSize(lua_State *L)
+{
+    Box *node = *static_cast<Box **>(luaL_checkudata(L, 1, "BoxMetaTable"));
+    node->setSize(Types::Vector2(luaL_checknumber(L, 2), luaL_checknumber(L, 3)));
+    return 0;
+}
+
+LUA_API int luau_BoxGetSize(lua_State *L)
+{
+    Box *node = *static_cast<Box **>(luaL_checkudata(L, 1, "BoxMetaTable"));
+    lua_pushnumber(L, node->getSize().x);
+    lua_pushnumber(L, node->getSize().y);
+    return 2;
+}
+
+/** Box functions **/
 
 /* NODE LIBRARY */
 
@@ -1211,6 +1314,8 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"CreateChild", luau_LabelCreateChild},
                                          {"SetColor", luau_LabelSetColor},
                                          {"SetAlpha", luau_LabelSetAlpha},
+                                         {"GetColor", luau_BoxGetColor},
+                                         {"GetAlpha", luau_BoxGetAlpha},
                                          {"SetFont", luau_LabelSetFont},
                                          {"GetFont", luau_LabelGetFont},
                                          {"SetText", luau_LabelSetText},
@@ -1220,6 +1325,23 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"__gc", lua_gcLabel},
                                          {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, labelLibrary, "LabelMetaTable");
+    constexpr luaL_Reg boxLibrary[] = {{"GetName", luau_BoxGetName},
+                                       {"SetName", luau_BoxSetName},
+                                       {"GetChildren", luau_BoxGetChildren},
+                                       {"GetChild", luau_BoxGetChild},
+                                       {"AddChild", luau_BoxAddChild},
+                                       {"GetPosition", luau_BoxGetPosition},
+                                       {"SetPosition", luau_BoxSetPosition},
+                                       {"CreateChild", luau_BoxCreateChild},
+                                       {"SetColor", luau_BoxSetColor},
+                                       {"SetAlpha", luau_BoxSetAlpha},
+                                       {"GetColor", luau_BoxGetColor},
+                                       {"GetAlpha", luau_BoxGetAlpha},
+                                       {"SetSize", luau_BoxSetSize},
+                                       {"GetSize", luau_BoxGetSize},
+                                       {"__gc", lua_gcBox},
+                                       {nullptr, nullptr}};
+    luau_ExposeFunctionsAsMetatable(L, boxLibrary, "BoxMetaTable");
     /* NODE LIBRARY */
 }
 

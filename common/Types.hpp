@@ -10,6 +10,60 @@
 
 namespace Types
 {
+    class Vector3
+    {
+        public:
+            Vector3() : x(0), y(0), z(0) {}
+
+            Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
+
+            float x;
+            float y;
+            float z;
+
+            static Vector3 Zero() { return Vector3(0, 0, 0); }
+
+            Vector3 operator+(const Vector3 &other) const { return Vector3(x + other.x, y + other.y, z + other.z); }
+
+            Vector3 operator+=(const Vector3 &other)
+            {
+                x += other.x;
+                y += other.y;
+                z += other.z;
+                return *this;
+            }
+
+            Vector3 operator+(const float &other) const { return Vector3(x + other, y + other, z + other); }
+
+            Vector3 operator+=(const float &other)
+            {
+                x += other;
+                y += other;
+                z += other;
+                return *this;
+            }
+
+            Vector3 operator*(const Vector3 &other) const { return Vector3(x * other.x, y * other.y, z * other.z); }
+
+            Vector3 operator*=(const Vector3 &other)
+            {
+                x *= other.x;
+                y *= other.y;
+                z *= other.z;
+                return *this;
+            }
+
+            Vector3 operator*(const float &other) const { return Vector3(x * other, y * other, z * other); }
+
+            Vector3 operator*=(const float &other)
+            {
+                x *= other;
+                y *= other;
+                z *= other;
+                return *this;
+            }
+    };
+
     class Vector2
     {
         public:
