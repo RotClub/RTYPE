@@ -36,8 +36,8 @@ void Parallax::Update() {}
 void Parallax::Draw()
 {
     raylib::Texture &tex = Engine::GetInstance().getResourceManager().getTexture(_texture);
-    float width = tex.width;
-    float height = tex.height;
+    float width = GetRenderWidth();
+    float height = GetRenderHeight();
     if (_referenceNode == nullptr) {
         _drawPos.x += _parallaxPos.x;
         _drawPos.y += _parallaxPos.y;
