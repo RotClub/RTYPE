@@ -57,6 +57,7 @@ class Client
         void processIncomingPackets();
 
         bool isConnectionEstablished() const { return _connectionEstablished; }
+        void disconnectFromServer();
 
     protected:
         Client(std::string ip, int port);

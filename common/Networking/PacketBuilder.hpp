@@ -9,6 +9,7 @@
 #define PACKETUTILS_HPP_
 
 #define PACKED_PACKET_SIZE 4096
+#define PACKED_PACKET_INTEGRITY_CHALLENGE "Y4DrMrLiwlli79jzU9v8AHLH1IaNyBo4"
 
 #include "Packet.hpp"
 

@@ -10,6 +10,7 @@ local ACTIONS = {
 local function handleActionChange(ply: string, action: number, state: boolean)
     for i = 1, #ACTIONS do
         if i == action then
+            info("Action " .. ACTIONS[i] .. " changed to " .. tostring(state))
             getSpaceshipByPlayer(ply).actions[ACTIONS[i]] = state
         end
     end

@@ -135,8 +135,9 @@ void PacketBuilder::reset()
 void PacketBuilder::pack(PackedPacket *packed, const Packet *packet)
 {
     std::memset(*packed, 0, PACKED_PACKET_SIZE);
+    std::memcpy(*packed, PACKED_PACKET_INTEGRITY_CHALLENGE, sizeof(char) * 32);
 
-    size_t offset = 0;
+    size_t offset = 32;
     std::memcpy(*packed + offset, &packet->n, sizeof(packet->n));
     offset += sizeof(packet->n);
 
@@ -154,7 +155,11 @@ void PacketBuilder::pack(PackedPacket *packed, const Packet *packet)
 
 void PacketBuilder::unpack(const PackedPacket *packed, Packet *packet)
 {
-    size_t offset = 0;
+    size_t offset = 32;
+
+    if (std::memcmp(*packed, PACKED_PACKET_INTEGRITY_CHALLENGE, sizeof(char) * 32) != 0) {
+        throw std::runtime_error("Invalid packet integrity challenge.");
+    }
 
     std::memcpy(&packet->n, *packed + offset, sizeof(packet->n));
     offset += sizeof(packet->n);

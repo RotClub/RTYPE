@@ -75,6 +75,12 @@ int Client::getPort() const { return _port; }
 
 ClientConnection &Client::getClientConnection() { return _clientConnection; }
 
+void Client::disconnectFromServer()
+{
+    _clientConnection.disconnectFromServer();
+    _connectionEstablished = false;
+}
+
 void Client::broadcastLuaPackets()
 {
     while (!Engine::GetInstance().getBroadcastQueue().empty()) {
@@ -104,7 +110,8 @@ void Client::processIncomingPackets()
         Packet *packet = getClientConnection().getLatestUDPPacket();
         if (packet == nullptr)
             return;
-        (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
+        if (packet->cmd != PacketCmd::NONE)
+            (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
         PacketBuilder(packet).reset();
         delete packet;
     }
