@@ -115,6 +115,9 @@ void ServerConnection::_sendLoop()
                 Packet *packet = client->popTcpPacketOutput();
                 PacketBuilder::PackedPacket packed = {0};
                 PacketBuilder::pack(&packed, packet);
+                if (packed[0] == 0) {
+                    throw std::runtime_error("Invalid packet");
+                }
                 write(client->getTcpFd(), &packed, PACKED_PACKET_SIZE);
                 PacketBuilder(packet).reset();
                 delete packet;

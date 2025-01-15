@@ -77,6 +77,7 @@ ClientConnection &Client::getClientConnection() { return _clientConnection; }
 
 void Client::disconnectFromServer()
 {
+    spdlog::info("Disconnecting from server");
     _clientConnection.disconnectFromServer();
     _connectionEstablished = false;
 }

@@ -18,6 +18,7 @@
 class PacketBuilder
 {
     public:
+        static const std::string integrityChallenge;
         PacketBuilder();
         PacketBuilder(Packet *packet);
         ~PacketBuilder() = default;
@@ -46,7 +47,6 @@ class PacketBuilder
         size_t _n;
         PacketCmd _cmd;
         void *_data;
-        static const std::string _integrityChallenge;
 };
 
 #endif /* !PACKETUTILS_HPP_ */
