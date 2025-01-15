@@ -73,14 +73,18 @@ void Server::broadcastLuaPackets()
 {
     while (!Engine::GetInstance().getBroadcastQueue().empty()) {
         std::pair<std::string, Packet *> newPacket = Engine::GetInstance().getBroadcastQueue().front();
+        Packet *copy = new Packet;
+        std::memcpy(copy, newPacket.second, sizeof(Packet));
+        PacketBuilder(newPacket.second).reset();
+        delete newPacket.second;
         for (auto &client : _serverConnection.getClientConnections()) {
             if (client->getStep() != Client::ConnectionStep::COMPLETE)
                 continue;
             if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
-                client->addTcpPacketOutput(newPacket.second);
+                client->addTcpPacketOutput(copy);
             }
             else {
-                client->addUdpPacketOutput(newPacket.second);
+                client->addUdpPacketOutput(copy);
             }
         }
         Engine::GetInstance().getBroadcastQueue().pop();
