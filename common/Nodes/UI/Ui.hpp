@@ -21,18 +21,18 @@ class UI : public Node
 
         void Update() override;
 
-        virtual void setRGB(float red, float green, float blue)
-        {
-            this->red = red;
-            this->green = green;
-            this->blue = blue;
-        }
-        virtual void setAlpha(float alpha) { this->alpha = alpha; }
+        void setRGB(const Types::Vector3 &color) { _color = color; }
+        void setAlpha(float alpha) { this->alpha = alpha; }
 
-        float red, green, blue, alpha;
+        [[nodiscard]] const Types::Vector3 &getRGB() const { return _color; }
+        [[nodiscard]] float getAlpha() const { return alpha; }
 
     private:
         Types::Vector2 _globalPosition;
+
+        Types::Vector3 _color;
+
+        float alpha;
 
         void _updateGlobalPosition();
 };

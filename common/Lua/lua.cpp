@@ -964,6 +964,41 @@ LUA_API int luau_BoxSetAlpha(lua_State *L) { return luau_TemplateSetAlpha<Box>(L
 
 /** SetAlpha functions **/
 
+/** GetColor functions **/
+
+template <typename T>
+LUA_API int luau_TemplateGetColor(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    Types::Vector3 color = node->getRGB();
+    lua_pushnumber(L, color.x);
+    lua_pushnumber(L, color.y);
+    lua_pushnumber(L, color.z);
+    return 3;
+}
+
+LUA_API int luau_LabelGetColor(lua_State *L) { return luau_TemplateGetColor<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxGetColor(lua_State *L) { return luau_TemplateGetColor<Box>(L, "BoxMetaTable"); }
+
+/** GetColor functions **/
+
+/** GetAlpha functions **/
+
+template <typename T>
+LUA_API int luau_TemplateGetAlpha(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    lua_pushnumber(L, node->getAlpha());
+    return 1;
+}
+
+LUA_API int luau_LabelGetAlpha(lua_State *L) { return luau_TemplateGetAlpha<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxGetAlpha(lua_State *L) { return luau_TemplateGetAlpha<Box>(L, "BoxMetaTable"); }
+
+/** GetAlpha functions **/
+
 /** Label functions **/
 
 LUA_API int luau_LabelSetText(lua_State *L)
@@ -1279,6 +1314,8 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"CreateChild", luau_LabelCreateChild},
                                          {"SetColor", luau_LabelSetColor},
                                          {"SetAlpha", luau_LabelSetAlpha},
+                                         {"GetColor", luau_BoxGetColor},
+                                         {"GetAlpha", luau_BoxGetAlpha},
                                          {"SetFont", luau_LabelSetFont},
                                          {"GetFont", luau_LabelGetFont},
                                          {"SetText", luau_LabelSetText},
@@ -1298,6 +1335,8 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"CreateChild", luau_BoxCreateChild},
                                          {"SetColor", luau_BoxSetColor},
                                          {"SetAlpha", luau_BoxSetAlpha},
+                                         {"GetColor", luau_BoxGetColor},
+                                         {"GetAlpha", luau_BoxGetAlpha},
                                          {"SetSize", luau_BoxSetSize},
                                          {"GetSize", luau_BoxGetSize},
                                          {"__gc", lua_gcBox},

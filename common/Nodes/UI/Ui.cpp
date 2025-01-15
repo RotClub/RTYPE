@@ -20,7 +20,6 @@ void UI::Update() { _updateGlobalPosition(); }
 
 void UI::_updateGlobalPosition()
 {
-    float dt = Engine::GetInstance().getDeltaLast();
     Node *parentNode = getParent();
     if (parentNode == nullptr) {
         _globalPosition = position;
