@@ -625,7 +625,8 @@ LUA_API int luau_TemplateCreateChild(lua_State *L, const char *metatable)
     lua_setmetatable(L, -2);
     try {
         node->addChild(*child);
-    } catch (const std::runtime_error &e) {
+    }
+    catch (const std::runtime_error &e) {
         luaL_error(L, e.what());
     }
     return 1;
@@ -677,7 +678,8 @@ LUA_API int luau_TemplateAddChild(lua_State *L, const char *metatable)
     Node *child = *static_cast<Node **>(luaL_checkudata(L, 2, "NodeMetaTable"));
     try {
         node->addChild(*child);
-    } catch (const std::runtime_error &e) {
+    }
+    catch (const std::runtime_error &e) {
         luaL_error(L, e.what());
     }
     return 0;
@@ -808,7 +810,16 @@ LUA_API int luau_BoxSetPosition(lua_State *L) { return luau_TemplateNode2DSetPos
 
 /** SetPosition functions **/
 
-/** SetTexture functions **/
+/** Sprite2D functions **/
+
+LUA_API int luau_Sprite2DSetSize(lua_State *L)
+{
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    float x = static_cast<float>(luaL_checknumber(L, 2));
+    float y = static_cast<float>(luaL_checknumber(L, 3));
+    sprite->SetSize(Types::Vector2(x, y));
+    return 0;
+}
 
 LUA_API int luau_Sprite2DSetTexture(lua_State *L)
 {
@@ -830,7 +841,7 @@ LUA_API int luau_Sprite2DSetSource(lua_State *L)
     return 0;
 }
 
-/** SetTexture functions **/
+/** Sprite2D functions **/
 
 /** Collide functions **/
 
@@ -1285,6 +1296,7 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"CreateChild", luau_Sprite2DCreateChild},
                                             {"GetPosition", luau_Sprite2DGetPosition},
                                             {"SetPosition", luau_Sprite2DSetPosition},
+                                            {"SetSize", luau_Sprite2DSetSize},
                                             {"SetTexture", luau_Sprite2DSetTexture},
                                             {"Destroy", luau_Sprite2DDestroy},
                                             {"__gc", lua_gcSprite2D},

@@ -34,7 +34,8 @@ std::vector<Node *> Node::GetChildren() const { return children; }
 
 void Node::addChild(Node &child)
 {
-    if (std::find_if(children.begin(), children.end(), [&child](Node *node) { return node->name == child.name; }) != children.end()) {
+    if (std::find_if(children.begin(), children.end(), [&child](Node *node) { return node->name == child.name; }) !=
+        children.end()) {
         throw std::runtime_error("Node name is already used");
     }
     children.push_back(&child);

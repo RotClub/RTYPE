@@ -30,6 +30,12 @@ Sprite2D &Sprite2D::SetSource(const Types::Rect2 &source)
     return *this;
 }
 
+Sprite2D &Sprite2D::SetSize(const Types::Vector2 &size)
+{
+    _size = size;
+    return *this;
+}
+
 void Sprite2D::Draw()
 {
     if (Engine::GetInstance().getState() == Types::VMState::SERVER)
@@ -46,5 +52,9 @@ void Sprite2D::Draw()
         raylib::Rectangle tmp = {_source.origin.x, _source.origin.y, _source.size.x, _source.size.y};
         src = tmp;
     }
-    tex.Draw(src, {getGlobalPosition().x, getGlobalPosition().y, width, height}, {0, 0}, 0);
+    Types::Vector2 finalSize = _size;
+    if (finalSize.x == 0 && finalSize.y == 0) {
+        finalSize = {_source.size.x, _source.size.y};
+    }
+    tex.Draw(src, {getGlobalPosition().x, getGlobalPosition().y, finalSize.x, finalSize.y}, {0, 0}, 0);
 }
