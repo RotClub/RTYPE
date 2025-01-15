@@ -73,7 +73,13 @@ Packet *ClientConnection::_tryReceiveTCP()
         throw std::runtime_error("Disconnect");
     }
     Packet *packet = new Packet;
-    PacketBuilder::unpack(&packed, packet);
+    try {
+        PacketBuilder::unpack(&packed, packet);
+    }
+    catch (const std::exception &e) {
+        delete packet;
+        return nullptr;
+    }
     return packet;
 }
 
@@ -86,7 +92,13 @@ Packet *ClientConnection::_tryReceiveUDP()
         throw std::runtime_error("Error receiving udp packet");
     }
     Packet *packet = new Packet;
-    PacketBuilder::unpack(&packed, packet);
+    try {
+        PacketBuilder::unpack(&packed, packet);
+    }
+    catch (const std::exception &e) {
+        delete packet;
+        return nullptr;
+    }
     return packet;
 }
 
@@ -110,7 +122,7 @@ void ClientConnection::_receiveLoop()
             packet = _tryReceiveTCP();
         }
         catch (const std::runtime_error &e) {
-            spdlog::error(e.what());
+            packet = nullptr;
         }
         if (packet)
             std::get<IN>(_tcpQueues).enqueue(packet);
@@ -121,7 +133,7 @@ void ClientConnection::_receiveLoop()
             packet = _tryReceiveUDP();
         }
         catch (const std::runtime_error &e) {
-            spdlog::error(e.what());
+            packet = nullptr;
         }
         if (packet)
             std::get<IN>(_udpQueues).enqueue(packet);

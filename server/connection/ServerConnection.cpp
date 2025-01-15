@@ -144,7 +144,13 @@ Packet *ServerConnection::_tryReceiveTCP(Client *client)
         throw std::runtime_error("Disconnect");
     }
     Packet *packet = new Packet;
-    PacketBuilder::unpack(&packed, packet);
+    try {
+        PacketBuilder::unpack(&packed, packet);
+    }
+    catch (const std::exception &e) {
+        delete packet;
+        return nullptr;
+    }
     return packet;
 }
 
@@ -157,7 +163,13 @@ Packet *ServerConnection::_tryReceiveUDP(sockaddr_in *addr)
         throw std::runtime_error("Error receiving udp packet");
     }
     Packet *packet = new Packet;
-    PacketBuilder::unpack(&packed, packet);
+    try {
+        PacketBuilder::unpack(&packed, packet);
+    }
+    catch (const std::exception &e) {
+        delete packet;
+        return nullptr;
+    }
     return packet;
 }
 

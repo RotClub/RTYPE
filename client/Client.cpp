@@ -104,7 +104,8 @@ void Client::processIncomingPackets()
         Packet *packet = getClientConnection().getLatestUDPPacket();
         if (packet == nullptr)
             return;
-        (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
+        if (packet->cmd != PacketCmd::NONE)
+            (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
         PacketBuilder(packet).reset();
         delete packet;
     }
