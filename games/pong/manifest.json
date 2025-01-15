@@ -1,0 +1,7 @@
+{
+    "name": "PONG",
+    "description": "Remaster of the classic PONG game",
+    "max_players": 2,
+    "authors": ["Kapsulon", "lmaoleo", "IceBird", "Kloups", "Garover"],
+    "version": "1.0"
+}
