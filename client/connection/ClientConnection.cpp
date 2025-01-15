@@ -84,7 +84,7 @@ void ClientConnection::_tryReceiveUDP()
     std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
     socklen_t len = sizeof(_addr);
     int n = 0;
-    if ((n = recvfrom(_udpFd, buffer.data(), PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(&_addr), &len) <= 0)) {
+    if ((n = recvfrom(_udpFd, buffer.data(), PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(&_addr), &len)) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
     buffer.resize(n);

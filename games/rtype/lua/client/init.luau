@@ -21,7 +21,9 @@ hook.Add("Tick", "main", function(delta)
     end
 end)
 
-net.Receive("Hello", function(len, ply)
-    info("Hello from server")
-    EnableFpsCounter()
+net.Receive("SpaceshipPosition", function(len, ply)
+    local id = net.ReadInt()
+    local x = net.ReadFloat()
+    local y = net.ReadFloat()
+    info("Received spaceship position: ", id, x, y)
 end)
