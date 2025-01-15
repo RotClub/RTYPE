@@ -1,7 +1,7 @@
 # Summary
 
-[Introduction](./introduction.md)
-[RFC](https://github.com/RotClub/RTYPE/tree/main/docs/rfc.txt)
+[Introduction](./introduction.md)<br/>
+[RFC](./rfc.md)
 
 ---
 
@@ -10,6 +10,7 @@
 - [Building](./engine/building.md)
 - [Server](./engine/server.md)
 - [Client](./engine/client.md)
+- [Networking](./engine/networking.md)
 
 ---
 

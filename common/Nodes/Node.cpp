@@ -6,38 +6,52 @@
 */
 
 #include "Node.hpp"
+
+#include <Engine.hpp>
 #include <raylib-cpp.hpp>
 
-Node::Node(const std::string &name)
-    : children(std::vector<Node*>()), name(name)
+Node::Node(const std::string &name) : children(std::vector<Node *>()), name(name)
 {
+    if (Engine::isInstanceStarted()) {
+        Engine &engine = Engine::GetInstance();
+        if (engine.root != nullptr && name == "root") {
+            throw std::runtime_error("Root node already exists");
+        }
+    }
     this->metatable = "NodeMetaTable";
 }
 
-const Node &Node::GetChild(const std::string &name) const
+Node *Node::GetChild(const std::string &name) const
 {
-    for (const auto &child : children) {
+    for (auto child : children) {
         if (child->name == name)
-            return *child;
+            return child;
     }
     throw std::runtime_error("Node not found");
 }
 
-const std::vector<Node *> &Node::GetChildren() const
-{
-    return children;
-}
+std::vector<Node *> Node::GetChildren() const { return children; }
 
 void Node::addChild(Node &child)
 {
+    if (std::find_if(children.begin(), children.end(), [&child](Node *node) { return node->name == child.name; }) != children.end()) {
+        throw std::runtime_error("Node name is already used");
+    }
     children.push_back(&child);
     child._parent = this;
 }
 
-void Node::Update()
+void Node::Destroy()
 {
-}
-
-void Node::Draw()
-{
+    if (this->name == "root") {
+        throw std::runtime_error("Cannot destroy root node");
+    }
+    if (_parent != nullptr) {
+        std::erase(_parent->children, this);
+    }
+    for (auto child : children) {
+        delete child;
+    }
+    children.clear();
+    delete this;
 }

@@ -7,8 +7,9 @@
 
 #include "Node2D.hpp"
 
-Node2D::Node2D(const std::string &name)
-    : Node(name), position(Types::Vector2::Zero())
+#include <Engine.hpp>
+
+Node2D::Node2D(const std::string &name) : Node(name), position(Types::Vector2::Zero())
 {
     this->metatable = "Node2DMetaTable";
 }
@@ -19,10 +20,7 @@ void Node2D::addChild(Node &child)
     _updateGlobalPosition();
 }
 
-void Node2D::Update()
-{
-    _updateGlobalPosition();
-}
+void Node2D::Update() { _updateGlobalPosition(); }
 
 
 void Node2D::_updateGlobalPosition()

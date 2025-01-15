@@ -8,21 +8,19 @@
 #include "ServerConnection.hpp"
 
 #include <Engine.hpp>
+#include <arpa/inet.h>
 #include <cstddef>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
-ServerConnection::ServerConnection(int port)
-    : _port(port)
-{
-}
+ServerConnection::ServerConnection(int port) : _port(port) {}
 
-ServerConnection::~ServerConnection()
-{
-    stop();
-}
+ServerConnection::~ServerConnection() { stop(); }
 
 void ServerConnection::start()
 {
-    if (_running) return;
+    if (_running)
+        return;
     _running = true;
     _createSocket();
     _networkThread = std::thread(&ServerConnection::_loop, this);
@@ -30,8 +28,10 @@ void ServerConnection::start()
 
 void ServerConnection::stop()
 {
-    if (!_running) return;
+    if (!_running)
+        return;
     _running = false;
+    pthread_cancel(_networkThread.native_handle());
     if (_networkThread.joinable()) {
         _networkThread.join();
     }
@@ -54,27 +54,22 @@ void ServerConnection::_loop()
             _receiveLoop();
             _disconnectClients();
             _sendLoop();
-            // for (auto &client : _clientConnections) {
-            //     if (client->getStep() != Client::ConnectionStep::COMPLETE) {
-            //         _authFlow(client);
-            //     }
-            // }
-        } catch (const std::exception &e) {
-            spdlog::error("Error in loop: {}", e.what());
+        }
+        catch (const std::exception &e) {
+            spdlog::error("Error in networking loop: {}", e.what());
         }
     }
 }
 
 void ServerConnection::_disconnectClients()
 {
-    _clientConnections.erase(std::ranges::remove_if(_clientConnections, [](Client *client) {
-        if (client->shouldDisconnect()) {
-            spdlog::debug("Client (fd {}) disconnected", client->getTcpFd());
-            delete client;
-            return true;
-        }
-        return false;
-    }).begin(), _clientConnections.end());
+    auto it =
+        std::ranges::remove_if(_clientConnections, [](Client *client) { return client->shouldDisconnect(); }).begin();
+    if (it != _clientConnections.end()) {
+        Client *client = *it;
+        _clientConnections.erase(it, _clientConnections.end());
+        delete client;
+    }
 }
 
 void ServerConnection::_receiveLoop()
@@ -84,31 +79,48 @@ void ServerConnection::_receiveLoop()
             try {
                 Packet *packet = _tryReceiveTCP(client);
                 client->addTcpPacketInput(packet);
-            } catch (const std::exception &e) {
+            }
+            catch (const std::exception &e) {
                 client->disconnect();
             }
         }
     }
-}
-
-void ServerConnection::_authFlow(Client *client)
-{
-    // PacketBuilder builder;
-    // Packet *packet = builder.writeString(Engine::GetInstance().getGameInfo()->getName()).build();
-    //
-    // client->addTcpPacketOutput(packet);
-    // client->setStep(Client::ConnectionStep::COMPLETE);
+    if (FD_ISSET(_udpFd, &_readfds)) {
+        sockaddr_in addr{};
+        std::memset(&addr, 0, sizeof(addr));
+        Packet *packet = _tryReceiveUDP(&addr);
+        Client *client = _getClientByID(packet->id);
+        if (client == nullptr) {
+            PacketBuilder(packet).reset();
+            delete packet;
+            return;
+        }
+        client->updateUdpAddress(&addr);
+        if (!client->shouldDisconnect())
+            client->addUdpPacketInput(packet);
+    }
 }
 
 void ServerConnection::_sendLoop()
 {
     for (auto &client : _clientConnections) {
-        if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_writefds) && client->hasTcpPacketOutput()) {
-            while (client->hasTcpPacketOutput()) {
+        if (!client->shouldDisconnect()) {
+            if (client->hasTcpPacketOutput() && FD_ISSET(client->getTcpFd(), &_writefds)) {
                 Packet *packet = client->popTcpPacketOutput();
-                size_t len = packet->n;
-                write(client->getTcpFd(), &packet, len);
-                std::free(packet->data);
+                PacketBuilder::PackedPacket packed = {0};
+                PacketBuilder::pack(&packed, packet);
+                write(client->getTcpFd(), &packed, PACKED_PACKET_SIZE);
+                PacketBuilder(packet).reset();
+                delete packet;
+            }
+            if (client->hasUdpPacketOutput()) {
+                Packet *packet = client->popUdpPacketOutput();
+                PacketBuilder::PackedPacket packed = {0};
+                PacketBuilder::pack(&packed, packet);
+                sendto(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()),
+                       sizeof(sockaddr_in));
+                PacketBuilder(packet).reset();
+                delete packet;
             }
         }
     }
@@ -123,16 +135,25 @@ void ServerConnection::_accept()
 
 Packet *ServerConnection::_tryReceiveTCP(Client *client)
 {
+    PacketBuilder::PackedPacket packed = {0};
+    if (read(client->getTcpFd(), &packed, PACKED_PACKET_SIZE) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
     Packet *packet = new Packet;
+    PacketBuilder::unpack(&packed, packet);
+    return packet;
+}
 
-    std::memset(packet, 0, sizeof(Packet));
-    if (read(client->getTcpFd(), packet, sizeof(Packet)) <= 0) {
-        throw std::runtime_error("Disconnect");
+Packet *ServerConnection::_tryReceiveUDP(sockaddr_in *addr)
+{
+    PacketBuilder::PackedPacket packed = {0};
+
+    socklen_t len = sizeof(*addr);
+    if (recvfrom(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+        throw std::runtime_error("Error receiving udp packet");
     }
-    packet->data = std::malloc(packet->n);
-    if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
-        throw std::runtime_error("Disconnect");
-    }
+    Packet *packet = new Packet;
+    PacketBuilder::unpack(&packed, packet);
     return packet;
 }
 
@@ -192,8 +213,18 @@ int ServerConnection::_selectFd()
     _setClientFds(&_readfds);
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
-    // FD_SET(_udpFd, &_readfds);
-    int maxFd = std::max(_getMaxFd(), _tcpFd);
+    FD_SET(_udpFd, &_readfds);
+    int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
     retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, nullptr);
     return retval;
+}
+
+Client *ServerConnection::_getClientByID(const char id[16])
+{
+    for (auto client : _clientConnections) {
+        if (std::memcmp(client->getID(), id, sizeof(char[16])) == 0) {
+            return client;
+        }
+    }
+    return nullptr;
 }

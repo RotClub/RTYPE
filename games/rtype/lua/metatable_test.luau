@@ -23,6 +23,33 @@ local function printMetatable(node)
     end
 end
 
+local function updateNodes(node)
+    for _, v in ipairs(node:GetChildren()) do
+        v:Update()
+        updateNodes(v)
+    end
+end
+
+local function mult_string(str, num)
+    local result = ""
+    for _ = 1, num do
+        result = result .. str
+    end
+    return result
+end
+
+local function printNodes(node, depth)
+    print(mult_string(" ", depth) .. "Node : ", node:GetName())
+    for _, v in ipairs(node:GetChildren()) do
+        if v then
+            print(mult_string(" ", depth + 1) .. "Child : ", v:GetName())
+            if v:GetChildren() then
+                printNodes(v, depth + 1)
+            end
+        end
+    end
+end
+
 root:CreateChild("Node2D", "node_two")
 root:CreateChild("Sprite2D", "iamasprite", "image.png")
 
@@ -53,6 +80,9 @@ print("Should be new_name -> ", node:GetName())  -- Works as expected (prints "n
 ---- Add a Node2D child
 local sprite = root:CreateChild("Node2D", "sprite")
 
+---- Add a Node2D duplicate child
+--local sprite_dup = root:CreateChild("Node2D", "sprite") -- Should crash
+
 -- Directly call Node2DMetaTable methods
 print("Should be 0, 0 -> ", sprite:GetPosition())  -- Works as expected (prints 0, 0)
 sprite:SetPosition(100, 200)
@@ -81,3 +111,34 @@ local rect2_shape = root:CreateChild("CollisionShape2D", "rect2", "Rectangle", 2
 
 -- Directly call CollisionShape2DMetaTable methods
 print("Should be false -> ", rect2_shape:Collide(rect_shape))
+
+-- Area2D
+local area2d = root:CreateChild("Area2D", "area" , 0, 0, 100, 100)
+print("Area2D position should be 0, 0 -> ", area2d:GetPosition())
+print("Area2D size should be 100, 100 -> ", area2d:GetSize())
+local area2d2 = area2d:CreateChild("Area2D", "area2" , 120, 120, 30, 30)
+--updateNodes(root)
+print("Should be false -> ", area2d:Collide(area2d2))
+area2d:SetPosition(80, 80)
+print("Area2D position should be 80, 80 -> ", area2d:GetPosition())
+--updateNodes(root)
+print("Area2D Pos : ", area2d:GetPosition())
+print("Area2D Size : ", area2d:GetSize())
+print("Area2D2 Pos : ", area2d2:GetPosition())
+print("Area2D2 Size : ", area2d2:GetSize())
+print("Should be true -> ", area2d:Collide(area2d2))
+
+-- Rigidbody2D
+local rb2d = area2d:CreateChild("RigidBody2D", "rb2d", 1, 0.5, 2, 2)
+print("Rigidbody2D position should be 1, 0.5 -> ", rb2d:GetPosition())
+
+-- Staticbody2D
+local st2d = rb2d:CreateChild("StaticBody2D", "st2d", 1, 0.5)
+print("Staticbody2D position should be 1, 0.5 -> ", st2d:GetPosition())
+
+-- Testing Destroy
+print("Before Destroy")
+printNodes(root, 0)
+area2d:Destroy() -- Destroy node named "area"
+print("After Destroy")
+printNodes(root, 0) -- Should print only root and its children without "area" and its children

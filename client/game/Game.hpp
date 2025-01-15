@@ -6,14 +6,15 @@
 */
 
 #ifndef GAME_HPP_
-    #define GAME_HPP_
+#define GAME_HPP_
 
-    #include "../../common/Engine.hpp"
-    #include "Networking/Packet.hpp"
+#include "../../common/Engine.hpp"
+#include "Networking/Packet.hpp"
 
-    #include <raylib-cpp.hpp>
+#include <raylib-cpp.hpp>
 
-class Game {
+class Game
+{
     public:
         Game();
         ~Game();
@@ -22,8 +23,11 @@ class Game {
 
     private:
         void _update(int dt);
+        void _loop();
+        void _accessibilityLoop();
         void _draw(int dt);
         void _updateNodes(Node &node);
+        void _drawNodes(Node &node);
         void _loadResources();
 
         raylib::Window _window;
