@@ -8,9 +8,9 @@
 #include "Server.hpp"
 #include "argumentManager/ArgumentManager.hpp"
 
-static void sigHandler(const int sig, Server* srv)
+static void sigHandler(const int sig, Server *srv)
 {
-    static Server* saved = nullptr;
+    static Server *saved = nullptr;
 
     if (saved == nullptr)
         saved = srv;
@@ -19,7 +19,7 @@ static void sigHandler(const int sig, Server* srv)
     saved->stop();
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     try {
         ArgumentManager argManager(argc, argv);
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 
         srv.start();
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e) {
         std::cerr << "Could not start server: " << e.what() << std::endl;
         return 84;
     }

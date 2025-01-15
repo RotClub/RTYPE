@@ -6,7 +6,7 @@
 
 Config::Config() : _fpsCount(false), _colorBlindnessMode(ColorBlindnessMode::NONE) {}
 
-Config& Config::GetInstance()
+Config &Config::GetInstance()
 {
     static Config instance;
     return instance;

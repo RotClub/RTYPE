@@ -23,45 +23,45 @@ PacketBuilder::PacketBuilder()
     _data = nullptr;
 }
 
-PacketBuilder::PacketBuilder(Packet* packet)
+PacketBuilder::PacketBuilder(Packet *packet)
 {
     _n = packet->n;
     _cmd = packet->cmd;
     _data = packet->data;
 }
 
-void PacketBuilder::loadFromPacket(Packet* packet)
+void PacketBuilder::loadFromPacket(Packet *packet)
 {
     _cmd = packet->cmd;
     _data = packet->data;
     _n = packet->n;
 }
 
-PacketBuilder& PacketBuilder::setCmd(PacketCmd cmd)
+PacketBuilder &PacketBuilder::setCmd(PacketCmd cmd)
 {
     _cmd = cmd;
     return *this;
 }
 
-PacketBuilder& PacketBuilder::writeInt(int nb)
+PacketBuilder &PacketBuilder::writeInt(int nb)
 {
-    void* rt = std::realloc(_data, _n + sizeof(int));
+    void *rt = std::realloc(_data, _n + sizeof(int));
     if (rt == nullptr)
         throw std::runtime_error("Error reallocating memory");
     _data = rt;
-    std::memcpy(static_cast<char*>(_data) + _n, &nb, sizeof(int));
+    std::memcpy(static_cast<char *>(_data) + _n, &nb, sizeof(int));
     _n += sizeof(int);
     return *this;
 }
 
-PacketBuilder& PacketBuilder::writeString(const std::string& str)
+PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
     size_t len = str.length() + 1;
-    void* rt = std::realloc(_data, _n + len);
+    void *rt = std::realloc(_data, _n + len);
     if (rt == nullptr)
         throw std::runtime_error("Error reallocating memory");
     _data = rt;
-    std::memcpy(static_cast<char*>(_data) + _n, str.c_str(), len);
+    std::memcpy(static_cast<char *>(_data) + _n, str.c_str(), len);
     _n += len;
     return *this;
 }
@@ -72,25 +72,25 @@ int PacketBuilder::readInt()
         throw std::runtime_error("Not enough data to read an int");
     int nb = 0;
     std::memcpy(&nb, _data, sizeof(int));
-    _data = static_cast<char*>(_data) + sizeof(int);
+    _data = static_cast<char *>(_data) + sizeof(int);
     _n -= sizeof(int);
     return nb;
 }
 
 std::string PacketBuilder::readString()
 {
-    size_t len = std::strlen(static_cast<char*>(_data)) + 1;
+    size_t len = std::strlen(static_cast<char *>(_data)) + 1;
     if (_n < len)
         throw std::runtime_error("Not enough data to read a string");
-    std::string str(static_cast<char*>(_data));
-    _data = static_cast<char*>(_data) + len;
+    std::string str(static_cast<char *>(_data));
+    _data = static_cast<char *>(_data) + len;
     _n -= len;
     return str;
 }
 
-Packet* PacketBuilder::build()
+Packet *PacketBuilder::build()
 {
-    Packet* packet = new Packet;
+    Packet *packet = new Packet;
     packet->n = _n;
     packet->cmd = _cmd;
     packet->data = _data;
@@ -110,7 +110,7 @@ void PacketBuilder::reset()
     _data = nullptr;
 }
 
-void PacketBuilder::pack(PackedPacket* packed, const Packet* packet)
+void PacketBuilder::pack(PackedPacket *packed, const Packet *packet)
 {
     std::memset(*packed, 0, PACKED_PACKET_SIZE);
 
@@ -130,7 +130,7 @@ void PacketBuilder::pack(PackedPacket* packed, const Packet* packet)
     }
 }
 
-void PacketBuilder::unpack(const PackedPacket* packed, Packet* packet)
+void PacketBuilder::unpack(const PackedPacket *packed, Packet *packet)
 {
     size_t offset = 0;
 

@@ -6,33 +6,34 @@
 */
 
 #ifndef ENGINE_HPP_
-    #define ENGINE_HPP_
+#define ENGINE_HPP_
 
-    #include "Nodes/Node.hpp"
-    #include "lua.h"
-    #include "luaconf.h"
-    #include "lualib.h"
-    #include "luacode.h"
-    #include "Lua/lua.hpp"
-    #include "ResourceManager/ResourceManager.hpp"
-    #include <queue>
-    #include <string>
-    #include <filesystem>
-    #include <stack>
-    #include <map>
-    #include "GameInfo/GameInfo.hpp"
-    #include "Networking/PacketBuilder.hpp"
-    #include "spdlog/spdlog.h"
-    #include "spdlog/sinks/stdout_color_sinks.h"
-    #include "spdlog/sinks/daily_file_sink.h"
-    #include "Types.hpp"
+#include <filesystem>
+#include <map>
+#include <queue>
+#include <stack>
+#include <string>
+#include "GameInfo/GameInfo.hpp"
+#include "Lua/lua.hpp"
+#include "Networking/PacketBuilder.hpp"
+#include "Nodes/Node.hpp"
+#include "ResourceManager/ResourceManager.hpp"
+#include "Types.hpp"
+#include "lua.h"
+#include "luacode.h"
+#include "luaconf.h"
+#include "lualib.h"
+#include "spdlog/sinks/daily_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 
-    #define LUA_PATH "lua/"
+#define LUA_PATH "lua/"
 
-    #define SERVER_CHALLENGE "SERVER-YNwUJMvHMf09J0R1"
-    #define CLIENT_CHALLENGE "CLIENT-qtZzAo4HL71h0iMt"
+#define SERVER_CHALLENGE "SERVER-YNwUJMvHMf09J0R1"
+#define CLIENT_CHALLENGE "CLIENT-qtZzAo4HL71h0iMt"
 
-class Engine {
+class Engine
+{
     public:
         Engine(Engine &other) = delete;
         void operator=(const Engine &) = delete;
@@ -59,9 +60,9 @@ class Engine {
 
         void callHook(const std::string &eventName, ...);
 
-		void updateNode(Node* root);
+        void updateNode(Node *root);
 
-		std::string GetLibraryFileContents(const std::string& filename);
+        std::string GetLibraryFileContents(const std::string &filename);
         void loadLibraries();
         void lockLuaState();
 
@@ -71,11 +72,17 @@ class Engine {
 
         [[nodiscard]] lua_State *getLuaState() { return L; }
 
-        [[nodiscard]] const std::unordered_map<std::string, bool> &getPacketsRegistry() const { return _packetsRegistry; }
+        [[nodiscard]] const std::unordered_map<std::string, bool> &getPacketsRegistry() const
+        {
+            return _packetsRegistry;
+        }
         bool hasNewPacketToBroadcast() const { return !_newPacketsInRegistry.empty(); }
         std::queue<std::string> &getNewPacketsInRegistry() { return _newPacketsInRegistry; }
         std::queue<std::pair<std::string, Packet *>> &getBroadcastQueue() { return _broadcastQueue; }
-        std::unordered_map<std::string, std::queue<std::pair<std::string, Packet *>>> &getSendToClientMap() { return _sendToClientQueue; }
+        std::unordered_map<std::string, std::queue<std::pair<std::string, Packet *>>> &getSendToClientMap()
+        {
+            return _sendToClientQueue;
+        }
 
         std::stack<PacketBuilder> &getPacketBuilders() { return _builders; }
         std::string &getLastStartedPacket() { return _lastStartedPacket; }

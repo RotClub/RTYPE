@@ -6,22 +6,23 @@
 */
 
 #ifndef NODE_HPP_
-    #define NODE_HPP_
+#define NODE_HPP_
 
-    #include <vector>
-    #include <string>
-    #include <stdexcept>
-    #include "Types.hpp"
+#include <stdexcept>
+#include <string>
+#include <vector>
+#include "Types.hpp"
 
-class Node {
+class Node
+{
     public:
-        explicit Node(const std::string& name = "node");
-		virtual ~Node() = default;
+        explicit Node(const std::string &name = "node");
+        virtual ~Node() = default;
 
         Node *GetChild(const std::string &name) const;
         std::vector<Node *> GetChildren() const;
 
-        Node* getParent() { return _parent; }
+        Node *getParent() { return _parent; }
 
         virtual void addChild(Node &child);
 

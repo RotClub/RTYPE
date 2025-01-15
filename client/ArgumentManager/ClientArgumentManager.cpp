@@ -7,7 +7,7 @@
 
 #include "ClientArgumentManager.hpp"
 
-ClientArgumentManager::ClientArgumentManager(int argc, char** argv) : _argc(argc), _argv(argv) {}
+ClientArgumentManager::ClientArgumentManager(int argc, char **argv) : _argc(argc), _argv(argv) {}
 
 ClientArgumentManager::~ClientArgumentManager() {}
 
@@ -36,7 +36,7 @@ bool ClientArgumentManager::checkClientArguments()
             return false;
         }
     }
-    catch (std::exception& e) {
+    catch (std::exception &e) {
         spdlog::error("Invalid port: must be a valid number between 1024 and 65535");
         return false;
     }

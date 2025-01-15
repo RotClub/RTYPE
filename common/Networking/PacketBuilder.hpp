@@ -6,44 +6,44 @@
 */
 
 #ifndef PACKETUTILS_HPP_
-    #define PACKETUTILS_HPP_
+#define PACKETUTILS_HPP_
 
-    #define PACKED_PACKET_SIZE 4096
+#define PACKED_PACKET_SIZE 4096
 
-    #include "Packet.hpp"
+#include "Packet.hpp"
 
-    #include <cstddef>
-    #include <string>
+#include <cstddef>
+#include <string>
 
-    class PacketBuilder {
-        public:
-            PacketBuilder();
-            PacketBuilder(Packet *packet);
-            ~PacketBuilder() = default;
+class PacketBuilder
+{
+    public:
+        PacketBuilder();
+        PacketBuilder(Packet *packet);
+        ~PacketBuilder() = default;
 
-            void loadFromPacket(Packet *packet);
+        void loadFromPacket(Packet *packet);
 
-            PacketBuilder &setCmd(PacketCmd cmd);
+        PacketBuilder &setCmd(PacketCmd cmd);
 
-            PacketBuilder &writeInt(int nb);
-            PacketBuilder &writeString(const std::string &str);
+        PacketBuilder &writeInt(int nb);
+        PacketBuilder &writeString(const std::string &str);
 
-            int readInt();
-            std::string readString();
+        int readInt();
+        std::string readString();
 
-            Packet *build();
-            void reset();
+        Packet *build();
+        void reset();
 
-            using PackedPacket = char[PACKED_PACKET_SIZE];
+        using PackedPacket = char[PACKED_PACKET_SIZE];
 
-            static void pack(PackedPacket *packed, const Packet *packet);
-            static void unpack(const PackedPacket *packed, Packet *packet);
+        static void pack(PackedPacket *packed, const Packet *packet);
+        static void unpack(const PackedPacket *packed, Packet *packet);
 
-        private:
-            size_t _n;
-            PacketCmd _cmd;
-            void *_data;
-
-    };
+    private:
+        size_t _n;
+        PacketCmd _cmd;
+        void *_data;
+};
 
 #endif /* !PACKETUTILS_HPP_ */

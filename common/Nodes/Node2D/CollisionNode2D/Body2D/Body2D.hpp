@@ -7,13 +7,14 @@
 
 #include "Nodes/Node2D/CollisionNode2D/CollisionNode2D.hpp"
 
-class Body2D : public CollisionNode2D {
-	public:
-	    explicit Body2D(const std::string& name);
+class Body2D : public CollisionNode2D
+{
+    public:
+        explicit Body2D(const std::string &name);
 
-		void Update() override;
+        void Update() override;
 
-		Types::Vector2 velocity;
+        Types::Vector2 velocity;
 };
 
-#endif //BODY2D_HPP
+#endif // BODY2D_HPP

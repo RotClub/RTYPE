@@ -6,7 +6,7 @@
 #include "spdlog/spdlog.h"
 
 
-CollisionShape2D::CollisionShape2D(const std::string& name) : shape(nullptr), collision_enabled(true), Node2D(name)
+CollisionShape2D::CollisionShape2D(const std::string &name) : shape(nullptr), collision_enabled(true), Node2D(name)
 {
     this->metatable = "CollisionShape2DMetaTable";
 }
@@ -19,15 +19,15 @@ void CollisionShape2D::Update()
     }
 }
 
-void CollisionShape2D::setShape(Shape2D* new_shape) { shape.reset(new_shape); }
+void CollisionShape2D::setShape(Shape2D *new_shape) { shape.reset(new_shape); }
 
-Shape2D* CollisionShape2D::getShape() const { return shape.get(); }
+Shape2D *CollisionShape2D::getShape() const { return shape.get(); }
 
 void CollisionShape2D::toggleCollision() { collision_enabled = !collision_enabled; }
 
 bool CollisionShape2D::isCollisionEnabled() const { return collision_enabled; }
 
-bool CollisionShape2D::collidesWith(const CollisionShape2D& other)
+bool CollisionShape2D::collidesWith(const CollisionShape2D &other)
 {
     if (!collision_enabled || !other.collision_enabled) {
         return false;

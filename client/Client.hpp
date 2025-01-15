@@ -6,69 +6,71 @@
 */
 
 #ifndef CLIENT_HPP_
-    #define CLIENT_HPP_
+#define CLIENT_HPP_
 
-    #include "../common/Engine.hpp"
-    #include "connection/ClientConnection.hpp"
-    #include "game/Game.hpp"
-    #include <string>
-    #include <unordered_map>
+#include <string>
+#include <unordered_map>
+#include "../common/Engine.hpp"
+#include "connection/ClientConnection.hpp"
+#include "game/Game.hpp"
 
-class Client {
+class Client
+{
 
-        public:
-            Client(Client const &) = delete;
-            void operator=(Client const &) = delete;
+    public:
+        Client(Client const &) = delete;
+        void operator=(Client const &) = delete;
 
-            enum class ConnectionStep {
-                AUTH_CODE_RECEIVED,
-                AUTH_CODE_SENT,
-                COMPLETE
-            };
+        enum class ConnectionStep
+        {
+            AUTH_CODE_RECEIVED,
+            AUTH_CODE_SENT,
+            COMPLETE
+        };
 
-            static Client &InitiateInstance(std::string ip, int port);
-            static Client &GetInstance();
+        static Client &InitiateInstance(std::string ip, int port);
+        static Client &GetInstance();
 
-            void handleConnectPacket(Packet *packet);
-            void handleDisconnectPacket(Packet *packet);
-            void handleLuaPacket(Packet *packet);
-            void handleNewMessagePacket(Packet *packet);
+        void handleConnectPacket(Packet *packet);
+        void handleDisconnectPacket(Packet *packet);
+        void handleLuaPacket(Packet *packet);
+        void handleNewMessagePacket(Packet *packet);
 
-            const std::unordered_map<PacketCmd, void (Client::*)(Packet *)> PACKET_HANDLERS = {
-                {PacketCmd::NONE, (void (Client::*)(Packet *))nullptr},
-                {PacketCmd::CONNECT, &Client::handleConnectPacket},
-                {PacketCmd::DISCONNECT, &Client::handleDisconnectPacket},
-                {PacketCmd::NEW_MESSAGE, &Client::handleNewMessagePacket},
-                {PacketCmd::NET, &Client::handleLuaPacket},
-            };
+        const std::unordered_map<PacketCmd, void (Client::*)(Packet *)> PACKET_HANDLERS = {
+            {PacketCmd::NONE, (void(Client::*)(Packet *)) nullptr},
+            {PacketCmd::CONNECT, &Client::handleConnectPacket},
+            {PacketCmd::DISCONNECT, &Client::handleDisconnectPacket},
+            {PacketCmd::NEW_MESSAGE, &Client::handleNewMessagePacket},
+            {PacketCmd::NET, &Client::handleLuaPacket},
+        };
 
-            void startGame();
-            void setupLua();
-            void setupClientSideLua();
-            void loadLuaGame();
-            std::string getIp() const;
-            int getPort() const;
-            ClientConnection &getClientConnection();
-            ResourceManager &getResourceManager();
+        void startGame();
+        void setupLua();
+        void setupClientSideLua();
+        void loadLuaGame();
+        std::string getIp() const;
+        int getPort() const;
+        ClientConnection &getClientConnection();
+        ResourceManager &getResourceManager();
 
-            void broadcastLuaPackets();
-            void processIncomingPackets();
+        void broadcastLuaPackets();
+        void processIncomingPackets();
 
-            bool isConnectionEstablished() const { return _connectionEstablished; }
+        bool isConnectionEstablished() const { return _connectionEstablished; }
 
-        protected:
-            Client(std::string ip, int port);
-            static Client *_instance;
+    protected:
+        Client(std::string ip, int port);
+        static Client *_instance;
 
-        private:
-            ConnectionStep _step;
-            bool _connectionEstablished;
+    private:
+        ConnectionStep _step;
+        bool _connectionEstablished;
 
-            std::string _ip;
-            int _port;
-            ClientConnection _clientConnection;
-            Game _game;
-            // loadingScreen
-    };
+        std::string _ip;
+        int _port;
+        ClientConnection _clientConnection;
+        Game _game;
+        // loadingScreen
+};
 
 #endif /* !CLIENT_HPP_ */

@@ -6,25 +6,27 @@
 */
 
 #ifndef STRINGPACKET_HPP_
-    #define STRINGPACKET_HPP_
+#define STRINGPACKET_HPP_
 
-    #include <any>
-    #include <cstddef>
-    #include <vector>
+#include <any>
+#include <cstddef>
+#include <vector>
 
-    enum class PacketCmd {
-        NONE,
-        CONNECT,
-        DISCONNECT,
-        NET,
-        NEW_MESSAGE
-    };
+enum class PacketCmd
+{
+    NONE,
+    CONNECT,
+    DISCONNECT,
+    NET,
+    NEW_MESSAGE
+};
 
-    using Packet = struct packet_s {
+using Packet = struct packet_s
+{
         size_t n;
         PacketCmd cmd;
         char id[16];
         void *data;
-    };
+};
 
 #endif /* !STRINGPACKET_HPP_ */
