@@ -29,10 +29,12 @@ class PacketBuilder
 
         PacketBuilder &writeInt(int nb);
         PacketBuilder &writeFloat(float nb);
+        PacketBuilder &writeBool(bool nb);
         PacketBuilder &writeString(const std::string &str);
 
         [[nodiscard]] int readInt();
         [[nodiscard]] float readFloat();
+        [[nodiscard]] bool readBool();
         [[nodiscard]] std::string readString();
 
         Packet *build();

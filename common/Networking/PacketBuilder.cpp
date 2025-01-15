@@ -70,6 +70,17 @@ PacketBuilder &PacketBuilder::writeFloat(const float nb)
     return *this;
 }
 
+PacketBuilder &PacketBuilder::writeBool(const bool nb)
+{
+    void *rt = std::realloc(_data, _n + sizeof(bool));
+    if (rt == nullptr)
+        throw std::runtime_error("Error reallocating memory");
+    _data = rt;
+    std::memcpy(static_cast<char *>(_data) + _n, &nb, sizeof(bool));
+    _n += sizeof(bool);
+    return *this;
+}
+
 PacketBuilder &PacketBuilder::writeString(const std::string &str)
 {
     size_t len = str.length() + 1;
@@ -101,6 +112,17 @@ float PacketBuilder::readFloat()
     std::memcpy(&nb, _data, sizeof(float));
     _data = static_cast<char *>(_data) + sizeof(float);
     _n -= sizeof(float);
+    return nb;
+}
+
+bool PacketBuilder::readBool()
+{
+    if (_n < sizeof(bool))
+        throw std::runtime_error("Not enough data to read a bool");
+    bool nb = false;
+    std::memcpy(&nb, _data, sizeof(bool));
+    _data = static_cast<char *>(_data) + sizeof(bool);
+    _n -= sizeof(bool);
     return nb;
 }
 

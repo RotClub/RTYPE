@@ -70,7 +70,7 @@ bool ClientConnection::hasPendingUDPPacket() { return !std::get<IN>(_udpQueues).
 Packet *ClientConnection::_tryReceiveTCP()
 {
     PacketBuilder::PackedPacket packed = {0};
-    if (read(_tcpFd, &packed, sizeof(PacketBuilder::PackedPacket)) <= 0) {
+    if (read(_tcpFd, packed, sizeof(PacketBuilder::PackedPacket)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
     Packet *packet = new Packet;
@@ -89,7 +89,7 @@ Packet *ClientConnection::_tryReceiveUDP()
     PacketBuilder::PackedPacket packed = {0};
 
     socklen_t len = sizeof(_addr);
-    if (recvfrom(_udpFd, &packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&_addr), &len) <= 0) {
+    if (recvfrom(_udpFd, packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&_addr), &len) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
     Packet *packet = new Packet;
@@ -151,11 +151,7 @@ void ClientConnection::_sendLoop()
             Packet *packet = std::get<OUT>(_tcpQueues).dequeue();
             PacketBuilder::PackedPacket packed = {0};
             PacketBuilder::pack(&packed, packet);
-            if (std::memcmp(packed, PacketBuilder::integrityChallenge.c_str(), sizeof(char) * 32) != 0) {
-                spdlog::error("Invalid packet integrity challenge.");
-                throw std::runtime_error("Invalid packet integrity challenge.");
-            }
-            write(_tcpFd, &packed, sizeof(PacketBuilder::PackedPacket));
+            write(_tcpFd, packed, sizeof(PacketBuilder::PackedPacket));
             PacketBuilder(packet).reset();
             delete packet;
         }
@@ -165,7 +161,7 @@ void ClientConnection::_sendLoop()
             Packet *packet = std::get<OUT>(_udpQueues).dequeue();
             PacketBuilder::PackedPacket packed = {0};
             PacketBuilder::pack(&packed, packet);
-            sendto(_udpFd, &packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
+            sendto(_udpFd, packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&_addr), sizeof(sockaddr_in));
             PacketBuilder(packet).reset();
             delete packet;
         }
