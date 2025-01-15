@@ -92,6 +92,16 @@ Engine &Engine::StartInstance(Types::VMState state, const std::string &gamePath)
     return *_instance;
 }
 
+bool Engine::isInstanceStarted()
+{
+    try {
+        GetInstance();
+    } catch (const std::runtime_error &) {
+        return false;
+    }
+    return true;
+}
+
 Engine *Engine::_instance = nullptr;
 
 void Engine::updateNode(Node *root)

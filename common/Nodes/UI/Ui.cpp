@@ -6,7 +6,7 @@
 #include <Engine.hpp>
 
 UI::UI(const std::string &name, const Types::Vector2 &position) :
-    Node(name), position(position), red(255), green(255), blue(255), alpha(255)
+    Node(name), position(position), _color(255,255,255), alpha(255)
 {
 }
 

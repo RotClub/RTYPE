@@ -12,9 +12,11 @@
 
 Node::Node(const std::string &name) : children(std::vector<Node *>())
 {
-    const Engine &engine = Engine::GetInstance();
-    if (engine.root != nullptr && name == "root") {
-        throw std::runtime_error("Root node already exists");
+    if (Engine::isInstanceStarted()) {
+        Engine &engine = Engine::GetInstance();
+        if (engine.root != nullptr && name == "root") {
+            throw std::runtime_error("Root node already exists");
+        }
     }
     this->metatable = "NodeMetaTable";
 }

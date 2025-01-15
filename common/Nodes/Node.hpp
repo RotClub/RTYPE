@@ -26,8 +26,8 @@ class Node
 
         virtual void addChild(Node &child);
 
-        virtual void Update();
-        virtual void Draw();
+        virtual void Update() {}
+        virtual void Draw() {}
 
         void Destroy();
 
