@@ -42,8 +42,10 @@ class ServerConnection
         void _sendLoop();
         void _accept();
         void _disconnectClients();
-        Packet *_tryReceiveTCP(Client *client);
-        Packet *_tryReceiveUDP(sockaddr_in *addr);
+        void _tryReceiveTCP(Client *client);
+        void _tryReceiveUDP();
+        void _processTcpBuffer(Client *client);
+        void _processUdpBuffer(const std::pair<std::string, int>& addr);
         void _createSocket();
         void _setClientFds(fd_set *set);
         int _getMaxFd();
@@ -60,6 +62,7 @@ class ServerConnection
         std::vector<Client *> _clientConnections;
         SafeQueue<std::string> _disconnectedClients;
         sockaddr_in _addr;
+        std::map<std::pair<std::string, int>, std::vector<uint8_t>> _udpBuffers;
 };
 
 #endif /* !SERVERCONNECTION_HPP_ */

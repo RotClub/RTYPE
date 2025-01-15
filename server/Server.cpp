@@ -125,8 +125,7 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
         case Client::ConnectionStep::UNVERIFIED:
             {
                 readBuilder.reset();
-                Packet *packet = PacketBuilder().setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE).build();
-                client->addTcpPacketOutput(packet);
+                client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE).build());
                 client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
                 Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
                 break;
@@ -135,8 +134,8 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
             {
                 std::string clientChallengeCode = readBuilder.readString();
                 if (clientChallengeCode == CLIENT_CHALLENGE) {
-                    for (const auto &[packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
-                        client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable).build());
+                    for (const auto &pair : Engine::GetInstance().getPacketsRegistry()) {
+                        client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::NEW_MESSAGE).writeString(pair.first).writeBool(pair.second).build());
                     }
                     client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED").writeString(idToString(client->getID())).build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
@@ -180,10 +179,7 @@ void Server::broadcastNewPackets()
             for (auto &client : _serverConnection.getClientConnections()) {
                 if (client->getStep() != Client::ConnectionStep::COMPLETE)
                     continue;
-                PacketBuilder builder;
-                Packet *packet =
-                    builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable).build();
-                client->addTcpPacketOutput(packet);
+                client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeBool(reliable).build());
             }
             Engine::GetInstance().getNewPacketsInRegistry().pop();
         }

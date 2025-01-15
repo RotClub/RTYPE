@@ -79,10 +79,7 @@ void ServerConnection::_receiveLoop()
     for (auto &client : _clientConnections) {
         if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
             try {
-                Packet *packet = _tryReceiveTCP(client);
-                if (packet == nullptr)
-                    continue;
-                client->addTcpPacketInput(packet);
+                _tryReceiveTCP(client);
             }
             catch (const std::exception &e) {
                 client->disconnect();
@@ -90,20 +87,7 @@ void ServerConnection::_receiveLoop()
         }
     }
     if (FD_ISSET(_udpFd, &_readfds)) {
-        sockaddr_in addr{};
-        std::memset(&addr, 0, sizeof(addr));
-        Packet *packet = _tryReceiveUDP(&addr);
-        if (packet == nullptr)
-            return;
-        Client *client = _getClientByID(packet->id);
-        if (client == nullptr) {
-            PacketBuilder(packet).reset();
-            delete packet;
-            return;
-        }
-        client->updateUdpAddress(&addr);
-        if (!client->shouldDisconnect())
-            client->addUdpPacketInput(packet);
+        _tryReceiveUDP();
     }
 }
 
@@ -141,41 +125,75 @@ void ServerConnection::_accept()
     }
 }
 
-Packet *ServerConnection::_tryReceiveTCP(Client *client)
+void ServerConnection::_tryReceiveTCP(Client *client)
 {
-    PacketBuilder::PackedPacket packed;
-    if (read(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket)) <= 0) {
+    std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
+    ssize_t n = 0;
+    if ((n = read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE) <= 0)) {
         throw std::runtime_error("Disconnect");
     }
-    Packet *packet = new Packet;
-    try {
-        PacketBuilder::unpack(&packed, packet);
-    }
-    catch (const std::exception &e) {
-        delete packet;
-        return nullptr;
-    }
-    return packet;
+    buffer.resize(n);
+    client->addToTcpBuffer(buffer);
+    _processTcpBuffer(client);
 }
 
-Packet *ServerConnection::_tryReceiveUDP(sockaddr_in *addr)
+void ServerConnection::_tryReceiveUDP()
 {
-    PacketBuilder::PackedPacket packed = {0};
+    std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
 
-    socklen_t len = sizeof(*addr);
-    if (recvfrom(_udpFd, packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+    sockaddr_in addr{};
+    std::memset(&addr, 0, sizeof(addr));
+    socklen_t len = sizeof(addr);
+    ssize_t n = 0;
+    if ((n = recvfrom(_udpFd, buffer.data(), sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&addr), &len)) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
-    Packet *packet = new Packet;
-    try {
-        spdlog::debug("Received udp packet");
-        PacketBuilder::unpack(&packed, packet);
+    buffer.resize(n);
+    if (_udpBuffers.find(std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))) == _udpBuffers.end()) {
+        _udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))] = buffer;
+    } else {
+        _udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))].insert(_udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))].end(), buffer.begin(), buffer.end());
     }
-    catch (const std::exception &e) {
-        delete packet;
-        return nullptr;
+    _processUdpBuffer(std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)));
+}
+
+void ServerConnection::_processTcpBuffer(Client *client)
+{
+    if (client->getTcpBuffer().size() >= PACKED_PACKET_SIZE) {
+        PacketBuilder::PackedPacket packed = {0};
+        std::memcpy(packed, client->getTcpBuffer().data(), sizeof(PacketBuilder::PackedPacket));
+        Packet *packet = new Packet;
+        try {
+            PacketBuilder::unpack(&packed, packet);
+        }
+        catch (const std::exception &e) {
+            delete packet;
+            return;
+        }
+        client->addTcpPacketInput(packet);
+        client->getTcpBuffer().erase(client->getTcpBuffer().begin(), client->getTcpBuffer().begin() + sizeof(PacketBuilder::PackedPacket));
     }
-    return packet;
+}
+
+void ServerConnection::_processUdpBuffer(const std::pair<std::string, int> &addr)
+{
+    auto &buffer = _udpBuffers[addr];
+    if (buffer.size() >= PACKED_PACKET_SIZE) {
+        PacketBuilder::PackedPacket packed = {0};
+        std::memcpy(packed, buffer.data(), sizeof(PacketBuilder::PackedPacket));
+        auto *packet = new Packet;
+        try {
+            PacketBuilder::unpack(&packed, packet);
+        }
+        catch (const std::exception &e) {
+            delete packet;
+            return;
+        }
+        if (Client *client = _getClientByID(packet->id); client != nullptr) {
+            client->addUdpPacketInput(packet);
+        }
+        buffer.erase(buffer.begin(), buffer.begin() + sizeof(PacketBuilder::PackedPacket));
+    }
 }
 
 void ServerConnection::_createSocket()

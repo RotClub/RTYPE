@@ -187,7 +187,6 @@ void PacketBuilder::unpack(const PackedPacket *packed, Packet *packet)
     size_t offset = 32;
 
     if (std::memcmp(*packed, integrityChallenge.c_str(), sizeof(char) * 32) != 0) {
-        spdlog::error("Invalid packet integrity challenge.");
         throw std::runtime_error("Invalid packet integrity challenge.");
     }
 

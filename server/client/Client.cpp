@@ -58,13 +58,11 @@ Packet *Client::popUdpPacketInput() { return std::get<IN>(_udpQueues).dequeue();
 
 void Client::addTcpPacketOutput(Packet *packet)
 {
-    spdlog::debug("New tcp packet of cmd: {} to client {}", (int)packet->cmd, uuid);
     std::get<OUT>(_tcpQueues).enqueue(packet);
 }
 
 void Client::addUdpPacketOutput(Packet *packet)
 {
-    spdlog::debug("New udp packet of cmd: {} to client {}", (int)packet->cmd, uuid);
     std::get<OUT>(_udpQueues).enqueue(packet);
 }
 
