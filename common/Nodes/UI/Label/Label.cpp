@@ -18,7 +18,8 @@ Label::~Label() {}
 
 void Label::Draw()
 {
-    raylib::Color color = raylib::Color(red, green, blue, alpha);
+    Types::Vector3 this_color = getRGB();
+    raylib::Color color = raylib::Color(this_color.x, this_color.y, this_color.z, getAlpha());
     if (_font.empty())
         raylib::DrawText(_text.c_str(), getGlobalPosition().x, getGlobalPosition().y, _fontSize, color);
     else {

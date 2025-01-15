@@ -291,6 +291,47 @@ LUA_API int lua_gcBox(lua_State *L)
 
 /** __gc functions **/
 
+/** Destroy functions **/
+
+template <typename T>
+LUA_API int luau_TemplateNodeDestroy(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    node->Destroy();
+    return 0;
+}
+
+LUA_API int luau_NodeDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Node>(L, "NodeMetaTable"); }
+
+LUA_API int luau_Node2DDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Node2D>(L, "Node2DMetaTable"); }
+
+LUA_API int luau_CollisionShape2DDestroy(lua_State *L)
+{
+    return luau_TemplateNodeDestroy<CollisionShape2D>(L, "CollisionShape2DMetaTable");
+}
+
+LUA_API int luau_Sprite2DDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Sprite2D>(L, "Sprite2DMetaTable"); }
+
+LUA_API int luau_Area2DDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Area2D>(L, "Area2DMetaTable"); }
+
+LUA_API int luau_ParallaxDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Parallax>(L, "ParallaxMetaTable"); }
+
+LUA_API int luau_RigidBody2DDestroy(lua_State *L)
+{
+    return luau_TemplateNodeDestroy<RigidBody2D>(L, "RigidBody2DMetaTable");
+}
+
+LUA_API int luau_StaticBody2DDestroy(lua_State *L)
+{
+    return luau_TemplateNodeDestroy<StaticBody2D>(L, "StaticBody2DMetaTable");
+}
+
+LUA_API int luau_LabelDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Label>(L, "LabelMetaTable"); }
+
+LUA_API int luau_BoxDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Box>(L, "BoxMetaTable"); }
+
+/** Destroy functions **/
+
 /** GetName functions **/
 
 template <typename T>
@@ -339,6 +380,9 @@ LUA_API int luau_TemplateNodeSetName(lua_State *L, const char *metaTableName)
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
     const char *name = luaL_checkstring(L, 2);
+    if (std::strcmp(name, "root") == 0) {
+        luaL_error(L, "Cannot set node name to 'root'.");
+    }
     node->name = name;
     return 0;
 }
@@ -579,7 +623,11 @@ LUA_API int luau_TemplateCreateChild(lua_State *L, const char *metatable)
                    metatableName.c_str());
     }
     lua_setmetatable(L, -2);
-    node->addChild(*child);
+    try {
+        node->addChild(*child);
+    } catch (const std::runtime_error &e) {
+        luaL_error(L, e.what());
+    }
     return 1;
 }
 
@@ -627,7 +675,11 @@ LUA_API int luau_TemplateAddChild(lua_State *L, const char *metatable)
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metatable));
     Node *child = *static_cast<Node **>(luaL_checkudata(L, 2, "NodeMetaTable"));
-    node->addChild(*child);
+    try {
+        node->addChild(*child);
+    } catch (const std::runtime_error &e) {
+        luaL_error(L, e.what());
+    }
     return 0;
 }
 
@@ -938,7 +990,8 @@ template <typename T>
 LUA_API int luau_TemplateSetColor(lua_State *L, const char *metaTableName)
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
-    node->setRGB(luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
+    Types::Vector3 color = Types::Vector3(luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
+    node->setRGB(color);
     return 0;
 }
 
@@ -1206,6 +1259,7 @@ void luau_ExposeFunctions(lua_State *L)
                                         {"GetChild", luau_NodeGetChild},
                                         {"AddChild", luau_NodeAddChild},
                                         {"CreateChild", luau_NodeCreateChild},
+                                        {"Destroy", luau_NodeDestroy},
                                         {"__gc", lua_gcNode},
                                         {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, nodeLibrary, "NodeMetaTable");
@@ -1217,6 +1271,7 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"GetPosition", luau_Node2DGetPosition},
                                           {"SetPosition", luau_Node2DSetPosition},
                                           {"CreateChild", luau_Node2DCreateChild},
+                                          {"Destroy", luau_Node2DDestroy},
                                           {"__gc", lua_gcNode2D},
                                           {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, node2DLibrary, "Node2DMetaTable");
@@ -1231,6 +1286,7 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"GetPosition", luau_Sprite2DGetPosition},
                                             {"SetPosition", luau_Sprite2DSetPosition},
                                             {"SetTexture", luau_Sprite2DSetTexture},
+                                            {"Destroy", luau_Sprite2DDestroy},
                                             {"__gc", lua_gcSprite2D},
                                             {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, sprite2DLibrary, "Sprite2DMetaTable");
@@ -1246,6 +1302,7 @@ void luau_ExposeFunctions(lua_State *L)
                                                     {"ToggleCollision", luau_CollisionShape2DToggleCollision},
                                                     {"IsCollisionEnabled", luau_CollisionShape2DIsCollisionEnabled},
                                                     {"Collide", luau_CollisionShape2DCollide},
+                                                    {"Destroy", luau_CollisionShape2DDestroy},
                                                     {"__gc", lua_gcCollisionShape2D},
                                                     {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, collisionshape2DLibrary, "CollisionShape2DMetaTable");
@@ -1262,6 +1319,7 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"Collide", luau_Area2DCollide},
                                           {"GetSize", luau_Area2DGetSize},
                                           {"SetSize", luau_Area2DSetSize},
+                                          {"Destroy", luau_Area2DDestroy},
                                           {"__gc", lua_gcArea2D},
                                           {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
@@ -1273,6 +1331,7 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"CreateChild", luau_ParallaxCreateChild},
                                             {"SetReferenceNode", luau_ParallaxSetReferenceNode},
                                             {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},
+                                            {"Destroy", luau_ParallaxDestroy},
                                             {"__gc", lua_gcParallax},
                                             {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
@@ -1287,6 +1346,7 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"ToggleCollision", luau_RigidBody2DToggleCollision},
                                           {"IsCollisionEnabled", luau_RigidBody2DIsCollisionEnabled},
                                           {"Collide", luau_RigidBody2DCollide},
+                                          {"Destroy", luau_RigidBody2DDestroy},
                                           {"__gc", lua_gcRigidBody2D},
                                           {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, rgbd2DLibrary, "RigidBody2DMetaTable");
@@ -1301,6 +1361,7 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"ToggleCollision", luau_StaticBody2DToggleCollision},
                                           {"IsCollisionEnabled", luau_StaticBody2DIsCollisionEnabled},
                                           {"Collide", luau_StaticBody2DCollide},
+                                          {"Destroy", luau_StaticBody2DDestroy},
                                           {"__gc", lua_gcStaticBody2D},
                                           {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, stbd2DLibrary, "StaticBody2DMetaTable");
@@ -1322,6 +1383,7 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"GetText", luau_LabelGetText},
                                          {"SetFontSize", luau_LabelSetFontSize},
                                          {"GetFontSize", luau_LabelGetFontSize},
+                                         {"Destroy", luau_LabelDestroy},
                                          {"__gc", lua_gcLabel},
                                          {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, labelLibrary, "LabelMetaTable");
@@ -1339,6 +1401,7 @@ void luau_ExposeFunctions(lua_State *L)
                                        {"GetAlpha", luau_BoxGetAlpha},
                                        {"SetSize", luau_BoxSetSize},
                                        {"GetSize", luau_BoxGetSize},
+                                       {"Destroy", luau_BoxDestroy},
                                        {"__gc", lua_gcBox},
                                        {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, boxLibrary, "BoxMetaTable");
