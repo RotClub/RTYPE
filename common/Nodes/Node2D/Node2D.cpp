@@ -25,15 +25,14 @@ void Node2D::Update() { _updateGlobalPosition(); }
 
 void Node2D::_updateGlobalPosition()
 {
-    float dt = Engine::GetInstance().getDeltaLast();
     Node *parentNode = getParent();
     if (parentNode == nullptr) {
-        _globalPosition = position * dt;
+        _globalPosition = position;
         return;
     }
     if (Node2D *node2D = dynamic_cast<Node2D *>(parentNode)) {
-        _globalPosition = node2D->getGlobalPosition() + position * dt;
+        _globalPosition = node2D->getGlobalPosition() + position;
         return;
     }
-    _globalPosition = position * dt;
+    _globalPosition = position;
 }
