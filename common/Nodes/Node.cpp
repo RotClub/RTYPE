@@ -47,7 +47,7 @@ void Node::Destroy()
         std::erase(_parent->children, this);
     }
     for (auto child : children) {
-        child->Destroy();
+        delete child;
     }
     children.clear();
     delete this;
