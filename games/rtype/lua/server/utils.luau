@@ -23,6 +23,7 @@ end
 
 function syncNewPlayer(ply)
     for i = 1, #spaceships do
+        if spaceships[i].bound_player == nil then return end
         net.Start("SpaceshipSpawn")
         net.WriteInt(i)
         net.SendToClient(ply)

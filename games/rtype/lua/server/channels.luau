@@ -19,6 +19,7 @@ end
 net.CreatePacket("ActionStart", true)
 net.Receive("ActionStart", function(len, ply)
     local action = net.ReadInt()
+    info("ActionStart received: " .. action)
     handleActionChange(ply, action, true)
 end)
 
@@ -32,3 +33,5 @@ end)
 net.CreatePacket("SpaceshipSpawn", true)
 net.CreatePacket("SpaceshipDespawn", true)
 net.CreatePacket("SpaceshipPosition", false)
+
+net.CreatePacket("Start", true)

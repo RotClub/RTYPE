@@ -165,8 +165,7 @@ void Server::handleNewMessagePacket(Client *client, Packet *packet) {}
 
 void Server::handleLuaPacket(Client *client, Packet *packet)
 {
-    PacketBuilder builder(packet);
-    std::string packetName = builder.readString();
+    std::string packetName = PacketBuilder(packet).readString();
     Engine::GetInstance().netCallback(packetName, packet, client->getUuid());
 }
 

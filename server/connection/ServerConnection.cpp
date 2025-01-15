@@ -128,8 +128,8 @@ void ServerConnection::_accept()
 void ServerConnection::_tryReceiveTCP(Client *client)
 {
     std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
-    ssize_t n = 0;
-    if ((n = read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE) <= 0)) {
+    int n = 0;
+    if ((n = read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
     buffer.resize(n);
@@ -144,7 +144,7 @@ void ServerConnection::_tryReceiveUDP()
     sockaddr_in addr{};
     std::memset(&addr, 0, sizeof(addr));
     socklen_t len = sizeof(addr);
-    ssize_t n = 0;
+    int n = 0;
     if ((n = recvfrom(_udpFd, buffer.data(), sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&addr), &len)) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
