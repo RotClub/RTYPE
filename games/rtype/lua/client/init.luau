@@ -1,11 +1,17 @@
 
 local parallax = root:CreateChild("Parallax", "parallaxBg", "assets/background.png", 1, nil)
-local spriteA = root:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet1.png")
+local spriteA = root:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
 local point = spriteA:CreateChild("Node2D", "point")
 
 parallax:SetReferenceNode(point)
-spriteA:SetSource(101, 3, 32, 14)
 spriteA:SetSize(32 * 2, 14 * 2)
+
+local function setPlayerColor(playerSprite, playerNum)
+    spriteA:SetSource(67, 3 + ((playerNum - 1) * 17), 32, 14)
+end
+
+local playerNum = 1
+setPlayerColor(spriteA, playerNum)
 
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
@@ -31,8 +37,13 @@ hook.Add("Tick", "main", function(delta)
         CycleColorBlindnessShader()
     end
     if IsKeyJustPressed(72) then
-        net.Start("Hello")
-        net.SendToServer()
+        -- net.Start("Hello")
+        -- net.SendToServer()
+        playerNum = playerNum + 1
+        if playerNum > 4 then
+            playerNum = 1
+        end
+        setPlayerColor(spriteA, playerNum)
     end
     spriteA:SetPosition(x, y)
     parallax:AddParallaxPosition(40 * dt, 0)
