@@ -143,7 +143,8 @@ void ServerConnection::_accept()
 
 Packet *ServerConnection::_tryReceiveTCP(Client *client)
 {
-    PacketBuilder::PackedPacket packed = {0};
+    PacketBuilder::PackedPacket packed;
+    std::memset(&packed, 0, sizeof(PacketBuilder::PackedPacket));
     if (read(client->getTcpFd(), &packed, sizeof(PacketBuilder::PackedPacket)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
@@ -199,7 +200,7 @@ void ServerConnection::_createSocket()
         throw std::runtime_error("Error binding tcp socket");
     }
 
-    listen(_tcpFd, 0);
+    listen(_tcpFd, SOMAXCONN);
 
     if (bind(_udpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) < 0) {
         throw std::runtime_error("Error binding udp socket");

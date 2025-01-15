@@ -23,6 +23,7 @@ PacketBuilder::PacketBuilder()
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;
+    std::memset(_id, 0, sizeof(_id));
 }
 
 PacketBuilder::PacketBuilder(Packet *packet)
@@ -30,6 +31,7 @@ PacketBuilder::PacketBuilder(Packet *packet)
     _n = packet->n;
     _cmd = packet->cmd;
     _data = packet->data;
+    std::memcpy(_id, packet->id, sizeof(packet->id));
 }
 
 void PacketBuilder::loadFromPacket(Packet *packet)
@@ -37,6 +39,7 @@ void PacketBuilder::loadFromPacket(Packet *packet)
     _cmd = packet->cmd;
     _data = packet->data;
     _n = packet->n;
+    std::memcpy(_id, packet->id, sizeof(packet->id));
 }
 
 PacketBuilder &PacketBuilder::setCmd(PacketCmd cmd)
@@ -118,10 +121,11 @@ Packet *PacketBuilder::build()
     packet->n = _n;
     packet->cmd = _cmd;
     packet->data = _data;
-    std::memset(packet->id, 0, sizeof(packet->id));
+    std::memcpy(packet->id, _id, sizeof(_id));
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;
+    std::memset(_id, 0, sizeof(_id));
     return packet;
 }
 
@@ -132,6 +136,7 @@ void PacketBuilder::reset()
     _n = 0;
     _cmd = PacketCmd::NONE;
     _data = nullptr;
+    std::memset(_id, 0, sizeof(_id));
 }
 
 void PacketBuilder::pack(PackedPacket *packed, const Packet *packet)

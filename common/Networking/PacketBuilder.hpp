@@ -46,6 +46,7 @@ class PacketBuilder
     private:
         size_t _n;
         PacketCmd _cmd;
+        char _id[16];
         void *_data;
 };
 
