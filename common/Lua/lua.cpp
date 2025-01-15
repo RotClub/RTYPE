@@ -1344,13 +1344,14 @@ LUA_API int luau_EngineCreateNode(lua_State *L)
 
 LUA_API int luau_EngineGetRenderWidth(lua_State *L)
 {
-    lua_pushnumber(L, GetRenderWidth());
+    lua_pushinteger(L, GetRenderWidth());
+    std::cout << "GetRenderWidth: " << GetRenderWidth() << std::endl;
     return 1;
 }
 
 LUA_API int luau_EngineGetRenderHeight(lua_State *L)
 {
-    lua_pushnumber(L, GetRenderHeight());
+    lua_pushinteger(L, GetRenderHeight());
     return 1;
 }
 
@@ -1529,14 +1530,13 @@ void luau_ExposeFunctions(lua_State *L)
     /* NODE LIBRARY */
 
     /* ENGINE LIBRARY */
-
-    constexpr luaL_Reg engineLibrary[] = {
-        {"CreateNode", luau_EngineCreateNode},
-        {"GetRenderHeight", luau_EngineGetRenderHeight},
-        {"GetRenderWidth", luau_EngineGetRenderWidth}
-    };
-
-    luau_ExposeFunctionsAsLibrary(L, engineLibrary, "engine");
+    // constexpr luaL_Reg engineLibrary[] = {
+    //     {"CreateNode", luau_EngineCreateNode},
+    //     {"GetRenderHeight", luau_EngineGetRenderHeight},
+    //     {"GetRenderWidth", luau_EngineGetRenderWidth},
+    //     {nullptr, nullptr}};
+    // luau_ExposeFunctionsAsLibrary(L, engineLibrary, "engine");
+    /* ENGINE LIBRARY */
 }
 
 /* LUA API LIBRARY */

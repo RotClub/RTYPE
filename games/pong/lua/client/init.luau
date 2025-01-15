@@ -1,8 +1,15 @@
+include("client/utils.luau")
+include("client/ball.luau")
+include("client/wall.luau")
+
 local player = root:CreateChild("Node2D", "player")
 local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/player.png")
 
 player:SetPosition(5, 600 / 2 - 40)
 player_sprite:SetSize(14, 100)
+
+local ball = generateBall()
+generateMiddle(14, 10)
 
 function localPlayerMovement(dt)
     local x, y = player:GetPosition()
