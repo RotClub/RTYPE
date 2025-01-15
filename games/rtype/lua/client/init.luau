@@ -1,9 +1,15 @@
-
-local parallax = root:CreateChild("Parallax", "parallaxBg", "assets/background.png", 1, nil)
 local spriteA = root:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
 local point = spriteA:CreateChild("Node2D", "point")
 
-parallax:SetReferenceNode(point)
+local parallaxLayers = {
+    root:CreateChild("Parallax", "parallaxBg1", "assets/sprites/background/background_1.png", 1, nil),
+    root:CreateChild("Parallax", "parallaxBg2", "assets/sprites/background/background_2.png", 1.5, nil),
+    root:CreateChild("Parallax", "parallaxBg3", "assets/sprites/background/background_3.png", 2, nil)
+}
+
+for i = 1, #parallaxLayers do
+    parallaxLayers[i]:SetReferenceNode(point)
+end
 spriteA:SetSize(32 * 2, 14 * 2)
 
 local function setPlayerColor(playerSprite, playerNum)
@@ -46,7 +52,9 @@ hook.Add("Tick", "main", function(delta)
         setPlayerColor(spriteA, playerNum)
     end
     spriteA:SetPosition(x, y)
-    parallax:AddParallaxPosition(40 * dt, 0)
+    parallaxLayers[1]:AddParallaxPosition(5 * dt, 0)
+    parallaxLayers[2]:AddParallaxPosition(10 * dt, 0)
+    parallaxLayers[3]:AddParallaxPosition(15 * dt, 0)
 end)
 
 net.Receive("Hello", function(len, ply)
