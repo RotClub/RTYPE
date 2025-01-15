@@ -45,8 +45,8 @@ void Parallax::Draw()
         return;
     }
     Types::Vector2 pos = _referenceNode->getGlobalPosition();
-    _drawPos.x += (std::fmod(pos.x, width) + _parallaxPos.x) * _zIndex * dt;
-    _drawPos.y += (std::fmod(pos.y, height) + _parallaxPos.y) * _zIndex * dt;
+    _drawPos.x += (std::fmod(pos.x, width) + _parallaxPos.x) * _zIndex;
+    _drawPos.y += (std::fmod(pos.y, height) + _parallaxPos.y) * _zIndex;
     raylib::Rectangle src = {_drawPos.x, _drawPos.y, width, height};
     spdlog::debug("Drawing parallax at x: {} y: {}", _drawPos.x, _drawPos.y);
     raylib::Rectangle dest = {0, 0, width, height};

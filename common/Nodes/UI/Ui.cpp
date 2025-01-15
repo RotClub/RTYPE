@@ -23,12 +23,12 @@ void UI::_updateGlobalPosition()
     float dt = Engine::GetInstance().getDeltaLast();
     Node *parentNode = getParent();
     if (parentNode == nullptr) {
-        _globalPosition = position * dt;
+        _globalPosition = position;
         return;
     }
     if (UI *ui = dynamic_cast<UI *>(parentNode)) {
-        _globalPosition = ui->getGlobalPosition() + position * dt;
+        _globalPosition = ui->getGlobalPosition() + position;
         return;
     }
-    _globalPosition = position * dt;
+    _globalPosition = position;
 }
