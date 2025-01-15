@@ -1051,6 +1051,50 @@ LUA_API int luau_StaticBody2DSetPosition(lua_State *L)
 
 /** SetPosition functions **/
 
+/** GetGlobalPosition functions **/
+
+template<typename T>
+LUA_API int luau_TemplateNode2DGetGlobalPosition(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    Types::Vector2 globalPosition = node->getGlobalPosition();
+    lua_pushnumber(L, globalPosition.x);
+    lua_pushnumber(L, globalPosition.y);
+    return 2;
+}
+
+LUA_API int luau_Node2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<Node2D>(L, "Node2DMetaTable");
+}
+
+LUA_API int luau_CollisionShape2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<CollisionShape2D>(L, "CollisionShape2DMetaTable");
+}
+
+LUA_API int luau_Sprite2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<Sprite2D>(L, "Sprite2DMetaTable");
+}
+
+LUA_API int luau_Area2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<Area2D>(L, "Area2DMetaTable");
+}
+
+LUA_API int luau_RigidBody2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<RigidBody2D>(L, "RigidBody2DMetaTable");
+}
+
+LUA_API int luau_StaticBody2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<StaticBody2D>(L, "StaticBody2DMetaTable");
+}
+
+/** GetGlobalPosition functions **/
+
 /** Sprite2D functions **/
 
 LUA_API int luau_Sprite2DSetSize(lua_State *L)
@@ -1396,6 +1440,7 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"AddChild", luau_Node2DAddChild},
                                           {"GetPosition", luau_Node2DGetPosition},
                                           {"SetPosition", luau_Node2DSetPosition},
+                                          {"GetGlobalPosition", luau_Node2DGetGlobalPosition},
                                           {"CreateChild", luau_Node2DCreateChild},
                                           {"Update", luau_Node2DUpdate},
                                           {"__gc", lua_gcNode2D},
@@ -1408,6 +1453,7 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"AddChild", luau_Sprite2DAddChild},
                                             {"GetPosition", luau_Sprite2DGetPosition},
                                             {"SetPosition", luau_Sprite2DSetPosition},
+                                            {"GetGlobalPosition", luau_Sprite2DGetGlobalPosition},
                                             {"CreateChild", luau_Sprite2DCreateChild},
                                             {"Update", luau_Sprite2DUpdate},
                                             {"GetPosition", luau_Sprite2DGetPosition},
@@ -1426,6 +1472,7 @@ void luau_ExposeFunctions(lua_State *L)
                                                     {"AddChild", luau_CollisionShape2DAddChild},
                                                     {"GetPosition", luau_CollisionShape2DGetPosition},
                                                     {"SetPosition", luau_CollisionShape2DSetPosition},
+                                                    {"GetGlobalPosition", luau_CollisionShape2DGetGlobalPosition},
                                                     {"CreateChild", luau_CollisionShape2DCreateChild},
                                                     {"Update", luau_CollisionShape2DUpdate},
                                                     {"GetBoundingBox", luau_CollisionShape2DGetBoundingBox},
@@ -1442,6 +1489,7 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"AddChild", luau_Area2DAddChild},
                                           {"GetPosition", luau_Area2DGetPosition},
                                           {"SetPosition", luau_Area2DSetPosition},
+                                          {"GetGlobalPosition", luau_Area2DGetGlobalPosition},
                                           {"CreateChild", luau_Area2DCreateChild},
                                           {"Update", luau_Area2DUpdate},
                                           {"ToggleCollision", luau_Area2DToggleCollision},

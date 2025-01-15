@@ -1,21 +1,16 @@
 
 local parallax = root:CreateChild("Parallax", "parallaxBg", "assets/background.png", 1, nil)
-local spriteA = root:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
-local point = spriteA:CreateChild("Node2D", "point")
 
-parallax:SetReferenceNode(point)
-spriteA:SetSize(32 * 2, 14 * 2)
+include("client/player.luau")
 
-local function setPlayerColor(playerSprite, playerNum)
-    spriteA:SetSource(67, 3 + ((playerNum - 1) * 17), 32, 14)
-end
+parallax:SetReferenceNode(localPlayer)
 
-local playerNum = 1
-setPlayerColor(spriteA, playerNum)
+local playerNum = 3
+setPlayerColor(localPlayerSprite, playerNum)
 
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
-    local x, y = spriteA:GetPosition()
+    local x, y = localPlayer:GetPosition()
 
     -- A
     if IsKeyPressed(65) then
@@ -41,11 +36,12 @@ hook.Add("Tick", "main", function(delta)
         -- net.SendToServer()
         playerNum = playerNum + 1
         if playerNum > 4 then
+            explodePlayer(localPlayer)
             playerNum = 1
         end
-        setPlayerColor(spriteA, playerNum)
+        setPlayerColor(localPlayerSprite, playerNum)
     end
-    spriteA:SetPosition(x, y)
+    localPlayer:SetPosition(x, y)
     parallax:AddParallaxPosition(40 * dt, 0)
 end)
 
