@@ -125,6 +125,7 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
     switch (client->getStep()) {
         case Client::ConnectionStep::UNVERIFIED:
             {
+                spdlog::debug("Client {} connecting", client->getUuid());
                 readBuilder.reset();
                 builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
                 Packet *packet = builder.build();
@@ -146,6 +147,7 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
                         .writeString(idToString(client->getID()));
                     client->addTcpPacketOutput(builder.build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
+                    spdlog::debug("Client {} authenticated", client->getUuid());
                 }
                 else {
                     client->disconnect();

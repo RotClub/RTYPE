@@ -80,6 +80,8 @@ void ServerConnection::_receiveLoop()
         if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
             try {
                 Packet *packet = _tryReceiveTCP(client);
+                if (packet == nullptr)
+                    continue;
                 client->addTcpPacketInput(packet);
             }
             catch (const std::exception &e) {
@@ -91,6 +93,8 @@ void ServerConnection::_receiveLoop()
         sockaddr_in addr{};
         std::memset(&addr, 0, sizeof(addr));
         Packet *packet = _tryReceiveUDP(&addr);
+        if (packet == nullptr)
+            return;
         Client *client = _getClientByID(packet->id);
         if (client == nullptr) {
             PacketBuilder(packet).reset();

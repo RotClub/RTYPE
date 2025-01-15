@@ -16,6 +16,8 @@
 
 #include "spdlog/spdlog.h"
 
+const std::string PacketBuilder::_integrityChallenge = "Y4DrMrLiwlli79jzU9v8AHLH1IaNyBo4";
+
 PacketBuilder::PacketBuilder()
 {
     _n = 0;
@@ -135,7 +137,7 @@ void PacketBuilder::reset()
 void PacketBuilder::pack(PackedPacket *packed, const Packet *packet)
 {
     std::memset(*packed, 0, PACKED_PACKET_SIZE);
-    std::memcpy(*packed, PACKED_PACKET_INTEGRITY_CHALLENGE, sizeof(char) * 32);
+    std::memcpy(*packed, _integrityChallenge.c_str(), sizeof(char) * 32);
 
     size_t offset = 32;
     std::memcpy(*packed + offset, &packet->n, sizeof(packet->n));
@@ -157,7 +159,8 @@ void PacketBuilder::unpack(const PackedPacket *packed, Packet *packet)
 {
     size_t offset = 32;
 
-    if (std::memcmp(*packed, PACKED_PACKET_INTEGRITY_CHALLENGE, sizeof(char) * 32) != 0) {
+    if (std::memcmp(*packed, _integrityChallenge.c_str(), sizeof(char) * 32) != 0) {
+        spdlog::error("Invalid packet integrity challenge.");
         throw std::runtime_error("Invalid packet integrity challenge.");
     }
 
