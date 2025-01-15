@@ -106,12 +106,7 @@ void ClientConnection::_receiveLoop()
 {
     if (FD_ISSET(_tcpFd, &_readfds)) {
         Packet *packet = nullptr;
-        try {
-            packet = _tryReceiveTCP();
-        }
-        catch (const std::runtime_error &e) {
-            spdlog::error(e.what());
-        }
+        packet = _tryReceiveTCP();
         if (packet)
             std::get<IN>(_tcpQueues).enqueue(packet);
     }

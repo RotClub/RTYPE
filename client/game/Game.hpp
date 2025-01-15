@@ -29,6 +29,7 @@ class Game
         void _updateNodes(Node &node);
         void _drawNodes(Node &node);
         void _loadResources();
+        void _renderPreGameText(std::string text);
 
         raylib::Window _window;
         bool _shouldClose = false;
