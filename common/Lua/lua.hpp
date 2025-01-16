@@ -37,6 +37,10 @@ LUA_API int luau_NetSendToClient(lua_State *L);
 LUA_API int luau_NetBroadcast(lua_State *L);
 
 /* READ/WRITE OPERATIONS */ // ALL OPERATIONS HERE MUST HAVE A READ AND WRITE PAIR
+LUA_API int luau_NetWriteInt(lua_State *L);
+LUA_API int luau_NetReadInt(lua_State *L);
+LUA_API int luau_NetWriteFloat(lua_State *L);
+LUA_API int luau_NetReadFloat(lua_State *L);
 LUA_API int luau_NetWriteString(lua_State *L);
 LUA_API int luau_NetReadString(lua_State *L);
 /* READ/WRITE OPERATIONS */

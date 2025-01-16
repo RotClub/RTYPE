@@ -11,6 +11,7 @@
 
 #include "../Client.hpp"
 #include "Networking/Packet.hpp"
+#include "Text.hpp"
 
 Game::Game() {}
 
@@ -30,6 +31,7 @@ void Game::run()
     client.getClientConnection().establishConnection();
     client.setupLua();
     while (!client.isConnectionEstablished()) {
+        _renderPreGameText("Connecting to server...");
         if (_window.ShouldClose())
             return;
         client.processIncomingPackets();
@@ -39,7 +41,7 @@ void Game::run()
 
     const bool accessibilityShaderExists =
         exists(Engine::GetInstance().getGamePath() / "assets/shaders/accessibility.fs");
-    if (accessibilityShaderExists)
+    if (accessibilityShaderExists && false)
         _accessibilityLoop();
     else
         _loop();
@@ -143,4 +145,13 @@ void Game::_loadResources()
 {
     ResourceManager &resourceManager = Engine::GetInstance().getResourceManager();
     resourceManager.loadAllPendingResources();
+}
+
+void Game::_renderPreGameText(std::string text)
+{
+    _window.ClearBackground(raylib::Color::Black());
+    raylib::Text textObj = raylib::Text(text, 20);
+    int textWidth = textObj.MeasureEx().GetX();
+    int textHeight = textObj.MeasureEx().GetY();
+    textObj.Draw(_window.GetWidth() / 2 - textWidth / 2, _window.GetHeight() / 2 - textHeight / 2);
 }

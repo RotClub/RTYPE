@@ -26,8 +26,8 @@ class Sprite2D : public Node2D
 
     private:
         std::string _texture;
-        Types::Rect2 _source;
         Types::Vector2 _size;
+        Types::Rect2 _source;
 };
 
 #endif /* !SPRITE2D_HPP_ */

@@ -185,6 +185,38 @@ LUA_API int luau_NetBroadcast(lua_State *L)
 }
 
 /* READ/WRITE OPERATIONS */ // ALL OPERATIONS HERE MUST HAVE A READ AND WRITE PAIR
+LUA_API int luau_NetWriteInt(lua_State *L)
+{
+    const int nb = lua_tointeger(L, 1);
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    builder.writeInt(nb);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_NetReadInt(lua_State *L)
+{
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    const int nb = builder.readInt();
+    lua_pushinteger(L, nb);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_NetWriteFloat(lua_State *L)
+{
+    const float nb = lua_tonumber(L, 1);
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    builder.writeFloat(nb);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_NetReadFloat(lua_State *L)
+{
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    const float nb = builder.readFloat();
+    lua_pushnumber(L, nb);
+    return lua_gettop(L);
+}
+
 LUA_API int luau_NetWriteString(lua_State *L)
 {
     const char *str = lua_tostring(L, 1);
@@ -192,13 +224,16 @@ LUA_API int luau_NetWriteString(lua_State *L)
         lua_pushstring(L, "Invalid string provided.");
         lua_error(L);
     }
-    // TODO: add the real deal here.
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    builder.writeString(str);
     return lua_gettop(L);
 }
 
 LUA_API int luau_NetReadString(lua_State *L)
 {
-    // TODO: add the real deal here.
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    const std::string str = builder.readString();
+    lua_pushstring(L, str.c_str());
     return lua_gettop(L);
 }
 /* READ/WRITE OPERATIONS */
@@ -838,6 +873,50 @@ LUA_API int luau_BoxSetPosition(lua_State *L) { return luau_TemplateNode2DSetPos
 
 /** SetPosition functions **/
 
+/** GetGlobalPosition functions **/
+
+template<typename T>
+LUA_API int luau_TemplateNode2DGetGlobalPosition(lua_State *L, const char *metaTableName)
+{
+    T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
+    Types::Vector2 globalPosition = node->getGlobalPosition();
+    lua_pushnumber(L, globalPosition.x);
+    lua_pushnumber(L, globalPosition.y);
+    return 2;
+}
+
+LUA_API int luau_Node2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<Node2D>(L, "Node2DMetaTable");
+}
+
+LUA_API int luau_CollisionShape2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<CollisionShape2D>(L, "CollisionShape2DMetaTable");
+}
+
+LUA_API int luau_Sprite2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<Sprite2D>(L, "Sprite2DMetaTable");
+}
+
+LUA_API int luau_Area2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<Area2D>(L, "Area2DMetaTable");
+}
+
+LUA_API int luau_RigidBody2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<RigidBody2D>(L, "RigidBody2DMetaTable");
+}
+
+LUA_API int luau_StaticBody2DGetGlobalPosition(lua_State *L)
+{
+    return luau_TemplateNode2DGetGlobalPosition<StaticBody2D>(L, "StaticBody2DMetaTable");
+}
+
+/** GetGlobalPosition functions **/
+
 /** Sprite2D functions **/
 
 LUA_API int luau_Sprite2DSetSize(lua_State *L)
@@ -1039,6 +1118,28 @@ LUA_API int luau_ParallaxAddParallaxPosition(lua_State *L)
 
 /** Parallax functions **/
 
+/** RigidBody2D functions **/
+
+LUA_API int luau_RigidBody2DSetVelocity(lua_State *L)
+{
+    RigidBody2D *node = *static_cast<RigidBody2D **>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+    const double x = luaL_checknumber(L, 2);
+    const double y = luaL_checknumber(L, 3);
+    node->velocity.x = static_cast<float>(x);
+    node->velocity.y = static_cast<float>(y);
+    return 0;
+}
+
+LUA_API int luau_RigidBody2DGetVelocity(lua_State *L)
+{
+    RigidBody2D *node = *static_cast<RigidBody2D **>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+    lua_pushnumber(L, node->velocity.x);
+    lua_pushnumber(L, node->velocity.y);
+    return 2;
+}
+
+/** RigidBody2D functions **/
+
 /** SetColor functions **/
 
 template <typename T>
@@ -1172,25 +1273,6 @@ LUA_API int luau_BoxGetSize(lua_State *L)
 
 /** Box functions **/
 
-/** Rigidbody2D functions **/
-
-LUA_API int luau_RigidBody2DSetVelocity(lua_State *L)
-{
-    RigidBody2D *node = *static_cast<RigidBody2D **>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
-    node->velocity = Types::Vector2(luaL_checknumber(L, 2), luaL_checknumber(L, 3));
-    return 0;
-}
-
-LUA_API int luau_RigidBody2DGetVelocity(lua_State *L)
-{
-    RigidBody2D *node = *static_cast<RigidBody2D **>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
-    lua_pushnumber(L, node->velocity.x);
-    lua_pushnumber(L, node->velocity.y);
-    return 2;
-}
-
-/** Rigidbody2D functions **/
-
 /** GetGlobalPosition functions **/
 
 template <typename T>
@@ -1203,39 +1285,9 @@ LUA_API int luau_TemplateGetGlobalPosition(lua_State *L, const char *metaTableNa
     return 2;
 }
 
-LUA_API int luau_Node2DGetGlobalPosition(lua_State *L)
-{
-    return luau_TemplateGetGlobalPosition<Node2D>(L, "Node2DMetaTable");
-}
-
-LUA_API int luau_CollisionShape2DGetGlobalPosition(lua_State *L)
-{
-    return luau_TemplateGetGlobalPosition<CollisionShape2D>(L, "CollisionShape2DMetaTable");
-}
-
-LUA_API int luau_Sprite2DGetGlobalPosition(lua_State *L)
-{
-    return luau_TemplateGetGlobalPosition<Sprite2D>(L, "Sprite2DMetaTable");
-}
-
-LUA_API int luau_Area2DGetGlobalPosition(lua_State *L)
-{
-    return luau_TemplateGetGlobalPosition<Area2D>(L, "Area2DMetaTable");
-}
-
 LUA_API int luau_ParallaxGetGlobalPosition(lua_State *L)
 {
     return luau_TemplateGetGlobalPosition<Parallax>(L, "ParallaxMetaTable");
-}
-
-LUA_API int luau_RigidBody2DGetGlobalPosition(lua_State *L)
-{
-    return luau_TemplateGetGlobalPosition<RigidBody2D>(L, "RigidBody2DMetaTable");
-}
-
-LUA_API int luau_StaticBody2DGetGlobalPosition(lua_State *L)
-{
-    return luau_TemplateGetGlobalPosition<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
 LUA_API int luau_LabelGetGlobalPosition(lua_State *L)
@@ -1440,12 +1492,15 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"AddChild", luau_Sprite2DAddChild},
                                             {"GetPosition", luau_Sprite2DGetPosition},
                                             {"SetPosition", luau_Sprite2DSetPosition},
+                                            {"GetGlobalPosition", luau_Sprite2DGetGlobalPosition},
                                             {"CreateChild", luau_Sprite2DCreateChild},
                                             {"GetPosition", luau_Sprite2DGetPosition},
                                             {"SetPosition", luau_Sprite2DSetPosition},
+                                            {"SetSize", luau_Sprite2DSetSize},
                                             {"GetGlobalPosition", luau_Sprite2DGetGlobalPosition},
                                             {"SetSize", luau_Sprite2DSetSize},
                                             {"SetTexture", luau_Sprite2DSetTexture},
+                                            {"SetSource", luau_Sprite2DSetSource},
                                             {"Destroy", luau_Sprite2DDestroy},
                                             {"__gc", lua_gcSprite2D},
                                             {nullptr, nullptr}};
@@ -1459,6 +1514,7 @@ void luau_ExposeFunctions(lua_State *L)
                                                     {"SetPosition", luau_CollisionShape2DSetPosition},
                                                     {"GetGlobalPosition", luau_CollisionShape2DGetGlobalPosition},
                                                     {"CreateChild", luau_CollisionShape2DCreateChild},
+
                                                     {"GetBoundingBox", luau_CollisionShape2DGetBoundingBox},
                                                     {"ToggleCollision", luau_CollisionShape2DToggleCollision},
                                                     {"IsCollisionEnabled", luau_CollisionShape2DIsCollisionEnabled},
@@ -1476,12 +1532,12 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"SetPosition", luau_Area2DSetPosition},
                                           {"GetGlobalPosition", luau_Area2DGetGlobalPosition},
                                           {"CreateChild", luau_Area2DCreateChild},
+
                                           {"ToggleCollision", luau_Area2DToggleCollision},
                                           {"IsCollisionEnabled", luau_Area2DIsCollisionEnabled},
                                           {"Collide", luau_Area2DCollide},
                                           {"GetSize", luau_Area2DGetSize},
-                                          {"SetSize", luau_Area2DSetSize},
-                                          {"Destroy", luau_Area2DDestroy},
+                                          {"SetSize", luau_Area2DSetSize},{"Destroy", luau_Area2DDestroy},
                                           {"__gc", lua_gcArea2D},
                                           {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
@@ -1492,8 +1548,7 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"AddChild", luau_ParallaxAddChild},
                                             {"CreateChild", luau_ParallaxCreateChild},
                                             {"SetReferenceNode", luau_ParallaxSetReferenceNode},
-                                            {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},
-                                            {"Destroy", luau_ParallaxDestroy},
+                                            {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},{"Destroy", luau_ParallaxDestroy},
                                             {"__gc", lua_gcParallax},
                                             {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
@@ -1505,12 +1560,15 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"GetPosition", luau_RigidBody2DGetPosition},
                                           {"SetPosition", luau_RigidBody2DSetPosition},
                                           {"GetGlobalPosition", luau_RigidBody2DGetGlobalPosition},
+                                          {"GetGlobalPosition", luau_RigidBody2DGetGlobalPosition},
                                           {"GetVelocity", luau_RigidBody2DGetVelocity},
                                           {"SetVelocity", luau_RigidBody2DSetVelocity},
                                           {"CreateChild", luau_RigidBody2DCreateChild},
                                           {"ToggleCollision", luau_RigidBody2DToggleCollision},
                                           {"IsCollisionEnabled", luau_RigidBody2DIsCollisionEnabled},
                                           {"Collide", luau_RigidBody2DCollide},
+                                          {"SetVelocity", luau_RigidBody2DSetVelocity},
+                                          {"GetVelocity", luau_RigidBody2DGetVelocity},
                                           {"Destroy", luau_RigidBody2DDestroy},
                                           {"__gc", lua_gcRigidBody2D},
                                           {nullptr, nullptr}};

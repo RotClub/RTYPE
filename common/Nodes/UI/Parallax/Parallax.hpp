@@ -17,8 +17,7 @@
 class Parallax : public UI
 {
     public:
-        Parallax(const std::string &texture, const std::string &name = "parallax", int zIndex = 0,
-                 Node2D *referenceNode = nullptr);
+        Parallax(const std::string &texture, const std::string &name, int zIndex, Node2D *referenceNode);
         ~Parallax();
 
         void Draw() override;
@@ -30,7 +29,7 @@ class Parallax : public UI
     private:
         std::string _texture;
         Node2D *_referenceNode;
-        int _zIndex;
+        float _zIndex;
         Types::Vector2 _drawPos;
         Types::Vector2 _parallaxPos;
 };

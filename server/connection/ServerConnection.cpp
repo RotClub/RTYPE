@@ -36,6 +36,7 @@ void ServerConnection::stop()
         _networkThread.join();
     }
     for (const auto *client : _clientConnections) {
+        _disconnectedClients.enqueue(client->getUuid());
         delete client;
     }
     close(_tcpFd);
@@ -63,11 +64,11 @@ void ServerConnection::_loop()
 
 void ServerConnection::_disconnectClients()
 {
-    auto it =
-        std::ranges::remove_if(_clientConnections, [](Client *client) { return client->shouldDisconnect(); }).begin();
-    if (it != _clientConnections.end()) {
+    std::lock_guard guard(_clientsMutex);
+    if (auto it = std::find_if(_clientConnections.begin(), _clientConnections.end(), [](Client *client) { return client->shouldDisconnect(); }); it != _clientConnections.end()) {
         Client *client = *it;
         _clientConnections.erase(it, _clientConnections.end());
+        _disconnectedClients.enqueue(client->getUuid());
         delete client;
     }
 }
@@ -77,8 +78,7 @@ void ServerConnection::_receiveLoop()
     for (auto &client : _clientConnections) {
         if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
             try {
-                Packet *packet = _tryReceiveTCP(client);
-                client->addTcpPacketInput(packet);
+                _tryReceiveTCP(client);
             }
             catch (const std::exception &e) {
                 client->disconnect();
@@ -86,18 +86,7 @@ void ServerConnection::_receiveLoop()
         }
     }
     if (FD_ISSET(_udpFd, &_readfds)) {
-        sockaddr_in addr{};
-        std::memset(&addr, 0, sizeof(addr));
-        Packet *packet = _tryReceiveUDP(&addr);
-        Client *client = _getClientByID(packet->id);
-        if (client == nullptr) {
-            PacketBuilder(packet).reset();
-            delete packet;
-            return;
-        }
-        client->updateUdpAddress(&addr);
-        if (!client->shouldDisconnect())
-            client->addUdpPacketInput(packet);
+        _tryReceiveUDP();
     }
 }
 
@@ -109,7 +98,7 @@ void ServerConnection::_sendLoop()
                 Packet *packet = client->popTcpPacketOutput();
                 PacketBuilder::PackedPacket packed = {0};
                 PacketBuilder::pack(&packed, packet);
-                write(client->getTcpFd(), &packed, PACKED_PACKET_SIZE);
+                write(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket));
                 PacketBuilder(packet).reset();
                 delete packet;
             }
@@ -117,7 +106,7 @@ void ServerConnection::_sendLoop()
                 Packet *packet = client->popUdpPacketOutput();
                 PacketBuilder::PackedPacket packed = {0};
                 PacketBuilder::pack(&packed, packet);
-                sendto(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()),
+                sendto(_udpFd, packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()),
                        sizeof(sockaddr_in));
                 PacketBuilder(packet).reset();
                 delete packet;
@@ -128,33 +117,84 @@ void ServerConnection::_sendLoop()
 
 void ServerConnection::_accept()
 {
+    if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers())
+        return;
     if (FD_ISSET(_tcpFd, &_readfds)) {
+        std::lock_guard guard(_clientsMutex);
         _clientConnections.emplace_back(new Client(_tcpFd));
     }
 }
 
-Packet *ServerConnection::_tryReceiveTCP(Client *client)
+void ServerConnection::_tryReceiveTCP(Client *client)
 {
-    PacketBuilder::PackedPacket packed = {0};
-    if (read(client->getTcpFd(), &packed, PACKED_PACKET_SIZE) <= 0) {
+    std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
+    int n = 0;
+    if ((n = read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
-    Packet *packet = new Packet;
-    PacketBuilder::unpack(&packed, packet);
-    return packet;
+    buffer.resize(n);
+    client->addToTcpBuffer(buffer);
+    _processTcpBuffer(client);
 }
 
-Packet *ServerConnection::_tryReceiveUDP(sockaddr_in *addr)
+void ServerConnection::_tryReceiveUDP()
 {
-    PacketBuilder::PackedPacket packed = {0};
+    std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
 
-    socklen_t len = sizeof(*addr);
-    if (recvfrom(_udpFd, &packed, PACKED_PACKET_SIZE, 0, reinterpret_cast<sockaddr *>(addr), &len) <= 0) {
+    sockaddr_in addr{};
+    std::memset(&addr, 0, sizeof(addr));
+    socklen_t len = sizeof(addr);
+    int n = 0;
+    if ((n = recvfrom(_udpFd, buffer.data(), sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&addr), &len)) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
-    Packet *packet = new Packet;
-    PacketBuilder::unpack(&packed, packet);
-    return packet;
+    buffer.resize(n);
+    if (_udpBuffers.find(std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))) == _udpBuffers.end()) {
+        _udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))] = buffer;
+    } else {
+        _udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))].insert(_udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))].end(), buffer.begin(), buffer.end());
+    }
+    _processUdpBuffer(std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)), &addr);
+}
+
+void ServerConnection::_processTcpBuffer(Client *client)
+{
+    if (client->getTcpBuffer().size() >= PACKED_PACKET_SIZE) {
+        PacketBuilder::PackedPacket packed = {0};
+        std::memcpy(packed, client->getTcpBuffer().data(), sizeof(PacketBuilder::PackedPacket));
+        Packet *packet = new Packet;
+        try {
+            PacketBuilder::unpack(&packed, packet);
+        }
+        catch (const std::exception &e) {
+            delete packet;
+            return;
+        }
+        client->addTcpPacketInput(packet);
+        client->getTcpBuffer().erase(client->getTcpBuffer().begin(), client->getTcpBuffer().begin() + sizeof(PacketBuilder::PackedPacket));
+    }
+}
+
+void ServerConnection::_processUdpBuffer(const std::pair<std::string, int> &addr, sockaddr_in *addr_in)
+{
+    auto &buffer = _udpBuffers[addr];
+    if (buffer.size() >= PACKED_PACKET_SIZE) {
+        PacketBuilder::PackedPacket packed = {0};
+        std::memcpy(packed, buffer.data(), sizeof(PacketBuilder::PackedPacket));
+        auto *packet = new Packet;
+        try {
+            PacketBuilder::unpack(&packed, packet);
+        }
+        catch (const std::exception &e) {
+            delete packet;
+            return;
+        }
+        if (Client *client = _getClientByID(packet->id); client != nullptr) {
+            client->updateUdpAddress(addr_in);
+            client->addUdpPacketInput(packet);
+        }
+        buffer.erase(buffer.begin(), buffer.begin() + sizeof(PacketBuilder::PackedPacket));
+    }
 }
 
 void ServerConnection::_createSocket()
@@ -178,7 +218,7 @@ void ServerConnection::_createSocket()
         throw std::runtime_error("Error binding tcp socket");
     }
 
-    listen(_tcpFd, 0);
+    listen(_tcpFd, SOMAXCONN);
 
     if (bind(_udpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) < 0) {
         throw std::runtime_error("Error binding udp socket");

@@ -10,6 +10,7 @@
 
 LUA_API int luau_IsKeyPressed(lua_State *L);
 LUA_API int luau_IsKeyJustPressed(lua_State *L);
+LUA_API int luau_IsKeyReleased(lua_State *L);
 LUA_API int luau_EnableFpsCounter(lua_State *L);
 LUA_API int luau_DisableFpsCounter(lua_State *L);
 LUA_API int luau_DisableColorBlindnessShader(lua_State *L);

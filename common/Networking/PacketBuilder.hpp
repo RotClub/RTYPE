@@ -8,7 +8,7 @@
 #ifndef PACKETUTILS_HPP_
 #define PACKETUTILS_HPP_
 
-#define PACKED_PACKET_SIZE 4096
+#define PACKED_PACKET_SIZE 128
 
 #include "Packet.hpp"
 
@@ -18,6 +18,7 @@
 class PacketBuilder
 {
     public:
+        static const std::string integrityChallenge;
         PacketBuilder();
         PacketBuilder(Packet *packet);
         ~PacketBuilder() = default;
@@ -27,13 +28,18 @@ class PacketBuilder
         PacketBuilder &setCmd(PacketCmd cmd);
 
         PacketBuilder &writeInt(int nb);
+        PacketBuilder &writeFloat(float nb);
+        PacketBuilder &writeBool(bool nb);
         PacketBuilder &writeString(const std::string &str);
 
-        int readInt();
-        std::string readString();
+        [[nodiscard]] int readInt();
+        [[nodiscard]] float readFloat();
+        [[nodiscard]] bool readBool();
+        [[nodiscard]] std::string readString();
 
         Packet *build();
         void reset();
+        static void copy(Packet *dest, const Packet *src);
 
         using PackedPacket = char[PACKED_PACKET_SIZE];
 
@@ -43,6 +49,7 @@ class PacketBuilder
     private:
         size_t _n;
         PacketCmd _cmd;
+        char _id[16];
         void *_data;
 };
 

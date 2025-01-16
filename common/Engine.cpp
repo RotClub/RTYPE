@@ -191,7 +191,7 @@ void Engine::callHook(const std::string &eventName, ...)
     va_end(args);
 
     if (lua_pcall(L, 1 + argCount, 0, 0) != LUA_OK) {
-        std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;
+        spdlog::error("Error calling hook: {}", lua_tostring(L, -1));
         lua_pop(L, 1);
     }
 
@@ -201,6 +201,7 @@ void Engine::callHook(const std::string &eventName, ...)
 void Engine::netCallback(const std::string &packetName, Packet *packet, const std::string &client)
 {
     _builders.emplace(packet);
+    (void)_builders.top().readString();
     lua_getglobal(L, "net");
     lua_getfield(L, -1, "Call");
 
@@ -214,7 +215,7 @@ void Engine::netCallback(const std::string &packetName, Packet *packet, const st
     lua_pushstring(L, client.c_str());
 
     if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
-        std::cerr << "Error calling hook: " << lua_tostring(L, -1) << std::endl;
+        spdlog::error("Error calling net callback: {}", lua_tostring(L, -1));
         lua_pop(L, 1);
     }
 
@@ -284,7 +285,9 @@ void Engine::loadLibraries()
     constexpr luaL_Reg netLibrary[] = {{"CreatePacket", luau_NetCreatePacket}, {"Start", luau_NetStart},
                                        {"SendToServer", luau_NetSendToServer}, {"SendToClient", luau_NetSendToClient},
                                        {"Broadcast", luau_NetBroadcast},       {"WriteString", luau_NetWriteString},
-                                       {"ReadString", luau_NetReadString},     {nullptr, nullptr}};
+                                       {"ReadString", luau_NetReadString},     {"ReadInt", luau_NetReadInt},
+                                       {"WriteInt", luau_NetWriteInt},         {"ReadFloat", luau_NetReadFloat},
+                                       {"WriteFloat", luau_NetWriteFloat},     {nullptr, nullptr}};
     luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
     /* NET LIBRARY */
 }
