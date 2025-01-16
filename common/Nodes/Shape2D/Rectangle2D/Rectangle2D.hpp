@@ -9,7 +9,6 @@
 
 class Rectangle2D : public Shape2D
 {
-    private:
         Types::Rect2 dimensions;
 
         bool _intersectsRect(const Shape2D &other) const override;

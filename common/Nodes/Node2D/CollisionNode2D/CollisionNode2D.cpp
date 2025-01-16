@@ -40,9 +40,9 @@ bool CollisionNode2D::collidesWith(const CollisionNode2D &other)
     }
     for (const auto &shape : children) {
         for (const auto &other_shape : other.children) {
-            if (dynamic_cast<CollisionNode2D *>(shape) && dynamic_cast<CollisionNode2D *>(other_shape)) {
-                if (dynamic_cast<CollisionNode2D *>(shape)->collidesWith(
-                        *dynamic_cast<CollisionNode2D *>(other_shape))) {
+            if (dynamic_cast<CollisionShape2D *>(shape) && dynamic_cast<CollisionShape2D *>(other_shape)) {
+                if (dynamic_cast<CollisionShape2D *>(shape)->collidesWith(
+                        *dynamic_cast<CollisionShape2D *>(other_shape))) {
                     return true;
                 }
             }

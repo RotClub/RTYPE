@@ -121,20 +121,20 @@ namespace Types
 
             bool intersects(const Rect2 &other) const
             {
-                float this_left = origin.x;
-                float this_right = this_left + size.x;
-                float this_top = origin.y;
-                float this_bottom = this_right + size.y;
+                float left = origin.x;
+                float right = origin.x + size.x;
+                float top = origin.y;
+                float bottom = origin.y + size.y;
 
                 float other_left = other.origin.x;
-                float other_right = other_left + other.size.x;
+                float other_right = other.origin.x + other.size.x;
                 float other_top = other.origin.y;
-                float other_bottom = other_right + other.size.y;
+                float other_bottom = other.origin.y + other.size.y;
 
-                bool horizontal_overlap = this_left < other_right && this_right > other_left;
-                bool vertical_overlap = this_top < other_bottom && this_bottom > other_top;
+                float x_overlap = std::max(0.f, std::min(right, other_right) - std::max(left, other_left));
+                float y_overlap = std::max(0.f, std::min(bottom, other_bottom) - std::max(top, other_top));
 
-                return horizontal_overlap && vertical_overlap;
+                return x_overlap > 0 && y_overlap > 0;
             }
 
             void expands(const Rect2 &to_expand)
