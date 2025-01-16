@@ -192,6 +192,7 @@ void Server::broadcastNewPackets()
 void Server::stop()
 {
     spdlog::info("Stopping server...");
+    _serverConnection.getClientsMutex().unlock();
     _serverConnection.stop();
     _isRunning = false;
 }
