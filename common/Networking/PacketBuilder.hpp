@@ -8,7 +8,7 @@
 #ifndef PACKETUTILS_HPP_
 #define PACKETUTILS_HPP_
 
-#define PACKED_PACKET_SIZE 4096
+#define PACKED_PACKET_SIZE 512
 
 #include "Packet.hpp"
 
@@ -39,6 +39,7 @@ class PacketBuilder
 
         Packet *build();
         void reset();
+        static void copy(Packet *dest, const Packet *src);
 
         using PackedPacket = char[PACKED_PACKET_SIZE];
 

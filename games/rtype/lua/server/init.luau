@@ -13,7 +13,7 @@ hook.Add("Tick", "main", function(delta)
     for i = 1, #spaceships do
         if spaceships[i]["bound_player"] == nil then return end
         -- updateSpaceshipVelocities(spaceships[i], dt)
-        sendSpaceshipPosition(i)
+        -- sendSpaceshipPosition(i)
     end
 end)
 

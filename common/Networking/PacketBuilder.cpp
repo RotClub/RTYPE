@@ -161,6 +161,15 @@ void PacketBuilder::reset()
     std::memset(_id, 0, sizeof(_id));
 }
 
+void PacketBuilder::copy(Packet *dest, const Packet *src)
+{
+    std::memcpy(dest, src, sizeof(Packet));
+    if (src->data == nullptr || src->n == 0)
+        return;
+    dest->data = std::malloc(src->n);
+    std::memcpy(dest->data, src->data, src->n);
+}
+
 void PacketBuilder::pack(PackedPacket *packed, const Packet *packet)
 {
     std::memset(*packed, 0, sizeof(PackedPacket));
