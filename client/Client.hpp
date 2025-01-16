@@ -53,6 +53,8 @@ class Client
         ClientConnection &getClientConnection();
         ResourceManager &getResourceManager();
 
+        const Types::Vector2 &getGameSize() const;
+
         void broadcastLuaPackets();
         void processIncomingPackets();
 

@@ -21,6 +21,8 @@ class Game
 
         void run();
 
+        [[nodiscard]] const Types::Vector2 &getWindowSize() const;
+
     private:
         void _update(int dt);
         void _loop();

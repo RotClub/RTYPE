@@ -10,7 +10,7 @@ function generateBall()
     local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, x_vel, y_vel)
     local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/player.png")
 
-    ball:SetPosition(800 / 2, 600 / 2)
+    ball:SetPosition(GetWindowWidth() / 2, GetWindowHeight() / 2)
     --ball:SetPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
     ball_sprite:SetSize(14, 14)
     return ball
@@ -21,7 +21,7 @@ function ballBounce(ball)
     local x_vel, y_vel = rgbd:GetVelocity()
     local x_pos, y_pos = rgbd:GetGlobalPosition()
 
-    local max_y = 600 --engine:GetRenderHeight()
+    local max_y = GetWindowHeight --engine:GetRenderHeight()
     local min_y = 0
 
     -- Debugging: Print current position and velocity
