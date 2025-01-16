@@ -13,6 +13,7 @@ bool Rectangle2D::_intersectsRect(const Shape2D &other) const
 Rectangle2D::Rectangle2D(const Types::Vector2 &origin, const Types::Vector2 &size) :
     dimensions(Types::Rect2(origin, size))
 {
+    shape = ShapeType::RECTANGLE;
 }
 
 void Rectangle2D::setDimensions(float w, float h)

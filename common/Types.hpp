@@ -8,6 +8,8 @@
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
 
+#include <algorithm>
+
 namespace Types
 {
     class Vector3
