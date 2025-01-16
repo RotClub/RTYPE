@@ -671,11 +671,29 @@ LUA_API int luau_BoxCreateChild(lua_State *L) { return luau_TemplateCreateChild<
 
 /** AddChild functions **/
 
+static Node *luau_AddChildFactory(lua_State *L)
+{
+    Node *node = nullptr;
+    const char *metatables[] = {"NodeMetaTable", "Node2DMetaTable", "CollisionShape2DMetaTable", "Sprite2DMetaTable",
+                                 "Area2DMetaTable", "ParallaxMetaTable", "RigidBody2DMetaTable", "StaticBody2DMetaTable",
+                                 "LabelMetaTable", "BoxMetaTable"};
+    for (const char *metatable : metatables) {
+        try {
+            node = *static_cast<Node **>(luaL_checkudata(L, 2, metatable));
+            break;
+        } catch (const std::exception &) {}
+    }
+    if (node == nullptr) {
+        luaL_error(L, "Invalid node type provided to AddChild.");
+    }
+    return node;
+}
+
 template <typename T>
 LUA_API int luau_TemplateAddChild(lua_State *L, const char *metatable)
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metatable));
-    Node *child = *static_cast<Node **>(luaL_checkudata(L, 2, "NodeMetaTable"));
+    Node *child = luau_AddChildFactory(L);
     try {
         node->addChild(*child);
     }
@@ -1330,13 +1348,15 @@ void luau_ExposeConstants(lua_State *L, const Types::VMState state)
 
 LUA_API int luau_EngineCreateNode(lua_State *L)
 {
-    const std::string type = luaL_checkstring(L, 1);
+    const std::string type = luaL_checkstring(L, 2);
+
     Node *node = luau_NodeFactory(L, type);
     *static_cast<Node **>(lua_newuserdata(L, sizeof(Node *))) = node;
     std::string metatableName = type + "MetaTable";
     luaL_getmetatable(L, metatableName.c_str());
     if (lua_isnil(L, -1)) {
-        luaL_error(L, "Metatable '%s' not found. Ensure it is registered before calling CreateNode.", metatableName.c_str());
+        luaL_error(L, "Metatable '%s' not found. Ensure it is registered before calling AddChild.",
+                   metatableName.c_str());
     }
     lua_setmetatable(L, -2);
     return 1;
