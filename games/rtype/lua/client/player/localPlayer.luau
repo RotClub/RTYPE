@@ -1,3 +1,5 @@
+netLocalPlrX = 0
+netLocalPlrY = 0
 
 function spawnLocalPlayer()
     Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0)
@@ -20,11 +22,11 @@ end
 function sendAction(direction, start)
     if start then
         net.Start("ActionStart")
-        net.WriteInt(direction)
+            net.WriteInt(direction)
         net.SendToServer()
     else
         net.Start("ActionEnd")
-        net.WriteInt(direction)
+            net.WriteInt(direction)
         net.SendToServer()
     end
 end
@@ -93,6 +95,7 @@ function localPlayerMovement(dt)
         -- net.SendToServer()
         explodePlayer(Game.localPlayer)
     end
-    Game.localPlayer:SetPosition(localPlrX, localPlrY)
+    debug("net x: " .. netLocalPlrX .. " y: " .. netLocalPlrY)
+    Game.localPlayer:SetPosition(netLocalPlrX, netLocalPlrY)
     -- Game.localPlayer:SetVelocity(direction.x * 100, direction.y * 100)
 end
