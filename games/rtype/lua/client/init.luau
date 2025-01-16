@@ -4,26 +4,22 @@ local parallaxLayers = {
     root:CreateChild("Parallax", "parallaxBg3", "assets/sprites/background/background_3.png", 2, nil)
 }
 
-include("client/player.luau")
+GAME = {}
+
+GAME.localId = nil
+GAME.localId = nil
+
+include("client/player/players.luau")
+include("client/player/localPlayer.luau")
 
 for i = 1, #parallaxLayers do
     parallaxLayers[i]:SetReferenceNode(localPlayer)
 end
 
-local playerNum = 1
-setPlayerColor(localPlayerSprite, playerNum)
-
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
     localPlayerMovement(dt)
     for i = 1, #parallaxLayers do
-        parallaxLayers[i]:AddParallaxPosition((5 * i) * dt, 0)
+        parallaxLayers[i]:AddParallaxPosition(((5 * i) * (i / 2)) * dt, 0)
     end
-end)
-
-net.Receive("SpaceshipPosition", function(len, ply)
-    local id = net.ReadInt()
-    local x = net.ReadFloat()
-    local y = net.ReadFloat()
-    info("Received spaceship position: ", id, x, y)
 end)

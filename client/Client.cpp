@@ -141,6 +141,7 @@ void Client::handleConnectPacket(Packet *packet)
                     std::string id = readBuilder.readString();
                     getClientConnection().setID(id);
                     getClientConnection().sendToServerTCP(PacketBuilder().setCmd(PacketCmd::CONNECT).build());
+                    getClientConnection().sendToServerUDP(PacketBuilder().setCmd(PacketCmd::NONE).build());
                     _step = Client::ConnectionStep::COMPLETE;
                 }
                 else {
