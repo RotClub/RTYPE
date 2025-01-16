@@ -20,7 +20,6 @@ class Parallax : public UI
         Parallax(const std::string &texture, const std::string &name, int zIndex, Node2D *referenceNode);
         ~Parallax();
 
-        void Update() override;
         void Draw() override;
 
         Parallax &setTexture(const std::string &texture);

@@ -7,7 +7,6 @@ local parallaxLayers = {
 GAME = {}
 
 GAME.localId = nil
-GAME.localId = nil
 
 include("client/player/players.luau")
 include("client/player/localPlayer.luau")

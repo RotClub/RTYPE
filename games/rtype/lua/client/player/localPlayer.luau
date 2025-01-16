@@ -1,12 +1,9 @@
 
-localPlayer = root:CreateChild("Node2D", "localPlayer")
+localPlayer = root:CreateChild("RigidBody", "localPlayer")
 localPlayerSprite = localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
 
 localPlayer:SetPosition(0, 0)
 localPlayerSprite:SetSize(32 * 2, 14 * 2)
-
-local playerNum = 1
-setPlayerColor(localPlayerSprite, playerNum)
 
 function explodePlayer(player)
     -- player:Destroy()
@@ -86,12 +83,7 @@ function localPlayerMovement(dt)
     if IsKeyJustPressed(SpecialKey1) then
         -- net.Start("Hello")
         -- net.SendToServer()
-        playerNum = playerNum + 1
-        if playerNum > 4 then
-            explodePlayer(localPlayer)
-            playerNum = 1
-        end
-        setPlayerColor(localPlayerSprite, playerNum)
+        eplodePlayer(localPlayer)
     end
     localPlayer:SetPosition(x, y)
 end
