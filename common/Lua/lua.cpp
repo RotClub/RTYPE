@@ -1077,9 +1077,10 @@ LUA_API int luau_ParallaxAddParallaxPosition(lua_State *L)
 LUA_API int luau_RigidBody2DSetVelocity(lua_State *L)
 {
     RigidBody2D *node = *static_cast<RigidBody2D **>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
-    double x = luaL_checknumber(L, 2);
-    double y = luaL_checknumber(L, 3);
-    node->velocity = Types::Vector2(x, y);
+    const double x = luaL_checknumber(L, 2);
+    const double y = luaL_checknumber(L, 3);
+    node->velocity.x = static_cast<float>(x);
+    node->velocity.y = static_cast<float>(y);
     return 0;
 }
 

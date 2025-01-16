@@ -11,11 +11,10 @@ spaceships = {
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 100000000
     for i = 1, #spaceships do
-        if spaceships[i]["bound_player"] == nil then continue end
+        if not spaceships[i]["bound_player"] then continue end
         updateSpaceshipVelocitiy(spaceships[i], dt)
         sendSpaceshipPosition(i)
-        local x, y = spaceships[i].node:GetGlobalPosition()
-        debug("Spaceship " .. i .. " position: " .. x .. ", " .. y)
+        -- info("Spaceship " .. i .. ", x " .. x .. ", y " .. y)
     end
 end)
 
@@ -41,7 +40,7 @@ hook.Add("PlayerLeave", "main", function(ply)
             spaceships[i].bound_player = nil
             spaceships[i].node:Destroy()
             net.Start("SpaceshipDespawn")
-            net.WriteInt(i)
+                net.WriteInt(i)
             net.Broadcast()
         end
     end

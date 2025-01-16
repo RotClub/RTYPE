@@ -8,7 +8,7 @@
 #ifndef PACKETUTILS_HPP_
 #define PACKETUTILS_HPP_
 
-#define PACKED_PACKET_SIZE 512
+#define PACKED_PACKET_SIZE 128
 
 #include "Packet.hpp"
 

@@ -31,8 +31,10 @@ void Server::start()
         engine.callHook("InitServer", nullptr);
         _serverConnection.start();
         _isRunning = true;
+        auto nextCallTime = std::chrono::steady_clock::now();
+        const std::chrono::milliseconds tickRate = std::chrono::milliseconds(1000 / TICKRATE);
         while (_isRunning) {
-            loop();
+            loop(nextCallTime, tickRate);
         }
     }
     catch (const std::exception &e) {
@@ -40,15 +42,25 @@ void Server::start()
     }
 }
 
-void Server::loop()
+void Server::loop(std::chrono::time_point<std::chrono::steady_clock> &nextCallTime, const std::chrono::milliseconds &interval)
 {
     Engine &engine = Engine::GetInstance();
+    auto now = std::chrono::steady_clock::now();
 
-    std::lock_guard guard(_serverConnection.getClientsMutex());
+    // std::lock_guard guard(_serverConnection.getClientsMutex());
     while (!_serverConnection.getDisconnectedClients().empty())
         Engine::GetInstance().callHook("PlayerLeave", "string", _serverConnection.getDisconnectedClients().dequeue().c_str(), nullptr);
-    engine.callHook("Tick", "int", engine.deltaTime(), nullptr);
-    engine.updateNode(engine.root);
+    if (now >= nextCallTime) {
+        engine.callHook("Tick", "int", engine.deltaTime(), nullptr);
+        engine.updateNode(engine.root);
+        nextCallTime += interval;
+    }
+    networkLoop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+}
+
+void Server::networkLoop()
+{
     broadcastNewPackets();
     broadcastLuaPackets();
     for (auto client : _serverConnection.getClientConnections()) {

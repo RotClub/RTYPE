@@ -12,6 +12,7 @@
 #include <string>
 #include <tuple>
 #include <cstdint>
+#include <Networking/Defines.hpp>
 
 class Client
 {
@@ -49,6 +50,9 @@ class Client
         bool hasUdpPacketOutput();
         bool hasTcpPacketInput();
         bool hasUdpPacketInput();
+
+        // TODO REMOVE
+        int getUdpQueueSize() { return std::get<OUT>(_udpQueues).size(); }
 
         void addToTcpBuffer(const std::vector<uint8_t> &buffer) { _tcpBuffer.insert(_tcpBuffer.end(), buffer.begin(), buffer.end()); }
         std::vector<uint8_t> &getTcpBuffer() { return _tcpBuffer; }

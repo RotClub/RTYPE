@@ -32,38 +32,40 @@ function syncNewPlayer(ply: string)
         if spaceships[i].bound_player == nil then continue end
         if spaceships[i].bound_player == ply then continue end
         net.Start("SpaceshipSpawn")
-        net.WriteInt(i)
+            net.WriteInt(i)
         net.SendToClient(ply)
     end
 end
 
 function sendSpaceshipPosition(i: number)
-    local x, y = spaceships[i].node:GetGlobalPosition()
+    local xp, yp = spaceships[i].node:GetGlobalPosition()
+    -- info("sending spaceship position: " .. xp .. ", " .. yp)
     net.Start("SpaceshipPosition")
-    net.WriteInt(i)
-    net.WriteFloat(x)
-    net.WriteFloat(y)
+        net.WriteInt(i)
+        net.WriteFloat(xp)
+        net.WriteFloat(yp)
     net.Broadcast()
 end
 
 function updateSpaceshipVelocitiy(spaceship, delta)
-    local x, y = spaceship.node:GetVelocity()
+    local vx, yx = spaceship.node:GetVelocity()
     if spaceship.actions["MOVE_LEFT"] then
-        spaceship.node:SetVelocity(SPACESHIP_SPEED * -1, y)
+        spaceship.node:SetVelocity(SPACESHIP_SPEED * -1.0, yx)
     end
     if spaceship.actions["MOVE_RIGHT"] then
-        spaceship.node:SetVelocity(SPACESHIP_SPEED, y)
+        spaceship.node:SetVelocity(SPACESHIP_SPEED, yx)
     end
     if not spaceship.actions["MOVE_LEFT"] and not spaceship.actions["MOVE_RIGHT"] then
-        spaceship.node:SetVelocity(0, y)
+        spaceship.node:SetVelocity(0.0, yx)
     end
+    vx, yx = spaceship.node:GetVelocity()
     if spaceship.actions["MOVE_UP"] then
-        spaceship.node:SetVelocity(x, SPACESHIP_SPEED * -1)
+        spaceship.node:SetVelocity(vx, SPACESHIP_SPEED * -1.0)
     end
     if spaceship.actions["MOVE_DOWN"] then
-        spaceship.node:SetVelocity(x, SPACESHIP_SPEED * 1)
+        spaceship.node:SetVelocity(vx, SPACESHIP_SPEED)
     end
     if not spaceship.actions["MOVE_UP"] and not spaceship.actions["MOVE_DOWN"] then
-        spaceship.node:SetVelocity(x, 0)
+        spaceship.node:SetVelocity(vx, 0.0)
     end
 end
