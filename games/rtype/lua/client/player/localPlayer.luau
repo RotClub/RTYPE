@@ -95,7 +95,6 @@ function localPlayerMovement(dt)
         -- net.SendToServer()
         explodePlayer(Game.localPlayer)
     end
-    debug("net x: " .. netLocalPlrX .. " y: " .. netLocalPlrY)
     Game.localPlayer:SetPosition(netLocalPlrX, netLocalPlrY)
     -- Game.localPlayer:SetVelocity(direction.x * 100, direction.y * 100)
 end
