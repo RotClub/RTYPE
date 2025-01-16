@@ -217,6 +217,110 @@ void luau_ExposeRootNode(lua_State *L)
     lua_setglobal(L, "root");
 }
 
+/** Factory functions **/
+
+static Node *luau_FindNodeFactory(lua_State *L, int pos)
+{
+    Node *node = nullptr;
+    const char *metatables[] = {"NodeMetaTable", "Node2DMetaTable", "CollisionShape2DMetaTable", "Sprite2DMetaTable",
+                                 "Area2DMetaTable", "ParallaxMetaTable", "RigidBody2DMetaTable", "StaticBody2DMetaTable",
+                                 "LabelMetaTable", "BoxMetaTable"};
+    for (const char *metatable : metatables) {
+        try {
+            node = *static_cast<Node **>(luaL_checkudata(L, pos, metatable));
+            break;
+        } catch (const std::exception &) {}
+    }
+    if (node == nullptr) {
+        luaL_error(L, "Node type not found.");
+    }
+    return node;
+}
+
+static Node *luau_NodeFactory(lua_State *L, const std::string &type)
+{
+    const char *name = luaL_checkstring(L, 3);
+    Node *child = nullptr;
+
+    if (type == "Node") {
+        child = new Node(name);
+    }
+    else if (type == "Node2D") {
+        child = new Node2D(name);
+    }
+    else if (type == "Sprite2D") {
+        const char *texture = luaL_checkstring(L, 4);
+        child = new Sprite2D(name, texture);
+    }
+    else if (type == "CollisionShape2D") {
+        const char *shapeType = luaL_checkstring(L, 4);
+        Shape2D *shape;
+        if (std::strcmp(shapeType, "Rectangle") == 0) {
+            double x = luaL_checknumber(L, 5);
+            double y = luaL_checknumber(L, 6);
+            double width = luaL_checknumber(L, 7);
+            double height = luaL_checknumber(L, 8);
+            shape = new Rectangle2D(Types::Vector2(x, y), Types::Vector2(width, height));
+        }
+        else {
+            luaL_error(L, "Invalid shape type '%s' provided to AddChild in CollisionShape2D.", shapeType);
+        }
+        child = new CollisionShape2D(name);
+        dynamic_cast<CollisionShape2D *>(child)->setShape(shape);
+    }
+    else if (type == "Area2D") {
+        double x = luaL_checknumber(L, 4);
+        double y = luaL_checknumber(L, 5);
+        double width = luaL_checknumber(L, 6);
+        double height = luaL_checknumber(L, 7);
+        child = new Area2D(name, Types::Vector2(x, y), Types::Vector2(width, height));
+    }
+    else if (type == "Parallax") {
+        const char *texture = luaL_checkstring(L, 4);
+        int zIndex = luaL_checkinteger(L, 5);
+        Node2D *referenceNode = nullptr;
+        if (!lua_isnil(L, 6)) {
+            Node2D *referenceNode = *static_cast<Node2D **>(luaL_checkudata(L, 6, "Node2DMetaTable"));
+        }
+        child = new Parallax(texture, name, zIndex, referenceNode);
+    }
+    else if (type == "StaticBody2D") {
+        double x = luaL_checknumber(L, 4);
+        double y = luaL_checknumber(L, 5);
+        child = new StaticBody2D(name, Types::Vector2(x, y));
+    }
+    else if (type == "RigidBody2D") {
+        double x = luaL_checknumber(L, 4);
+        double y = luaL_checknumber(L, 5);
+        double vel_x = luaL_checknumber(L, 6);
+        double vel_y = luaL_checknumber(L, 7);
+        child = new RigidBody2D(name, Types::Vector2(x, y), Types::Vector2(vel_x, vel_y));
+    }
+    else if (type == "Label") {
+        double x = luaL_checknumber(L, 4);
+        double y = luaL_checknumber(L, 5);
+        const char *text = luaL_checkstring(L, 6);
+        const char *font = luaL_checkstring(L, 7);
+        int fontSize = luaL_checkinteger(L, 8);
+        child = new Label(name, Types::Vector2(x, y), text, font, fontSize);
+    }
+    else if (type == "Box") {
+        double x = luaL_checknumber(L, 4);
+        double y = luaL_checknumber(L, 5);
+        double size_x = luaL_checknumber(L, 6);
+        double size_y = luaL_checknumber(L, 7);
+        child = new Box(name, Types::Vector2(x, y), Types::Vector2(size_x, size_y));
+    }
+    else {
+        luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
+    }
+    return child;
+}
+
+
+/** Factory functions **/
+
+
 /** __gc functions **/
 
 LUA_API int lua_gcNode(lua_State *L)
@@ -474,86 +578,6 @@ LUA_API int luau_BoxGetChildren(lua_State *L) { return luau_TemplateNodeGetChild
 
 /** GetChild functions **/
 
-static Node *luau_NodeFactory(lua_State *L, const std::string &type)
-{
-    const char *name = luaL_checkstring(L, 3);
-    Node *child = nullptr;
-
-    if (type == "Node") {
-        child = new Node(name);
-    }
-    else if (type == "Node2D") {
-        child = new Node2D(name);
-    }
-    else if (type == "Sprite2D") {
-        const char *texture = luaL_checkstring(L, 4);
-        child = new Sprite2D(name, texture);
-    }
-    else if (type == "CollisionShape2D") {
-        const char *shapeType = luaL_checkstring(L, 4);
-        Shape2D *shape;
-        if (std::strcmp(shapeType, "Rectangle") == 0) {
-            double x = luaL_checknumber(L, 5);
-            double y = luaL_checknumber(L, 6);
-            double width = luaL_checknumber(L, 7);
-            double height = luaL_checknumber(L, 8);
-            shape = new Rectangle2D(Types::Vector2(x, y), Types::Vector2(width, height));
-        }
-        else {
-            luaL_error(L, "Invalid shape type '%s' provided to AddChild in CollisionShape2D.", shapeType);
-        }
-        child = new CollisionShape2D(name);
-        dynamic_cast<CollisionShape2D *>(child)->setShape(shape);
-    }
-    else if (type == "Area2D") {
-        double x = luaL_checknumber(L, 4);
-        double y = luaL_checknumber(L, 5);
-        double width = luaL_checknumber(L, 6);
-        double height = luaL_checknumber(L, 7);
-        child = new Area2D(name, Types::Vector2(x, y), Types::Vector2(width, height));
-    }
-    else if (type == "Parallax") {
-        const char *texture = luaL_checkstring(L, 4);
-        int zIndex = luaL_checkinteger(L, 5);
-        Node2D *referenceNode = nullptr;
-        if (!lua_isnil(L, 6)) {
-            Node2D *referenceNode = *static_cast<Node2D **>(luaL_checkudata(L, 6, "Node2DMetaTable"));
-        }
-        child = new Parallax(texture, name, zIndex, referenceNode);
-    }
-    else if (type == "StaticBody2D") {
-        double x = luaL_checknumber(L, 4);
-        double y = luaL_checknumber(L, 5);
-        child = new StaticBody2D(name, Types::Vector2(x, y));
-    }
-    else if (type == "RigidBody2D") {
-        double x = luaL_checknumber(L, 4);
-        double y = luaL_checknumber(L, 5);
-        double vel_x = luaL_checknumber(L, 6);
-        double vel_y = luaL_checknumber(L, 7);
-        child = new RigidBody2D(name, Types::Vector2(x, y), Types::Vector2(vel_x, vel_y));
-    }
-    else if (type == "Label") {
-        double x = luaL_checknumber(L, 4);
-        double y = luaL_checknumber(L, 5);
-        const char *text = luaL_checkstring(L, 6);
-        const char *font = luaL_checkstring(L, 7);
-        int fontSize = luaL_checkinteger(L, 8);
-        child = new Label(name, Types::Vector2(x, y), text, font, fontSize);
-    }
-    else if (type == "Box") {
-        double x = luaL_checknumber(L, 4);
-        double y = luaL_checknumber(L, 5);
-        double size_x = luaL_checknumber(L, 6);
-        double size_y = luaL_checknumber(L, 7);
-        child = new Box(name, Types::Vector2(x, y), Types::Vector2(size_x, size_y));
-    }
-    else {
-        luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
-    }
-    return child;
-}
-
 template <typename T>
 LUA_API int luau_TemplateGetChild(lua_State *L, const char *metatable)
 {
@@ -671,29 +695,11 @@ LUA_API int luau_BoxCreateChild(lua_State *L) { return luau_TemplateCreateChild<
 
 /** AddChild functions **/
 
-static Node *luau_AddChildFactory(lua_State *L)
-{
-    Node *node = nullptr;
-    const char *metatables[] = {"NodeMetaTable", "Node2DMetaTable", "CollisionShape2DMetaTable", "Sprite2DMetaTable",
-                                 "Area2DMetaTable", "ParallaxMetaTable", "RigidBody2DMetaTable", "StaticBody2DMetaTable",
-                                 "LabelMetaTable", "BoxMetaTable"};
-    for (const char *metatable : metatables) {
-        try {
-            node = *static_cast<Node **>(luaL_checkudata(L, 2, metatable));
-            break;
-        } catch (const std::exception &) {}
-    }
-    if (node == nullptr) {
-        luaL_error(L, "Invalid node type provided to AddChild.");
-    }
-    return node;
-}
-
 template <typename T>
 LUA_API int luau_TemplateAddChild(lua_State *L, const char *metatable)
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metatable));
-    Node *child = luau_AddChildFactory(L);
+    Node *child = luau_FindNodeFactory(L, 2);
     try {
         node->addChild(*child);
     }
