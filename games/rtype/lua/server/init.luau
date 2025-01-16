@@ -11,23 +11,23 @@ spaceships = {
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 100000000
     for i = 1, #spaceships do
-        if spaceships[i]["bound_player"] == nil then return end
+        if spaceships[i]["bound_player"] == nil then continue end
         -- updateSpaceshipVelocities(spaceships[i], dt)
-        -- sendSpaceshipPosition(i)
+        sendSpaceshipPosition(i)
     end
 end)
 
 hook.Add("PlayerJoin", "main", function(ply)
-    syncNewPlayer(ply)
     for i = 1, #spaceships do
         if spaceships[i].bound_player == nil then
             spaceships[i].bound_player = ply
             net.Start("SpaceshipSpawn")
             net.WriteInt(i)
-            net.Broadcast()
+            net.SendToClient(ply)
             break
         end
     end
+    syncNewPlayer(ply)
 end)
 
 hook.Add("PlayerLeave", "main", function(ply)
