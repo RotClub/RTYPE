@@ -4,9 +4,13 @@
 
 #include "StaticBody2D.hpp"
 
-StaticBody2D::StaticBody2D(const std::string &name, const Types::Vector2 &position) : Body2D(name)
+#include <Nodes/Shape2D/Rectangle2D/Rectangle2D.hpp>
+
+StaticBody2D::StaticBody2D(const std::string &name, const Types::Vector2 &position, const Types::Vector2 &size) : Body2D(name)
 {
     this->metatable = "StaticBody2DMetaTable";
-    this->position = position;
     this->velocity = Types::Vector2(0, 0);
+    CollisionShape2D *shape = new CollisionShape2D(name + "_shape");
+    shape->setShape(new Rectangle2D(position, size));
+    Node2D::addChild(*shape);
 }

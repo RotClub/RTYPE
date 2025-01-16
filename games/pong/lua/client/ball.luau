@@ -7,7 +7,7 @@ function generateBall()
     local ball = root:CreateChild("Node2D", "ball")
     local x_vel = math.random() * (math.random(-1, 1) < 0 and -1 or 1) * BALL_VELOCITY_COEFFICIENT
     local y_vel = math.random() * (math.random(-1, 1) < 0 and -1 or 1) * BALL_VELOCITY_COEFFICIENT
-    local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, x_vel, y_vel)
+    local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, 14, 14, x_vel, y_vel)
     local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/player.png")
 
     ball:SetPosition(GetWindowWidth() / 2, GetWindowHeight() / 2)

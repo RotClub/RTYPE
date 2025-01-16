@@ -287,14 +287,18 @@ static Node *luau_NodeFactory(lua_State *L, const std::string &type)
     else if (type == "StaticBody2D") {
         double x = luaL_checknumber(L, 4);
         double y = luaL_checknumber(L, 5);
-        child = new StaticBody2D(name, Types::Vector2(x, y));
+        double width = luaL_checknumber(L, 6);
+        double height = luaL_checknumber(L, 7);
+        child = new StaticBody2D(name, Types::Vector2(x, y), Types::Vector2(width, height));
     }
     else if (type == "RigidBody2D") {
         double x = luaL_checknumber(L, 4);
         double y = luaL_checknumber(L, 5);
-        double vel_x = luaL_checknumber(L, 6);
-        double vel_y = luaL_checknumber(L, 7);
-        child = new RigidBody2D(name, Types::Vector2(x, y), Types::Vector2(vel_x, vel_y));
+        double width = luaL_checknumber(L, 6);
+        double height = luaL_checknumber(L, 7);
+        double vel_x = luaL_checknumber(L, 8);
+        double vel_y = luaL_checknumber(L, 9);
+        child = new RigidBody2D(name, Types::Vector2(x, y), Types::Vector2(width, height), Types::Vector2(vel_x, vel_y));
     }
     else if (type == "Label") {
         double x = luaL_checknumber(L, 4);
@@ -870,32 +874,48 @@ LUA_API int luau_Sprite2DSetSource(lua_State *L)
 /** Collide functions **/
 
 template <typename T>
-LUA_API int luau_TemplateCollisionShape2DCollide(lua_State *L, const char *metaTableName)
+LUA_API int luau_TemplateCollide(lua_State *L, const char *metaTableName)
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
-    T *other = *static_cast<T **>(luaL_checkudata(L, 2, metaTableName));
-    lua_pushboolean(L, node->collidesWith(*other));
+    Node *other = luau_FindNodeFactory(L, 2);
+
+    // Check if both are CollisionNode2D
+    if (auto *collisionNode1 = dynamic_cast<CollisionNode2D *>(node)) {
+        if (auto *collisionNode2 = dynamic_cast<CollisionNode2D *>(other)) {
+            lua_pushboolean(L, collisionNode1->collidesWith(*collisionNode2));
+            return 1;
+        }
+    }
+    // Check if both are CollisionShape2D
+    if (auto *collisionShape1 = dynamic_cast<CollisionShape2D *>(node)) {
+        if (auto *collisionShape2 = dynamic_cast<CollisionShape2D *>(other)) {
+            lua_pushboolean(L, collisionShape1->collidesWith(*collisionShape2));
+            return 1;
+        }
+    }
+    // Handle invalid cases
+    luaL_error(L, "Invalid node type provided to Collide.");
     return 1;
 }
 
 LUA_API int luau_CollisionShape2DCollide(lua_State *L)
 {
-    return luau_TemplateCollisionShape2DCollide<CollisionShape2D>(L, "CollisionShape2DMetaTable");
+    return luau_TemplateCollide<CollisionShape2D>(L, "CollisionShape2DMetaTable");
 }
 
 LUA_API int luau_Area2DCollide(lua_State *L)
 {
-    return luau_TemplateCollisionShape2DCollide<Area2D>(L, "Area2DMetaTable");
+    return luau_TemplateCollide<Area2D>(L, "Area2DMetaTable");
 }
 
 LUA_API int luau_RigidBody2DCollide(lua_State *L)
 {
-    return luau_TemplateCollisionShape2DCollide<RigidBody2D>(L, "RigidBody2DMetaTable");
+    return luau_TemplateCollide<RigidBody2D>(L, "RigidBody2DMetaTable");
 }
 
 LUA_API int luau_StaticBody2DCollide(lua_State *L)
 {
-    return luau_TemplateCollisionShape2DCollide<StaticBody2D>(L, "StaticBody2DMetaTable");
+    return luau_TemplateCollide<StaticBody2D>(L, "StaticBody2DMetaTable");
 }
 
 /** Collide functions **/
