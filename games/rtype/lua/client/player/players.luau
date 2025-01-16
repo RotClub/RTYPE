@@ -1,5 +1,6 @@
 
 function setPlayerColor(playerSprite, playerNum)
+    debug(playerSprite:GetName())
     playerSprite:SetSource(67, 3 + ((playerNum - 1) * 17), 32, 14)
 end
 
@@ -49,5 +50,11 @@ net.Receive("SpaceshipPosition", function(len, ply)
     local id = net.ReadInt()
     local x = net.ReadFloat()
     local y = net.ReadFloat()
+    if Game.localId == id then
+        debug("Local x: " .. x .. " y: " .. y)
+        localPlrX = x
+        localPlrY = y
+        return
+    end
     updatePlayerPosition(id, x, y)
 end)

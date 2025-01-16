@@ -7,11 +7,16 @@ local parallaxLayers = {
 Game = {}
 
 Game.localId = nil
+Game.localPlr = {}
+-- Game.localPlr.x = 0.0
+-- Game.localPlr.y = 0.0
+localPlrX = 0.0
+localPlrY = 0.0
 
 include("client/player/localPlayer.luau")
 include("client/player/players.luau")
 
-spawnLocalPlayer(Game.localId)
+spawnLocalPlayer()
 
 for i = 1, #parallaxLayers do
     parallaxLayers[i]:SetReferenceNode(localPlayerPoint)

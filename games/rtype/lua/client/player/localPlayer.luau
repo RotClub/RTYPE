@@ -1,12 +1,13 @@
 
-function spawnLocalPlayer(id)
+function spawnLocalPlayer()
     Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0)
-    localPlayerPoint = localPlayer:CreateChild("Node2D", "localPlayerPoint")
-    localPlayerSprite = localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
+    localPlayerPoint = Game.localPlayer:CreateChild("Node2D", "localPlayerPoint")
+    localPlayerSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
 
     Game.localPlayer:SetPosition(0, 0)
     localPlayerSprite:SetSize(32 * 2, 14 * 2)
-    setPlayerColor(localPlayerSprite, id)
+    debug(localPlayerSprite:GetGlobalPosition())
+    setPlayerColor(localPlayerSprite, 1)
 end
 
 function explodePlayer(player)
@@ -38,19 +39,21 @@ Keys.ShootKey = 74
 Keys.SpecialKey1 = 72
 
 function localPlayerMovement(dt)
-    local direction = {0, 0}
+    local direction = {}
+    direction.x = 0
+    direction.y = 0
 
     if IsKeyPressed(Keys.LeftKey) then
-        direction[1] = -1
+        direction.x = -1
     end
     if IsKeyPressed(Keys.RightKey) then
-        direction[1] = 1
+        direction.x = 1
     end
     if IsKeyPressed(Keys.UpKey) then
-        direction[2] = -1
+        direction.y = -1
     end
     if IsKeyPressed(Keys.DownKey) then
-        direction[2] = 1
+        direction.y = 1
     end
     if IsKeyJustPressed(Keys.LeftKey) then
         sendAction(1, true)
@@ -90,5 +93,6 @@ function localPlayerMovement(dt)
         -- net.SendToServer()
         explodePlayer(Game.localPlayer)
     end
-    Game.localPlayer:SetVelocity(direction[1] * 100, direction[2] * 100)
+    Game.localPlayer:SetPosition(localPlrX, localPlrY)
+    -- Game.localPlayer:SetVelocity(direction.x * 100, direction.y * 100)
 end
