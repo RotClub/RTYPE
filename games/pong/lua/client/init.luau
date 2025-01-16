@@ -8,11 +8,13 @@ local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/pl
 player_sprite:SetSize(14, 100)
 local player_hitbox = player:CreateChild("Area2D", "hitbox", 0, 0, 14, 100)
 
-local player2 = root:CreateChild("Node2D", "player2")
+local player2 = engine:CreateNode("Node2D", "player2")
 player2:SetPosition(5, 600 / 2 - 50 + 150)
 local player_sprite2 = player2:CreateChild("Sprite2D", "player_sprite2", "assets/player.png")
 player_sprite2:SetSize(14, 100)
 local player_hitbox2 = player2:CreateChild("Area2D", "hitbox2", 0, 0, 14, 100)
+
+root:AddChild(player2)
 
 local ball = generateBall()
 generateMiddle(14, 10)

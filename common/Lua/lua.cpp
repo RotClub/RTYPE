@@ -1550,12 +1550,10 @@ void luau_ExposeFunctions(lua_State *L)
     /* NODE LIBRARY */
 
     /* ENGINE LIBRARY */
-    // constexpr luaL_Reg engineLibrary[] = {
-    //     {"CreateNode", luau_EngineCreateNode},
-    //     {"GetRenderHeight", luau_EngineGetRenderHeight},
-    //     {"GetRenderWidth", luau_EngineGetRenderWidth},
-    //     {nullptr, nullptr}};
-    // luau_ExposeFunctionsAsLibrary(L, engineLibrary, "engine");
+    constexpr luaL_Reg engineLibrary[] = {
+        {"CreateNode", luau_EngineCreateNode},
+        {nullptr, nullptr}};
+    luau_ExposeFunctionsAsLibrary(L, engineLibrary, "engine");
     /* ENGINE LIBRARY */
 }
 
