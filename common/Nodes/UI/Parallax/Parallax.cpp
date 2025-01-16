@@ -11,8 +11,8 @@
 #include "Types.hpp"
 #include "spdlog/spdlog.h"
 
-Parallax::Parallax(const std::string &texture, const std::string &name, int zIndex, Node2D *referenceNode) :
-    UI(name, {0, 0}), _referenceNode(referenceNode), _zIndex(zIndex)
+Parallax::Parallax(const std::string &texture, const std::string &name, int zIndex, Node2D *referenceNode)
+    : UI(name, {0, 0}), _referenceNode(referenceNode), _zIndex(zIndex)
 {
     _zIndex = zIndex;
     setTexture(texture);

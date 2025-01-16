@@ -22,8 +22,11 @@ hook.Add("PlayerJoin", "main", function(ply)
         if spaceships[i].bound_player == nil then
             spaceships[i].bound_player = ply
             net.Start("SpaceshipSpawn")
-            net.WriteInt(i)
+                net.WriteInt(i)
             net.SendToClient(ply)
+            net.Start("SpaceshipSpawn")
+                net.WriteInt(i)
+            net.Broadcast()
             break
         end
     end
