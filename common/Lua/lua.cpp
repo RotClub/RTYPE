@@ -6,7 +6,6 @@
 #include "Nodes/UI/Box/Box.hpp"
 #include "Nodes/UI/Label/Label.hpp"
 #include "Nodes/UI/Parallax/Parallax.hpp"
-#include "lua.h"
 #include "luaconf.h"
 
 #include <Nodes/Node.hpp>
@@ -929,7 +928,7 @@ LUA_API int luau_TemplateCollisionShape2DCollide(lua_State *L, const char *metaT
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
     T *other = *static_cast<T **>(luaL_checkudata(L, 2, metaTableName));
     lua_pushboolean(L, node->collidesWith(*other));
-    return lua_gettop(L);
+    return 1;
 }
 
 LUA_API int luau_CollisionShape2DCollide(lua_State *L)
@@ -961,7 +960,7 @@ LUA_API int luau_TemplateCollisionShape2DToggleCollision(lua_State *L, const cha
 {
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
     node->toggleCollision();
-    return lua_gettop(L);
+    return 0;
 }
 
 LUA_API int luau_CollisionShape2DToggleCollision(lua_State *L)
@@ -1081,7 +1080,7 @@ LUA_API int luau_RigidBody2DSetVelocity(lua_State *L)
     double x = luaL_checknumber(L, 2);
     double y = luaL_checknumber(L, 3);
     node->velocity = Types::Vector2(x, y);
-    return lua_gettop(L);
+    return 0;
 }
 
 LUA_API int luau_RigidBody2DGetVelocity(lua_State *L)
@@ -1089,7 +1088,7 @@ LUA_API int luau_RigidBody2DGetVelocity(lua_State *L)
     RigidBody2D *node = *static_cast<RigidBody2D **>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
     lua_pushnumber(L, node->velocity.x);
     lua_pushnumber(L, node->velocity.y);
-    return lua_gettop(L);
+    return 2;
 }
 
 /** RigidBody2D functions **/
@@ -1102,7 +1101,7 @@ LUA_API int luau_TemplateSetColor(lua_State *L, const char *metaTableName)
     T *node = *static_cast<T **>(luaL_checkudata(L, 1, metaTableName));
     Types::Vector3 color = Types::Vector3(luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
     node->setRGB(color);
-    return lua_gettop(L);
+    return 0;
 }
 
 LUA_API int luau_LabelSetColor(lua_State *L) { return luau_TemplateSetColor<Label>(L, "LabelMetaTable"); }
