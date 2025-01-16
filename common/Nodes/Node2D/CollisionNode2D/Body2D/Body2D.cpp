@@ -11,11 +11,6 @@ Body2D::Body2D(const std::string &name) : CollisionNode2D(name) { this->metatabl
 void Body2D::Update()
 {
     float dt = Engine::GetInstance().getDeltaLast();
-    CollisionNode2D::Update();
     position += velocity * dt;
-    for (auto &child : children) {
-        if (Node2D *node = dynamic_cast<Node2D *>(child)) {
-            node->position += velocity * dt;
-        }
-    }
+    CollisionNode2D::Update();
 }

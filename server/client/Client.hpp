@@ -11,6 +11,8 @@
 #include <netinet/in.h>
 #include <string>
 #include <tuple>
+#include <cstdint>
+#include <Networking/Defines.hpp>
 
 class Client
 {
@@ -49,6 +51,12 @@ class Client
         bool hasTcpPacketInput();
         bool hasUdpPacketInput();
 
+        // TODO REMOVE
+        int getUdpQueueSize() { return std::get<OUT>(_udpQueues).size(); }
+
+        void addToTcpBuffer(const std::vector<uint8_t> &buffer) { _tcpBuffer.insert(_tcpBuffer.end(), buffer.begin(), buffer.end()); }
+        std::vector<uint8_t> &getTcpBuffer() { return _tcpBuffer; }
+
         void disconnect() { _shouldDisconnect = true; }
         [[nodiscard]] bool shouldDisconnect() const { return _shouldDisconnect; }
 
@@ -64,6 +72,7 @@ class Client
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _udpQueues;
         bool _shouldDisconnect;
         char _id[16];
+        std::vector<uint8_t> _tcpBuffer;
 };
 
 #endif // CLIENT_HPP

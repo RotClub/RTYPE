@@ -8,6 +8,8 @@
 #ifndef SERVERCONNECTION_HPP_
 #define SERVERCONNECTION_HPP_
 
+#include <cstdint>
+#include <vector>
 #include "../common/Networking/GlobalConnection.hpp"
 #include "../common/Networking/Packet.hpp"
 
@@ -36,13 +38,15 @@ class ClientConnection : public GlobalConnection
         void _loop();
         void _receiveLoop();
         void _sendLoop();
-        Packet *_tryReceiveTCP();
-        Packet *_tryReceiveUDP();
+        void _tryReceiveTCP();
+        void _tryReceiveUDP();
 
         std::string _ip;
         int _port;
         char _id[16];
         std::atomic<bool> _connected = false;
+        std::vector<uint8_t> _tcpBuffer;
+        std::vector<uint8_t> _udpBuffer;
 };
 
 #endif /* !SERVERCONNECTION_HPP_ */

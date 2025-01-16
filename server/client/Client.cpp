@@ -3,6 +3,8 @@
 //
 
 #include "Client.hpp"
+
+#include <Engine.hpp>
 #include <Networking/Defines.hpp>
 #include <cstring>
 #include <random>
@@ -54,9 +56,15 @@ Packet *Client::popTcpPacketInput() { return std::get<IN>(_tcpQueues).dequeue();
 
 Packet *Client::popUdpPacketInput() { return std::get<IN>(_udpQueues).dequeue(); }
 
-void Client::addTcpPacketOutput(Packet *packet) { std::get<OUT>(_tcpQueues).enqueue(packet); }
+void Client::addTcpPacketOutput(Packet *packet)
+{
+    std::get<OUT>(_tcpQueues).enqueue(packet);
+}
 
-void Client::addUdpPacketOutput(Packet *packet) { std::get<OUT>(_udpQueues).enqueue(packet); }
+void Client::addUdpPacketOutput(Packet *packet)
+{
+    std::get<OUT>(_udpQueues).enqueue(packet);
+}
 
 Packet *Client::popTcpPacketOutput() { return std::get<OUT>(_tcpQueues).dequeue(); }
 

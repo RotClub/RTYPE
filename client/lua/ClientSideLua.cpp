@@ -24,6 +24,15 @@ LUA_API int luau_IsKeyJustPressed(lua_State *L)
     return lua_gettop(L);
 }
 
+LUA_API int luau_IsKeyReleased(lua_State *L)
+{
+    int key = lua_tointeger(L, 1);
+    lua_remove(L, 1);
+    bool isKeyReleased = IsKeyReleased(key);
+    lua_pushboolean(L, isKeyReleased);
+    return lua_gettop(L);
+}
+
 LUA_API int luau_EnableFpsCounter(lua_State *L)
 {
     Config::GetInstance().setFpsCounter(true);

@@ -31,8 +31,10 @@ void Server::start()
         engine.callHook("InitServer", nullptr);
         _serverConnection.start();
         _isRunning = true;
+        auto nextCallTime = std::chrono::steady_clock::now();
+        const std::chrono::milliseconds tickRate = std::chrono::milliseconds(1000 / TICKRATE);
         while (_isRunning) {
-            loop();
+            loop(nextCallTime, tickRate);
         }
     }
     catch (const std::exception &e) {
@@ -40,43 +42,62 @@ void Server::start()
     }
 }
 
-void Server::loop()
+void Server::loop(std::chrono::time_point<std::chrono::steady_clock> &nextCallTime, const std::chrono::milliseconds &interval)
 {
     Engine &engine = Engine::GetInstance();
+    auto now = std::chrono::steady_clock::now();
 
-    engine.callHook("Tick", "int", engine.deltaTime(), nullptr);
-    engine.updateNode(engine.root);
+    // std::lock_guard guard(_serverConnection.getClientsMutex());
+    while (!_serverConnection.getDisconnectedClients().empty())
+        Engine::GetInstance().callHook("PlayerLeave", "string", _serverConnection.getDisconnectedClients().dequeue().c_str(), nullptr);
+    if (now >= nextCallTime) {
+        engine.callHook("Tick", "int", engine.deltaTime(), nullptr);
+        engine.updateNode(engine.root);
+        nextCallTime += interval;
+    }
+    networkLoop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+}
+
+void Server::networkLoop()
+{
+    broadcastNewPackets();
+    broadcastLuaPackets();
     for (auto client : _serverConnection.getClientConnections()) {
         if (!client->shouldDisconnect()) {
-            broadcastNewPackets();
-            broadcastLuaPackets();
-            sendToClients();
             if (client->hasTcpPacketInput()) {
                 Packet *packet = client->popTcpPacketInput();
                 if (PACKET_HANDLERS.find(packet->cmd) != PACKET_HANDLERS.end())
                     (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
                 PacketBuilder(packet).reset();
+                delete packet;
             }
             if (client->hasUdpPacketInput()) {
                 Packet *packet = client->popUdpPacketInput();
                 if (PACKET_HANDLERS.find(packet->cmd) != PACKET_HANDLERS.end())
                     (this->*PACKET_HANDLERS.at(packet->cmd))(client, packet);
                 PacketBuilder(packet).reset();
+                delete packet;
             }
         }
     }
+    sendToClients();
 }
 
 void Server::broadcastLuaPackets()
 {
     while (!Engine::GetInstance().getBroadcastQueue().empty()) {
-        std::pair<std::string, Packet *> newPacket = Engine::GetInstance().getBroadcastQueue().front();
+        std::pair<std::string, Packet *> newPacketPair = Engine::GetInstance().getBroadcastQueue().front();
         for (auto &client : _serverConnection.getClientConnections()) {
-            if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
-                client->addTcpPacketOutput(newPacket.second);
+            if (client->shouldDisconnect() || client->getStep() != Client::ConnectionStep::COMPLETE)
+                continue;
+            auto *copy = new Packet;
+            PacketBuilder::copy(copy, newPacketPair.second);
+            if (Engine::GetInstance().isPacketReliable(newPacketPair.first)) {
+                client->addTcpPacketOutput(copy);
             }
             else {
-                client->addUdpPacketOutput(newPacket.second);
+                client->addUdpPacketOutput(copy);
             }
         }
         Engine::GetInstance().getBroadcastQueue().pop();
@@ -87,14 +108,16 @@ void Server::sendToClients()
 {
     for (auto &packetClient : Engine::GetInstance().getSendToClientMap()) {
         for (auto client : _serverConnection.getClientConnections()) {
-            if (client->getUuid() == packetClient.first) {
+            if (!client->shouldDisconnect() && client->getUuid() == packetClient.first) {
                 while (!packetClient.second.empty()) {
-                    std::pair<std::string, Packet *> newPacket = packetClient.second.front();
-                    if (Engine::GetInstance().isPacketReliable(newPacket.first)) {
-                        client->addTcpPacketOutput(newPacket.second);
+                    std::pair<std::string, Packet *> newPacketPair = packetClient.second.front();
+                    Packet *copy = new Packet;
+                    PacketBuilder::copy(copy, newPacketPair.second);
+                    if (Engine::GetInstance().isPacketReliable(newPacketPair.first)) {
+                        client->addTcpPacketOutput(copy);
                     }
                     else {
-                        client->addUdpPacketOutput(newPacket.second);
+                        client->addUdpPacketOutput(copy);
                     }
                     packetClient.second.pop();
                 }
@@ -117,14 +140,10 @@ static std::string idToString(char *id)
 void Server::handleConnectPacket(Client *client, Packet *inPacket)
 {
     PacketBuilder readBuilder(inPacket);
-    PacketBuilder builder;
     switch (client->getStep()) {
         case Client::ConnectionStep::UNVERIFIED:
             {
-                readBuilder.reset();
-                builder.setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE);
-                Packet *packet = builder.build();
-                client->addTcpPacketOutput(packet);
+                client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString(SERVER_CHALLENGE).build());
                 client->setStep(Client::ConnectionStep::AUTH_CODE_SENT);
                 Engine::GetInstance().callHook("ClientConnecting", "string", client->getUuid().c_str(), nullptr);
                 break;
@@ -133,28 +152,22 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
             {
                 std::string clientChallengeCode = readBuilder.readString();
                 if (clientChallengeCode == CLIENT_CHALLENGE) {
-                    for (const auto &[packetName, reliable] : Engine::GetInstance().getPacketsRegistry()) {
-                        builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable);
-                        client->addTcpPacketOutput(builder.build());
+                    for (const auto &pair : Engine::GetInstance().getPacketsRegistry()) {
+                        client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::NEW_MESSAGE).writeString(pair.first).writeBool(pair.second).build());
                     }
-                    builder.setCmd(PacketCmd::CONNECT)
-                        .writeString("AUTHENTICATED")
-                        .writeString(idToString(client->getID()));
-                    client->addTcpPacketOutput(builder.build());
+                    client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED").writeString(idToString(client->getID())).build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
                 }
                 else {
                     client->disconnect();
                 }
-                readBuilder.reset();
                 break;
             }
         case Client::ConnectionStep::AUTH_CODE_VERIFIED:
             {
-                readBuilder.reset();
                 client->setStep(Client::ConnectionStep::COMPLETE);
                 spdlog::info("Client {} connected", client->getUuid());
-                Engine::GetInstance().callHook("ClientConnected", "string", client->getUuid().c_str(), nullptr);
+                Engine::GetInstance().callHook("PlayerJoin", "string", client->getUuid().c_str(), nullptr);
                 break;
             }
         default:
@@ -168,8 +181,7 @@ void Server::handleNewMessagePacket(Client *client, Packet *packet) {}
 
 void Server::handleLuaPacket(Client *client, Packet *packet)
 {
-    PacketBuilder builder(packet);
-    std::string packetName = builder.readString();
+    std::string packetName = PacketBuilder(packet).readString();
     Engine::GetInstance().netCallback(packetName, packet, client->getUuid());
 }
 
@@ -180,12 +192,9 @@ void Server::broadcastNewPackets()
             const std::string packetName = Engine::GetInstance().getNewPacketsInRegistry().front();
             const bool reliable = Engine::GetInstance().isPacketReliable(packetName);
             for (auto &client : _serverConnection.getClientConnections()) {
-                if (client->getStep() != Client::ConnectionStep::COMPLETE)
+                if (client->shouldDisconnect() || client->getStep() != Client::ConnectionStep::COMPLETE)
                     continue;
-                PacketBuilder builder;
-                Packet *packet =
-                    builder.setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeInt(reliable).build();
-                client->addTcpPacketOutput(packet);
+                client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::NEW_MESSAGE).writeString(packetName).writeBool(reliable).build());
             }
             Engine::GetInstance().getNewPacketsInRegistry().pop();
         }
@@ -195,6 +204,7 @@ void Server::broadcastNewPackets()
 void Server::stop()
 {
     spdlog::info("Stopping server...");
+    // _serverConnection.getClientsMutex().unlock();
     _serverConnection.stop();
     _isRunning = false;
 }

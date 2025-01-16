@@ -52,6 +52,7 @@ void Client::setupClientSideLua()
     lua_State *L = Engine::GetInstance().getLuaState();
     luau_ExposeGlobalFunction(L, luau_IsKeyPressed, "IsKeyPressed");
     luau_ExposeGlobalFunction(L, luau_IsKeyJustPressed, "IsKeyJustPressed");
+    luau_ExposeGlobalFunction(L, luau_IsKeyReleased, "IsKeyReleased");
     luau_ExposeGlobalFunction(L, luau_EnableFpsCounter, "EnableFpsCounter");
     luau_ExposeGlobalFunction(L, luau_DisableFpsCounter, "DisableFpsCounter");
     luau_ExposeGlobalFunction(L, luau_DisableColorBlindnessShader, "DisableColorBlindnessShader");
@@ -74,6 +75,13 @@ int Client::getPort() const { return _port; }
 
 ClientConnection &Client::getClientConnection() { return _clientConnection; }
 
+void Client::disconnectFromServer()
+{
+    spdlog::info("Disconnecting from server");
+    _clientConnection.disconnectFromServer();
+    _connectionEstablished = false;
+}
+
 void Client::broadcastLuaPackets()
 {
     while (!Engine::GetInstance().getBroadcastQueue().empty()) {
@@ -94,7 +102,8 @@ void Client::processIncomingPackets()
         Packet *packet = getClientConnection().getLatestTCPPacket();
         if (packet == nullptr)
             return;
-        (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
+        if (packet->cmd != PacketCmd::NONE)
+            (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
         PacketBuilder(packet).reset();
         delete packet;
     }
@@ -102,7 +111,8 @@ void Client::processIncomingPackets()
         Packet *packet = getClientConnection().getLatestUDPPacket();
         if (packet == nullptr)
             return;
-        (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
+        if (packet->cmd != PacketCmd::NONE)
+            (this->*PACKET_HANDLERS.at(packet->cmd))(packet);
         PacketBuilder(packet).reset();
         delete packet;
     }
@@ -111,15 +121,12 @@ void Client::processIncomingPackets()
 void Client::handleConnectPacket(Packet *packet)
 {
     PacketBuilder readBuilder(packet);
-    PacketBuilder builder;
     switch (_step) {
         case Client::ConnectionStep::AUTH_CODE_RECEIVED:
             {
                 std::string authCode = readBuilder.readString();
                 if (authCode == SERVER_CHALLENGE) {
-                    builder.setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE);
-                    Packet *packet = builder.build();
-                    getClientConnection().sendToServerTCP(packet);
+                    getClientConnection().sendToServerTCP(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString(CLIENT_CHALLENGE).build());
                     _step = Client::ConnectionStep::AUTH_CODE_SENT;
                 }
                 else {
@@ -133,8 +140,8 @@ void Client::handleConnectPacket(Packet *packet)
                 if (message == "AUTHENTICATED") {
                     std::string id = readBuilder.readString();
                     getClientConnection().setID(id);
-                    builder.setCmd(PacketCmd::CONNECT);
-                    getClientConnection().sendToServerTCP(builder.build());
+                    getClientConnection().sendToServerTCP(PacketBuilder().setCmd(PacketCmd::CONNECT).build());
+                    getClientConnection().sendToServerUDP(PacketBuilder().setCmd(PacketCmd::NONE).build());
                     _step = Client::ConnectionStep::COMPLETE;
                 }
                 else {
@@ -167,7 +174,7 @@ void Client::handleNewMessagePacket(Packet *packet)
 {
     PacketBuilder builder(packet);
     std::string packetName = builder.readString();
-    int reliable = builder.readInt();
+    bool reliable = builder.readBool();
     spdlog::debug("Packet name: {}, reliable: {}", packetName, reliable);
-    Engine::GetInstance().addPacketRegistryEntry(packetName, static_cast<bool>(reliable));
+    Engine::GetInstance().addPacketRegistryEntry(packetName, reliable);
 }
