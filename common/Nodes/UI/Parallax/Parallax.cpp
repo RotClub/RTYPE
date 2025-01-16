@@ -47,7 +47,6 @@ void Parallax::Draw()
     _drawPos.x += ((std::fmod(pos.x, width) + _parallaxPos.x) * _zIndex);
     _drawPos.y += ((std::fmod(pos.y, height) + _parallaxPos.y) * _zIndex);
     raylib::Rectangle src = {_drawPos.x, _drawPos.y, width, height};
-    spdlog::debug("Drawing parallax at x: {} y: {}", _drawPos.x, _drawPos.y);
     raylib::Rectangle dest = {0, 0, width, height};
     tex.Draw(src, dest, {0, 0}, 0);
     _drawPos = {0, 0};

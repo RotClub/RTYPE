@@ -32,13 +32,13 @@ end
 
 net.Receive("SpaceshipSpawn", function(len, ply)
     local id = net.ReadInt()
-    if GAME.localId == nil then
+    if Game.localId == nil then
         debug("Creating local player : " .. id)
-        GAME.localId = id
+        Game.localId = id
         setPlayerColor(localPlayerSprite, id)
         return
     end
-    if GAME.localId == id then
+    if Game.localId == id then
         return
     end
     debug("Creating other player : " .. id)

@@ -4,15 +4,17 @@ local parallaxLayers = {
     root:CreateChild("Parallax", "parallaxBg3", "assets/sprites/background/background_3.png", 2, nil)
 }
 
-GAME = {}
+Game = {}
 
-GAME.localId = nil
+Game.localId = nil
 
-include("client/player/players.luau")
 include("client/player/localPlayer.luau")
+include("client/player/players.luau")
+
+spawnLocalPlayer(Game.localId)
 
 for i = 1, #parallaxLayers do
-    parallaxLayers[i]:SetReferenceNode(localPlayer)
+    parallaxLayers[i]:SetReferenceNode(localPlayerPoint)
 end
 
 hook.Add("Tick", "main", function(delta)

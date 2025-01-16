@@ -1,12 +1,16 @@
 
-localPlayer = root:CreateChild("RigidBody", "localPlayer")
-localPlayerSprite = localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
+function spawnLocalPlayer(id)
+    Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0)
+    localPlayerPoint = localPlayer:CreateChild("Node2D", "localPlayerPoint")
+    localPlayerSprite = localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
 
-localPlayer:SetPosition(0, 0)
-localPlayerSprite:SetSize(32 * 2, 14 * 2)
+    Game.localPlayer:SetPosition(0, 0)
+    localPlayerSprite:SetSize(32 * 2, 14 * 2)
+    setPlayerColor(localPlayerSprite, id)
+end
 
 function explodePlayer(player)
-    -- player:Destroy()
+    player:Destroy()
     local explosion = player:CreateChild("Sprite2D", "explosion", "assets/sprites/r-typesheet1.png")
     explosion:SetPosition(0, -10)
     explosion:SetSource(1, 334, 32, 28*2)
@@ -24,66 +28,67 @@ function sendAction(direction, start)
     end
 end
 
-local LeftKey = 65
-local RightKey = 68
-local UpKey = 87
-local DownKey = 83
-local CycleKey = 67
-local ShootKey = 74
-local SpecialKey1 = 72
+Keys = {}
+Keys.LeftKey = 65
+Keys.RightKey = 68
+Keys.UpKey = 87
+Keys.DownKey = 83
+Keys.CycleKey = 67
+Keys.ShootKey = 74
+Keys.SpecialKey1 = 72
 
 function localPlayerMovement(dt)
-    local x, y = localPlayer:GetPosition()
+    local direction = {0, 0}
 
-    if IsKeyPressed(LeftKey) then
-        x -= 70 * dt
+    if IsKeyPressed(Keys.LeftKey) then
+        direction[1] = -1
     end
-    if IsKeyPressed(RightKey) then
-        x += 70 * dt
+    if IsKeyPressed(Keys.RightKey) then
+        direction[1] = 1
     end
-    if IsKeyPressed(UpKey) then
-        y -= 70 * dt
+    if IsKeyPressed(Keys.UpKey) then
+        direction[2] = -1
     end
-    if IsKeyPressed(DownKey) then
-        y += 70 * dt
+    if IsKeyPressed(Keys.DownKey) then
+        direction[2] = 1
     end
-    if IsKeyJustPressed(LeftKey) then
+    if IsKeyJustPressed(Keys.LeftKey) then
         sendAction(1, true)
     end
-    if IsKeyJustPressed(RightKey) then
+    if IsKeyJustPressed(Keys.RightKey) then
         sendAction(2, true)
     end
-    if IsKeyJustPressed(UpKey) then
+    if IsKeyJustPressed(Keys.UpKey) then
         sendAction(3, true)
     end
-    if IsKeyJustPressed(DownKey) then
+    if IsKeyJustPressed(Keys.DownKey) then
         sendAction(4, true)
     end
-    if IsKeyReleased(LeftKey) then
+    if IsKeyReleased(Keys.LeftKey) then
         sendAction(1, false)
     end
-    if IsKeyReleased(RightKey) then
+    if IsKeyReleased(Keys.RightKey) then
         sendAction(2, false)
     end
-    if IsKeyReleased(UpKey) then
+    if IsKeyReleased(Keys.UpKey) then
         sendAction(3, false)
     end
-    if IsKeyReleased(DownKey) then
+    if IsKeyReleased(Keys.DownKey) then
         sendAction(4, false)
     end
-    if IsKeyJustPressed(CycleKey) then
+    if IsKeyJustPressed(Keys.CycleKey) then
         CycleColorBlindnessShader()
     end
-    if IsKeyJustPressed(ShootKey) then
+    if IsKeyJustPressed(Keys.ShootKey) then
         sendAction(5, true)
     end
-    if IsKeyReleased(ShootKey) then
+    if IsKeyReleased(Keys.ShootKey) then
         sendAction(5, false)
     end
-    if IsKeyJustPressed(SpecialKey1) then
+    if IsKeyJustPressed(Keys.SpecialKey1) then
         -- net.Start("Hello")
         -- net.SendToServer()
-        eplodePlayer(localPlayer)
+        explodePlayer(Game.localPlayer)
     end
-    localPlayer:SetPosition(x, y)
+    Game.localPlayer:SetVelocity(direction[1] * 100, direction[2] * 100)
 end

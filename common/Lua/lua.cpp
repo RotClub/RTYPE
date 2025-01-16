@@ -1072,6 +1072,27 @@ LUA_API int luau_ParallaxAddParallaxPosition(lua_State *L)
 
 /** Parallax functions **/
 
+/** RigidBody2D functions **/
+
+LUA_API int luau_RigidBody2DSetVelocity(lua_State *L)
+{
+    RigidBody2D *node = *static_cast<RigidBody2D **>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+    double x = luaL_checknumber(L, 2);
+    double y = luaL_checknumber(L, 3);
+    node->velocity = Types::Vector2(x, y);
+    return 0;
+}
+
+LUA_API int luau_RigidBody2DGetVelocity(lua_State *L)
+{
+    RigidBody2D *node = *static_cast<RigidBody2D **>(luaL_checkudata(L, 1, "RigidBody2DMetaTable"));
+    lua_pushnumber(L, node->velocity.x);
+    lua_pushnumber(L, node->velocity.y);
+    return 2;
+}
+
+/** RigidBody2D functions **/
+
 /** SetColor functions **/
 
 template <typename T>
@@ -1427,17 +1448,21 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},{"Destroy", luau_ParallaxDestroy},
                                             {"__gc", lua_gcParallax},
                                             {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");constexpr luaL_Reg rgbd2DLibrary[] = {{"GetName", luau_RigidBody2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
+    constexpr luaL_Reg rgbd2DLibrary[] = {{"GetName", luau_RigidBody2DGetName},
                                           {"SetName", luau_RigidBody2DSetName},
                                           {"GetChildren", luau_RigidBody2DGetChildren},
                                           {"GetChild", luau_RigidBody2DGetChild},
                                           {"AddChild", luau_RigidBody2DAddChild},
                                           {"GetPosition", luau_RigidBody2DGetPosition},
                                           {"SetPosition", luau_RigidBody2DSetPosition},
+                                          {"GetGlobalPosition", luau_RigidBody2DGetGlobalPosition},
                                           {"CreateChild", luau_RigidBody2DCreateChild},
                                           {"ToggleCollision", luau_RigidBody2DToggleCollision},
                                           {"IsCollisionEnabled", luau_RigidBody2DIsCollisionEnabled},
                                           {"Collide", luau_RigidBody2DCollide},
+                                          {"SetVelocity", luau_RigidBody2DSetVelocity},
+                                          {"GetVelocity", luau_RigidBody2DGetVelocity},
                                           {"Destroy", luau_RigidBody2DDestroy},
                                           {"__gc", lua_gcRigidBody2D},
                                           {nullptr, nullptr}};
@@ -1449,6 +1474,7 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"AddChild", luau_StaticBody2DAddChild},
                                           {"GetPosition", luau_StaticBody2DGetPosition},
                                           {"SetPosition", luau_StaticBody2DSetPosition},
+                                          {"GetGlobalPosition", luau_StaticBody2DGetGlobalPosition},
                                           {"CreateChild", luau_StaticBody2DCreateChild},
                                           {"ToggleCollision", luau_StaticBody2DToggleCollision},
                                           {"IsCollisionEnabled", luau_StaticBody2DIsCollisionEnabled},
