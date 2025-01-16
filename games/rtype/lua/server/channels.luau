@@ -32,3 +32,7 @@ end)
 net.CreatePacket("SpaceshipSpawn", true)
 net.CreatePacket("SpaceshipDespawn", true)
 net.CreatePacket("SpaceshipPosition", false)
+
+net.Receive("SpaceshipPosition", function(len, ply)
+    debug("SpaceshipPosition received from: " .. ply)
+end)

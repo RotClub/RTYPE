@@ -64,9 +64,8 @@ void ServerConnection::_loop()
 
 void ServerConnection::_disconnectClients()
 {
-    auto it =
-        std::ranges::remove_if(_clientConnections, [](Client *client) { return client->shouldDisconnect(); }).begin();
-    if (it != _clientConnections.end()) {
+    std::lock_guard guard(_clientsMutex);
+    if (auto it = std::find_if(_clientConnections.begin(), _clientConnections.end(), [](Client *client) { return client->shouldDisconnect(); }); it != _clientConnections.end()) {
         Client *client = *it;
         _clientConnections.erase(it, _clientConnections.end());
         _disconnectedClients.enqueue(client->getUuid());
@@ -121,6 +120,7 @@ void ServerConnection::_accept()
     if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers())
         return;
     if (FD_ISSET(_tcpFd, &_readfds)) {
+        std::lock_guard guard(_clientsMutex);
         _clientConnections.emplace_back(new Client(_tcpFd));
     }
 }
@@ -154,7 +154,7 @@ void ServerConnection::_tryReceiveUDP()
     } else {
         _udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))].insert(_udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))].end(), buffer.begin(), buffer.end());
     }
-    _processUdpBuffer(std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)));
+    _processUdpBuffer(std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)), &addr);
 }
 
 void ServerConnection::_processTcpBuffer(Client *client)
@@ -175,7 +175,7 @@ void ServerConnection::_processTcpBuffer(Client *client)
     }
 }
 
-void ServerConnection::_processUdpBuffer(const std::pair<std::string, int> &addr)
+void ServerConnection::_processUdpBuffer(const std::pair<std::string, int> &addr, sockaddr_in *addr_in)
 {
     auto &buffer = _udpBuffers[addr];
     if (buffer.size() >= PACKED_PACKET_SIZE) {
@@ -190,6 +190,7 @@ void ServerConnection::_processUdpBuffer(const std::pair<std::string, int> &addr
             return;
         }
         if (Client *client = _getClientByID(packet->id); client != nullptr) {
+            client->updateUdpAddress(addr_in);
             client->addUdpPacketInput(packet);
         }
         buffer.erase(buffer.begin(), buffer.begin() + sizeof(PacketBuilder::PackedPacket));

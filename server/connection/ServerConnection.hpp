@@ -32,6 +32,7 @@ class ServerConnection
 
         std::vector<Client *> &getClientConnections() { return _clientConnections; }
         SafeQueue<std::string> &getDisconnectedClients() { return _disconnectedClients; }
+        std::mutex &getClientsMutex() { return _clientsMutex; }
 
         void start();
         void stop();
@@ -45,7 +46,7 @@ class ServerConnection
         void _tryReceiveTCP(Client *client);
         void _tryReceiveUDP();
         void _processTcpBuffer(Client *client);
-        void _processUdpBuffer(const std::pair<std::string, int>& addr);
+        void _processUdpBuffer(const std::pair<std::string, int>& addr, sockaddr_in *addr_in);
         void _createSocket();
         void _setClientFds(fd_set *set);
         int _getMaxFd();
@@ -59,6 +60,7 @@ class ServerConnection
         fd_set _writefds;
         int _tcpFd = -1;
         int _udpFd = -1;
+        std::mutex _clientsMutex;
         std::vector<Client *> _clientConnections;
         SafeQueue<std::string> _disconnectedClients;
         sockaddr_in _addr;

@@ -44,6 +44,7 @@ void Server::loop()
 {
     Engine &engine = Engine::GetInstance();
 
+    std::lock_guard guard(_serverConnection.getClientsMutex());
     while (!_serverConnection.getDisconnectedClients().empty())
         Engine::GetInstance().callHook("PlayerLeave", "string", _serverConnection.getDisconnectedClients().dequeue().c_str(), nullptr);
     engine.callHook("Tick", "int", engine.deltaTime(), nullptr);
