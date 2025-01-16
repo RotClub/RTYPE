@@ -41,6 +41,7 @@ class Engine
 
         static Engine &StartInstance(Types::VMState state, const std::string &gamePath);
         static Engine &GetInstance();
+        static bool isInstanceStarted();
 
         int deltaTime();
         float getDeltaLast() { return _deltaLast / 1000000000.0f; }

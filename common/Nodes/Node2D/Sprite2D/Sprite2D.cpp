@@ -47,7 +47,8 @@ void Sprite2D::Draw()
     if (_source.size.x == 0 && _source.size.y == 0) {
         raylib::Rectangle tmp = {0, 0, width, height};
         src = tmp;
-    } else {
+    }
+    else {
         raylib::Rectangle tmp = {_source.origin.x, _source.origin.y, _source.size.x, _source.size.y};
         src = tmp;
     }

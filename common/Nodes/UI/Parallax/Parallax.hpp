@@ -10,18 +10,17 @@
 
 #include <string>
 #include "Engine.hpp"
-#include "Nodes/Node.hpp"
 #include "Nodes/Node2D/Node2D.hpp"
+#include "Nodes/UI/Ui.hpp"
 #include "Types.hpp"
 
-class Parallax : public Node
+class Parallax : public UI
 {
     public:
         Parallax(const std::string &texture, const std::string &name = "parallax", float zIndex = 0,
                  Node2D *referenceNode = nullptr);
         ~Parallax();
 
-        void Update() override;
         void Draw() override;
 
         Parallax &setTexture(const std::string &texture);
