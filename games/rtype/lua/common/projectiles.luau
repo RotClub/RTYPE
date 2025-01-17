@@ -19,6 +19,41 @@ function createProjectile(x, y, damage, owner, id)
         net.Start("SpaceshipShoot")
             net.WriteInt(id)
             net.WriteInt(projectileId + 1)
+            net.WriteFloat(fX)
+            net.WriteFloat(fY)
+            net.WriteFloat(PLAYER_PROJECTILE_SPEED + plrVecX)
+            net.WriteFloat(plrVecY)
+        net.Broadcast()
+    end
+    projectileId += 1
+    table.insert(Game.projectiles, {
+        node = projectile,
+        sprite = projectileSprite,
+        damage = damage,
+        owner = owner,
+        lifetime = 0,
+        id = projectileId
+    })
+    return Game.projectiles[#Game.projectiles]
+end
+
+function createProjectileWithVelocity(x, y, plrVecX, plrVecY, damage, owner, id)
+    if CLIENT then projectileId = id end
+    local fX = x + Game.playersSize.x
+    local fY = y + Game.playersSize.y / 2
+    local projectile = root:CreateChild("RigidBody2D", "projectile" .. projectileId, fX, fY, 16, 4, PLAYER_PROJECTILE_SPEED + plrVecX, plrVecY)
+    local projectileSprite = nil
+    if CLIENT then
+        projectileSprite = projectile:CreateChild("Sprite2D", "projectileSprite" .. id, "assets/sprites/r-typesheet1.png")
+        projectileSprite:SetSource(249, 90, 16, 4)
+    elseif SERVER then
+        net.Start("SpaceshipShoot")
+            net.WriteInt(id)
+            net.WriteInt(projectileId + 1)
+            net.WriteFloat(fX)
+            net.WriteFloat(fY)
+            net.WriteFloat(PLAYER_PROJECTILE_SPEED + plrVecX)
+            net.WriteFloat(plrVecY)
         net.Broadcast()
     end
     projectileId += 1
