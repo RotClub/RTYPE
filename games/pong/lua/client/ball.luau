@@ -28,7 +28,7 @@ function generateBall()
     local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, ENTITY_WIDTH, ENTITY_WIDTH, x_vel, y_vel)
     local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/player.png")
 
-    ball:SetPosition(GetWindowWidth() / 2, GetWindowHeight() / 2)
+    ball:SetPosition(800 / 2, 600 / 2)--GetWindowWidth() / 2, GetWindowHeight() / 2)
     ball_sprite:SetSize(ENTITY_WIDTH, ENTITY_WIDTH)
     return ball
 end
@@ -41,7 +41,7 @@ function ballWallBounce(ball)
     local x_vel, y_vel = rgbd:GetVelocity()
     local _, y_pos = rgbd:GetGlobalPosition()
 
-    local max_y = GetWindowHeight()
+    local max_y = 600 --GetWindowHeight()
     local min_y = 0
 
     if y_pos < min_y then
@@ -75,4 +75,23 @@ function ballPlayerBounce(ball, player)
 
         ball_rgbd:SetVelocity(-x_vel, y_vel + y_refract)
     end
+end
+
+function ballPlayerGoal(ball, score)
+    local ball_rgbd = ball:GetChild("ball_body")
+    local _, x_pos = ball_rgbd:GetGlobalPosition()
+
+    local max_x = 800 --GetWindowWidth()
+    local min_x = 0
+
+    if x_pos < min_x then
+        score[2] = score[2] + 1
+    elseif x_pos > max_x then
+        score[1] = score[1] + 1
+    end
+
+    ball:SetPosition(800 / 2, 600 / 2)--GetWindowWidth() / 2, GetWindowHeight() / 2)
+    local x_vel, y_vel = generateBallVelocity()
+    ball_rgbd:SetVelocity(x_vel, y_vel)
+    return score
 end

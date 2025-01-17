@@ -26,4 +26,3 @@ function resetScore(score, score_text, score_text_player2)
     score_text:SetText(score[1])
     score_text_player2:SetText(score[2])
 end
-
