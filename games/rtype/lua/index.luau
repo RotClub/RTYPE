@@ -1,3 +1,4 @@
+include("common/init.luau")
 if SERVER then
     include("server/init.luau")
     -- include("metatable_test.luau")

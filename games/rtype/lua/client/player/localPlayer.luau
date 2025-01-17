@@ -1,14 +1,17 @@
-netLocalPlrX = 0
-netLocalPlrY = 0
+Game.localPly = {}
+Game.localPly.netX = 0
+Game.localPly.netY = 0
 
 function spawnLocalPlayer()
     Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0, 0, 0)
     localPlayerPoint = Game.localPlayer:CreateChild("Node2D", "localPlayerPoint")
     localPlayerSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
+    localPlayerArrowSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerArrowSprite", "assets/sprites/arrow.png")
 
     Game.localPlayer:SetPosition(0, 0)
-    localPlayerSprite:SetSize(32 * 2, 14 * 2)
-    debug(localPlayerSprite:GetGlobalPosition())
+    localPlayerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
+    localPlayerArrowSprite:SetSize(32, 32)
+    localPlayerArrowSprite:SetPosition(Game.playersSize.x / 2 - 16, -30)
     setPlayerColor(localPlayerSprite, 1)
 end
 
@@ -31,6 +34,10 @@ function sendAction(direction, start)
     end
 end
 
+function calculateDistance(x1: number, y1: number, x2: number, y2: number)
+    return math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+end
+
 Keys = {}
 Keys.LeftKey = 65
 Keys.RightKey = 68
@@ -39,6 +46,9 @@ Keys.DownKey = 83
 Keys.CycleKey = 67
 Keys.ShootKey = 74
 Keys.SpecialKey1 = 72
+
+local SHOOT_RATE = 0.1
+local shootTimer = 0
 
 function localPlayerMovement(dt)
     local direction = {}
@@ -86,15 +96,13 @@ function localPlayerMovement(dt)
     end
     if IsKeyJustPressed(Keys.ShootKey) then
         sendAction(5, true)
-    end
-    if IsKeyReleased(Keys.ShootKey) then
         sendAction(5, false)
     end
     if IsKeyJustPressed(Keys.SpecialKey1) then
         -- net.Start("Hello")
         -- net.SendToServer()
-        explodePlayer(Game.localPlayer)
+        -- explodePlayer(Game.localPlayer)
     end
-    Game.localPlayer:SetPosition(netLocalPlrX, netLocalPlrY)
-    -- Game.localPlayer:SetVelocity(direction.x * 100, direction.y * 100)
+
+    Game.localPlayer:SetPosition(Game.localPly.netX, Game.localPly.netY)
 end
