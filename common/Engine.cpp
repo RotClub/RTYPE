@@ -287,7 +287,8 @@ void Engine::loadLibraries()
                                        {"Broadcast", luau_NetBroadcast},       {"WriteString", luau_NetWriteString},
                                        {"ReadString", luau_NetReadString},     {"ReadInt", luau_NetReadInt},
                                        {"WriteInt", luau_NetWriteInt},         {"ReadFloat", luau_NetReadFloat},
-                                       {"WriteFloat", luau_NetWriteFloat},     {nullptr, nullptr}};
+                                       {"WriteFloat", luau_NetWriteFloat},     {"ReadBool", luau_NetReadBool},
+                                       {"WriteBool", luau_NetWriteBool},       {nullptr, nullptr}};
     luau_ExposeFunctionsAsLibrary(L, netLibrary, "net");
     /* NET LIBRARY */
 }

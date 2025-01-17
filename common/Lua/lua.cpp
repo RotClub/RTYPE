@@ -236,6 +236,23 @@ LUA_API int luau_NetReadString(lua_State *L)
     lua_pushstring(L, str.c_str());
     return lua_gettop(L);
 }
+
+LUA_API int luau_NetWriteBool(lua_State *L)
+{
+    const bool b = lua_toboolean(L, 1);
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    builder.writeBool(b);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_NetReadBool(lua_State *L)
+{
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    const bool b = builder.readBool();
+    lua_pushboolean(L, b);
+    return lua_gettop(L);
+}
+
 /* READ/WRITE OPERATIONS */
 
 /* NET LIBRARY */

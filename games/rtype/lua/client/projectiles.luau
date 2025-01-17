@@ -34,11 +34,16 @@ function updateFireFlashes(dt)
     end)
 end
 
-net.Receive("FireFlash", function(len, ply)
+net.Receive("SpaceshipShoot", function(len, ply)
     local id = net.ReadInt()
+    local projectileId = net.ReadInt()
     if Game.localId == id then
+        local x, y = Game.localPlayer:GetGlobalPosition()
+        createProjectile(x, y, 0, localPlayer, projectileId)
         createFireFlash(localPlayer)
     else
+        local x, y = otherPlayers[id]:GetGlobalPosition()
+        createProjectile(x, y, 0, otherPlayers[id], projectileId)
         createFireFlash(otherPlayers[id])
     end
 end)
