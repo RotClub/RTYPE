@@ -1,14 +1,16 @@
-function defaultSpaceship()
+function defaultSpaceship(id: number)
     return {
-        ["bound_player"] = nil,
-        ["node"] = nil,
-        ["actions"] = {
-            ["MOVE_LEFT"] = false,
-            ["MOVE_RIGHT"] = false,
-            ["MOVE_UP"] = false,
-            ["MOVE_DOWN"] = false,
-            ["SHOOT"] = false
-        }
+        id = id,
+        bound_player = nil,
+        node = nil,
+        actions = {
+            MOVE_LEFT = false,
+            MOVE_RIGHT = false,
+            MOVE_UP = false,
+            MOVE_DOWN = false,
+            SHOOT = false
+        },
+        shoot_cd = 0.0
     }
 end
 
@@ -24,7 +26,7 @@ end
 
 function spawnSpaceship(id: number, ply: string)
     spaceships[id].bound_player = ply
-    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, 0, 0, 0, 0)
+    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, Game.playersSize.x, Game.playersSize.y, 0, 0)
 end
 
 function syncNewPlayer(ply: string)
@@ -49,23 +51,30 @@ end
 
 function updateSpaceshipVelocitiy(spaceship, delta)
     local vx, yx = spaceship.node:GetVelocity()
-    if spaceship.actions["MOVE_LEFT"] then
+    if spaceship.actions.MOVE_LEFT then
         spaceship.node:SetVelocity(SPACESHIP_SPEED * -1.0, yx)
     end
-    if spaceship.actions["MOVE_RIGHT"] then
+    if spaceship.actions.MOVE_RIGHT then
         spaceship.node:SetVelocity(SPACESHIP_SPEED, yx)
     end
-    if not spaceship.actions["MOVE_LEFT"] and not spaceship.actions["MOVE_RIGHT"] then
+    if not spaceship.actions.MOVE_LEFT and not spaceship.actions.MOVE_RIGHT then
         spaceship.node:SetVelocity(0.0, yx)
     end
     vx, yx = spaceship.node:GetVelocity()
-    if spaceship.actions["MOVE_UP"] then
+    if spaceship.actions.MOVE_UP then
         spaceship.node:SetVelocity(vx, SPACESHIP_SPEED * -1.0)
     end
-    if spaceship.actions["MOVE_DOWN"] then
+    if spaceship.actions.MOVE_DOWN then
         spaceship.node:SetVelocity(vx, SPACESHIP_SPEED)
     end
-    if not spaceship.actions["MOVE_UP"] and not spaceship.actions["MOVE_DOWN"] then
+    if not spaceship.actions.MOVE_UP and not spaceship.actions.MOVE_DOWN then
         spaceship.node:SetVelocity(vx, 0.0)
+    end
+end
+
+function handleShooting(spaceship, delta: number)
+    if spaceship.actions.SHOOT then
+        local px, py = spaceship.node:GetGlobalPosition()
+        createProjectile(px, py, 10, spaceship.node, spaceship.id)
     end
 end

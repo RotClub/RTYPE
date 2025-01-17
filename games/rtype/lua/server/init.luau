@@ -2,20 +2,21 @@ include("server/game.luau")
 include("server/channels.luau")
 
 spaceships = {
-    defaultSpaceship(),
-    defaultSpaceship(),
-    defaultSpaceship(),
-    defaultSpaceship()
+    defaultSpaceship(1),
+    defaultSpaceship(2),
+    defaultSpaceship(3),
+    defaultSpaceship(4)
 }
 
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 100000000
     for i = 1, #spaceships do
-        if not spaceships[i]["bound_player"] then continue end
+        if not spaceships[i].bound_player then continue end
         updateSpaceshipVelocitiy(spaceships[i], dt)
+        handleShooting(spaceships[i], dt)
         sendSpaceshipPosition(i)
-        -- info("Spaceship " .. i .. ", x " .. x .. ", y " .. y)
     end
+    updateProjectiles(dt)
 end)
 
 hook.Add("PlayerJoin", "main", function(ply)
