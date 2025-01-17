@@ -14,6 +14,7 @@ hook.Add("Tick", "main", function(delta)
         if not spaceships[i].bound_player then continue end
         updateSpaceshipVelocitiy(spaceships[i], dt)
         handleShooting(spaceships[i], dt)
+        spaceshipBoundaries(spaceships[i])
         sendSpaceshipPosition(i)
     end
     updateProjectiles(dt)

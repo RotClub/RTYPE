@@ -85,3 +85,19 @@ function handleShooting(spaceship, delta: number)
         spaceship.shoot_cd = 0.0
     end
 end
+
+function spaceshipBoundaries(spaceship)
+    local xp, yp = spaceship.node:GetGlobalPosition()
+    if xp <= 0.0 then
+        spaceship.node:SetPosition(0.2, yp)
+    end
+    if xp + Game.playersSize.x >= 800.0 then
+        spaceship.node:SetPosition(799.8 - Game.playersSize.x, yp)
+    end
+    if yp <= 0.0 then
+        spaceship.node:SetPosition(xp, 0.2)
+    end
+    if yp + Game.playersSize.y >= 600.0 then
+    spaceship.node:SetPosition(xp, 599.8 - Game.playersSize.y)
+    end
+end
