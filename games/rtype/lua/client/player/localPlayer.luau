@@ -102,9 +102,5 @@ function localPlayerMovement(dt)
         explodePlayer(Game.localPlayer)
     end
 
-    Game.localPlayer:SetVelocity(direction.x * 100, direction.y * 100)
-    local x, y = Game.localPlayer:GetGlobalPosition()
-    if calculateDistance(x, y, Game.localPly.netX, Game.localPly.netY) > 10 then
-        Game.localPlayer:SetPosition(Game.localPly.netX, Game.localPly.netY)
-    end
+    Game.localPlayer:SetPosition(Game.localPly.netX, Game.localPly.netY)
 end
