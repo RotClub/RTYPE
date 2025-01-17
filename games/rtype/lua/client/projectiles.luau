@@ -3,13 +3,31 @@ fireFlashes = {}
 
 local FLASH_LIFETIME = 0.07
 
+local flashId = 0
+
+function createProjectileWithVelocity(x, y, plrVecX, plrVecY, damage, owner, id)
+    local projectile = root:CreateChild("RigidBody2D", "projectile" .. id, x, y, 16, 4, PLAYER_PROJECTILE_SPEED + plrVecX, plrVecY)
+    local projectileSprite = projectile:CreateChild("Sprite2D", "projectileSprite" .. id, "assets/sprites/r-typesheet1.png")
+    projectileSprite:SetSource(249, 90, 16, 4)
+    table.insert(Game.projectiles, {
+        node = projectile,
+        sprite = projectileSprite,
+        damage = damage,
+        owner = owner,
+        lifetime = 0,
+        id = id
+    })
+    return Game.projectiles[#Game.projectiles]
+end
+
 function createFireFlash(player)
     local x = Game.playersSize.x
     local w, h = 14 * 1.7, 12 * 1.7
-    local fireFlash = player:CreateChild("Sprite2D", "fireFlash", "assets/sprites/r-typesheet1.png")
+    local fireFlash = player:CreateChild("Sprite2D", "fireFlash" .. flashId, "assets/sprites/r-typesheet1.png")
     fireFlash:SetSize(w, h)
     fireFlash:SetPosition(x, h / 2.9)
     setFlashFrame(fireFlash, 0)
+    flashId += 1
     table.insert(fireFlashes, {
         node = fireFlash,
         lifetime = 0
@@ -37,13 +55,15 @@ end
 net.Receive("SpaceshipShoot", function(len, ply)
     local id = net.ReadInt()
     local projectileId = net.ReadInt()
+    local x = net.ReadFloat()
+    local y = net.ReadFloat()
+    local velX = net.ReadFloat()
+    local velY = net.ReadFloat()
     if Game.localId == id then
-        local x, y = Game.localPlayer:GetGlobalPosition()
-        createProjectile(x, y, 0, localPlayer, projectileId)
-        createFireFlash(localPlayer)
+        createProjectileWithVelocity(x, y, velX, velY, 0, Game.localPlayer, projectileId)
+        createFireFlash(Game.localPlayer)
     else
-        local x, y = otherPlayers[id]:GetGlobalPosition()
-        createProjectile(x, y, 0, otherPlayers[id], projectileId)
+        createProjectileWithVelocity(x, y, velX, velY, 0, otherPlayers[id], projectileId)
         createFireFlash(otherPlayers[id])
     end
 end)

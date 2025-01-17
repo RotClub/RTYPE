@@ -9,7 +9,6 @@ function spawnLocalPlayer()
 
     Game.localPlayer:SetPosition(0, 0)
     localPlayerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
-    debug(localPlayerSprite:GetGlobalPosition())
     setPlayerColor(localPlayerSprite, 1)
 end
 

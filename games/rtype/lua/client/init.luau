@@ -19,7 +19,6 @@ end
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
     localPlayerMovement(dt)
-    updateProjectiles(dt)
     updateFireFlashes(dt)
     for i = 1, #parallaxLayers do
         parallaxLayers[i]:AddParallaxPosition(((5 * i) * (i / 2)) * dt, 0)

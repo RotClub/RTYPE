@@ -1,6 +1,5 @@
 
 function setPlayerColor(playerSprite, playerNum)
-    debug(playerSprite:GetName())
     playerSprite:SetSource(67, 3 + ((playerNum - 1) * 17), 32, 14)
 end
 
@@ -33,7 +32,6 @@ end
 net.Receive("SpaceshipSpawn", function(len, ply)
     local id = net.ReadInt()
     if Game.localId == nil then
-        debug("Creating local player : " .. id)
         Game.localId = id
         setPlayerColor(localPlayerSprite, id)
         return
@@ -41,7 +39,6 @@ net.Receive("SpaceshipSpawn", function(len, ply)
     if Game.localId == id then
         return
     end
-    debug("Creating other player : " .. id)
     createPlayer(id)
 end)
 
