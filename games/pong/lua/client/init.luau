@@ -9,8 +9,8 @@ local player2 = generatePlayer(800 - 5 - ENTITY_WIDTH, 600 / 2 - 50, 2)--GetWind
 local ball = generateBall()
 generateMiddle(14, 10)
 local score = generateScore()
-score_text = drawScore(score, 1)
-score_text_player2 = drawScore(score, 2)
+local score_text = drawScore(score, 1)
+local score_text_player2 = drawScore(score, 2)
 
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
@@ -20,6 +20,5 @@ hook.Add("Tick", "main", function(delta)
     ballPlayerBounce(ball, player)
     ballPlayerBounce(ball, player2)
     score = ballPlayerGoal(ball, score)
-    updateScore(score, 1, score_text)
-    updateScore(score, 2, score_text_player2)
+    updateScore(score, score_text, score_text_player2)
 end)

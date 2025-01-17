@@ -79,19 +79,19 @@ end
 
 function ballPlayerGoal(ball, score)
     local ball_rgbd = ball:GetChild("ball_body")
-    local _, x_pos = ball_rgbd:GetGlobalPosition()
-
+    local x_pos, _ = ball_rgbd:GetGlobalPosition()
     local max_x = 800 --GetWindowWidth()
     local min_x = 0
 
-    if x_pos < min_x then
+    if x_pos <= min_x then
+        ball:SetPosition(800 / 2, 600 / 2)--GetWindowWidth() / 2, GetWindowHeight() / 2)
+        ball_rgbd:SetVelocity(generateBallVelocity())
         score[2] = score[2] + 1
-    elseif x_pos > max_x then
+    elseif x_pos >= max_x then
+        ball:SetPosition(800 / 2, 600 / 2)--GetWindowWidth() / 2, GetWindowHeight() / 2)
+        ball_rgbd:SetVelocity(generateBallVelocity())
         score[1] = score[1] + 1
     end
 
-    ball:SetPosition(800 / 2, 600 / 2)--GetWindowWidth() / 2, GetWindowHeight() / 2)
-    local x_vel, y_vel = generateBallVelocity()
-    ball_rgbd:SetVelocity(x_vel, y_vel)
     return score
 end
