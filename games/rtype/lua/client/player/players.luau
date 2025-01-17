@@ -1,7 +1,4 @@
 
-Game.playersSize.x = 32 * 2
-Game.playersSize.y = 14 * 2
-
 function setPlayerColor(playerSprite, playerNum)
     debug(playerSprite:GetName())
     playerSprite:SetSource(67, 3 + ((playerNum - 1) * 17), 32, 14)
