@@ -3,7 +3,7 @@ function setPlayerColor(playerSprite, playerNum)
     playerSprite:SetSource(67, 3 + ((playerNum - 1) * 17), 32, 14)
 end
 
-local otherPlayers = {}
+otherPlayers = {}
 
 local function createPlayer(id: number)
     local player = root:CreateChild("Node2D", "player" .. id)
