@@ -8,7 +8,8 @@ local player = generatePlayer()
 local ball = generateBall()
 generateMiddle(14, 10)
 local score = generateScore()
-drawScore(score)
+score_text = drawScore(score, 1)
+score_text_player2 = drawScore(score, 2)
 
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
