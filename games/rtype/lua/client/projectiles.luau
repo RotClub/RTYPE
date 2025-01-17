@@ -34,10 +34,11 @@ function updateFireFlashes(dt)
     end)
 end
 
-net.Receive("PlayerShoot", function(len, ply)
+net.Receive("FireFlash", function(len, ply)
     local id = net.ReadInt()
-    if Game.localId ~= id then
-        playerShoot(otherPlayers[id])
+    if Game.localId == id then
+        createFireFlash(localPlayer)
+    else
         createFireFlash(otherPlayers[id])
     end
 end)

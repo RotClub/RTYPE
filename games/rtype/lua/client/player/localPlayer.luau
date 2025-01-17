@@ -65,14 +65,6 @@ function localPlayerMovement(dt)
     if IsKeyPressed(Keys.DownKey) then
         direction.y = 1
     end
-    if IsKeyPressed(Keys.ShootKey) then
-        shootTimer += dt
-        if shootTimer > SHOOT_RATE then
-            shootTimer = 0
-            playerShoot(Game.localPlayer)
-            createFireFlash(Game.localPlayer)
-        end
-    end
     if IsKeyJustPressed(Keys.LeftKey) then
         sendAction(1, true)
     end
@@ -101,12 +93,7 @@ function localPlayerMovement(dt)
         CycleColorBlindnessShader()
     end
     if IsKeyJustPressed(Keys.ShootKey) then
-        shootTimer = 0
-        playerShoot(Game.localPlayer)
-        createFireFlash(Game.localPlayer)
         sendAction(5, true)
-    end
-    if IsKeyReleased(Keys.ShootKey) then
         sendAction(5, false)
     end
     if IsKeyJustPressed(Keys.SpecialKey1) then
