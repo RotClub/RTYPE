@@ -75,7 +75,7 @@ end
 
 function handleShooting(spaceship, delta: number)
     spaceship.shoot_cd += delta
-    if spaceship.shoot_cd < PROJECTILE_LIFETIME then
+    if spaceship.shoot_cd < 0.1 then
         return
     end
     if spaceship.buffered_shot then

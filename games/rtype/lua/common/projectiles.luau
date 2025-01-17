@@ -1,7 +1,7 @@
 Game.projectiles = {}
 
 PLAYER_PROJECTILE_SPEED = 700
-PROJECTILE_LIFETIME = 2
+PROJECTILE_LIFETIME = 5.0
 
 local projectileId = 0
 
@@ -70,7 +70,7 @@ function updateProjectiles(dt)
             table.remove(Game.projectiles, i)
             return
         end
-        if projectile.node:GetName() == nil then
+        if projectile.node == nil then
             hook.Call("ProjectileEnd", projectile.id, false)
             table.remove(Game.projectiles, i)
             return
