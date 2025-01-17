@@ -10,6 +10,7 @@ function defaultSpaceship(id: number)
             MOVE_DOWN = false,
             SHOOT = false
         },
+        buffered_shot = false,
         shoot_cd = 0.0
     }
 end
@@ -73,8 +74,14 @@ function updateSpaceshipVelocitiy(spaceship, delta)
 end
 
 function handleShooting(spaceship, delta: number)
-    if spaceship.actions.SHOOT then
+    spaceship.shoot_cd += delta
+    if spaceship.shoot_cd < PROJECTILE_LIFETIME then
+        return
+    end
+    if spaceship.buffered_shot then
         local px, py = spaceship.node:GetGlobalPosition()
         createProjectile(px, py, 10, spaceship.node, spaceship.id)
+        spaceship.buffered_shot = false
+        spaceship.shoot_cd = 0.0
     end
 end

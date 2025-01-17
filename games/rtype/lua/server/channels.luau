@@ -11,6 +11,9 @@ local function handleActionChange(ply: string, action: number, state: boolean)
     for i = 1, #ACTIONS do
         if i == action then
             getSpaceshipByPlayer(ply).actions[ACTIONS[i]] = state
+            if action == 5 and state then
+               getSpaceshipByPlayer(ply).buffered_shot = true
+            end
         end
     end
 end
