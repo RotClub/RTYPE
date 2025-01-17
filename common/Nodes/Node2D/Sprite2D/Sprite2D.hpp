@@ -19,8 +19,8 @@ class Sprite2D : public Node2D
         ~Sprite2D();
 
         Sprite2D &SetTexture(const std::string &texture);
-        Sprite2D &SetSize(const Types::Vector2 &size);
         Sprite2D &SetSource(const Types::Rect2 &source);
+        Sprite2D &SetSize(const Types::Vector2 &size);
 
         void Draw() override;
 

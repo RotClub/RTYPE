@@ -47,6 +47,11 @@ void Game::run()
         _loop();
 }
 
+const Types::Vector2 &Game::getWindowSize() const
+{
+    return Types::Vector2(_window.GetHeight(), _window.GetWidth());
+}
+
 void Game::_loop()
 {
     while (!_shouldClose) {

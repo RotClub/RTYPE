@@ -24,7 +24,7 @@ end
 
 function spawnSpaceship(id: number, ply: string)
     spaceships[id].bound_player = ply
-    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, 0, 0)
+    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, 0, 0, 0, 0)
 end
 
 function syncNewPlayer(ply: string)

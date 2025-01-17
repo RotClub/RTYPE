@@ -2,7 +2,7 @@ netLocalPlrX = 0
 netLocalPlrY = 0
 
 function spawnLocalPlayer()
-    Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0)
+    Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0, 0, 0)
     localPlayerPoint = Game.localPlayer:CreateChild("Node2D", "localPlayerPoint")
     localPlayerSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
 

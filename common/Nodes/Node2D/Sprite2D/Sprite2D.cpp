@@ -24,15 +24,15 @@ Sprite2D &Sprite2D::SetTexture(const std::string &texture)
     return *this;
 }
 
-Sprite2D &Sprite2D::SetSize(const Types::Vector2 &size)
-{
-    _size = size;
-    return *this;
-}
-
 Sprite2D &Sprite2D::SetSource(const Types::Rect2 &source)
 {
     _source = source;
+    return *this;
+}
+
+Sprite2D &Sprite2D::SetSize(const Types::Vector2 &size)
+{
+    _size = size;
     return *this;
 }
 

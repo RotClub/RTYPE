@@ -10,7 +10,7 @@
 class StaticBody2D : public Body2D
 {
     public:
-        StaticBody2D(const std::string &name, const Types::Vector2 &position);
+        StaticBody2D(const std::string &name, const Types::Vector2 &position, const Types::Vector2 &size);
 };
 
 

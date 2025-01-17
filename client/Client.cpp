@@ -57,6 +57,13 @@ void Client::setupClientSideLua()
     luau_ExposeGlobalFunction(L, luau_DisableFpsCounter, "DisableFpsCounter");
     luau_ExposeGlobalFunction(L, luau_DisableColorBlindnessShader, "DisableColorBlindnessShader");
     luau_ExposeGlobalFunction(L, luau_CycleColorBlindnessShader, "CycleColorBlindnessShader");
+    luau_ExposeGlobalFunction(L, luau_WindowHeight, "GetWindowHeight");
+    luau_ExposeGlobalFunction(L, luau_WindowWidth, "GetWindowWidth");
+}
+
+const Types::Vector2 &Client::getGameSize() const
+{
+    return _game.getWindowSize();
 }
 
 

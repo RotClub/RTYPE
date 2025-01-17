@@ -15,5 +15,7 @@ LUA_API int luau_EnableFpsCounter(lua_State *L);
 LUA_API int luau_DisableFpsCounter(lua_State *L);
 LUA_API int luau_DisableColorBlindnessShader(lua_State *L);
 LUA_API int luau_CycleColorBlindnessShader(lua_State *L);
+LUA_API int luau_WindowHeight(lua_State *L);
+LUA_API int luau_WindowWidth(lua_State *L);
 
 #endif // CLIENTSIDELUA_HPP
