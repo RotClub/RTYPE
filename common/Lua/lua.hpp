@@ -43,6 +43,8 @@ LUA_API int luau_NetWriteFloat(lua_State *L);
 LUA_API int luau_NetReadFloat(lua_State *L);
 LUA_API int luau_NetWriteString(lua_State *L);
 LUA_API int luau_NetReadString(lua_State *L);
+LUA_API int luau_NetWriteBool(lua_State *L);
+LUA_API int luau_NetReadBool(lua_State *L);
 /* READ/WRITE OPERATIONS */
 
 /* NET LIBRARY */

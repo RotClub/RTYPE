@@ -4,12 +4,11 @@ local parallaxLayers = {
     root:CreateChild("Parallax", "parallaxBg3", "assets/sprites/background/background_3.png", 2, nil)
 }
 
-Game = {}
-
 Game.localId = nil
 
 include("client/player/localPlayer.luau")
 include("client/player/players.luau")
+include("client/projectiles.luau")
 
 spawnLocalPlayer()
 
@@ -20,6 +19,7 @@ end
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
     localPlayerMovement(dt)
+    updateFireFlashes(dt)
     for i = 1, #parallaxLayers do
         parallaxLayers[i]:AddParallaxPosition(((5 * i) * (i / 2)) * dt, 0)
     end
