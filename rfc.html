@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>R-TYPE</title>
-        <meta name="robots" content="noindex">
+        <title>RFC - R-TYPE</title>
 
 
         <!-- Custom HTML head -->
@@ -153,17 +152,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p><strong>R-TYPE</strong> is a 2D side-scrolling shoot 'em up game. The player controls a spaceship that can move horizontally and vertically. The game is divided into several levels, each with a boss at the end. The player must defeat the boss to progress to the next level. The player can collect power-ups to upgrade their ship's weapons and shields. The player must avoid or destroy enemy ships and projectiles to survive.</p>
-<h2 id="what-we-made"><a class="header" href="#what-we-made">What we made</a></h2>
-<p>In the context of EPITECH, we had to implement this project with some added features.</p>
-<ul>
-<li>Fully fledged engine with a Node System</li>
-<li>Socket system with TCP and UDP</li>
-<li>LUAU Virtual Machine</li>
-</ul>
-<p>The engine in itself makes 2 executables, a <code>server</code> and a <code>client</code>, the server on launch selects a game from a bunch of available games (either via launch arguments or selection if multiple games are available)</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="rfc"><a class="header" href="#rfc">RFC</a></h1>
+                        <h1 id="rfc"><a class="header" href="#rfc">RFC</a></h1>
 <pre><code class="language-plaintext">RFC: RTYPE
 
 1. Introduction
@@ -324,173 +313,18 @@
     | UDP    |   No    | No                      | Real-time Game Updates     |
     +--------+---------+-------------------------+----------------------------+
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="building"><a class="header" href="#building">Building</a></h1>
-<p>The engine is a shared library that is used by the server and the client.
-The server and the client are two separate executables that use the engine library.
-Before building the project, you need to pull the submodules with the following command:</p>
-<pre><code class="language-bash">git submodule update --init --recursive
-</code></pre>
-<p>Then you can build all the project with the following command:</p>
-<pre><code class="language-bash">./build.sh release
-</code></pre>
-<p>This command will build the engine, the server and the client in release mode.
-The executables will be at the root of the project.</p>
-<p>You can also build the engine, the server and the client separately with the following commands:</p>
-<pre><code class="language-bash">./build.sh release engine
-./build.sh release server
-./build.sh release client
-</code></pre>
-<p>This will build the engine, the server or the client in release mode.</p>
-<p>You can also build the project in debug mode with the following command:</p>
-<pre><code class="language-bash">./build.sh debug
-</code></pre>
-<p>or</p>
-<pre><code class="language-bash">./build.sh debug engine
-./build.sh debug server
-./build.sh debug client
-</code></pre>
-<p>This will build the engine, the server or the client in debug mode.</p>
-<p>You can also build the project in profile mode with the following command:</p>
-<pre><code class="language-bash">./build.sh profile
-</code></pre>
-<p>or</p>
-<pre><code class="language-bash">./build.sh profile engine
-./build.sh profile server
-./build.sh profile client
-</code></pre>
-<p>This mode is used tu use a profiler to analyze the performance of the engine and the game.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="server"><a class="header" href="#server">Server</a></h1>
-<p>The server is responsible of managing the game state and the communication between the clients and the game.
-When the server is started, it will start the game engine and the connection manager.
-It run on the port "25777" by default but it can be changed with the <code>--port</code> option.
-The server can use two types of connection: TCP and UDP.</p>
-<p>The command to run the server is:</p>
-<pre><code class="language-bash">./r-type_server
-</code></pre>
-<p>or with the port option:</p>
-<pre><code class="language-bash">./r-type_server --port 12345
-</code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="client"><a class="header" href="#client">Client</a></h1>
-<p>The client runs the game and is responsible for rendering the game state and sending the input to the server.</p>
-<p>The client is written in C++ and uses the Raylib library to render the game.</p>
-<p>The client can be run with the following command:</p>
-<pre><code class="language-bash">./r-type_client
-</code></pre>
-<p>The client can be run with the following options:</p>
-<ul>
-<li><code>--ip</code> to specify the server IP address</li>
-<li><code>--port</code> to specify the server port</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="networking"><a class="header" href="#networking">Networking</a></h1>
-<p><a href="engine/../../rfc.html">RFC</a></p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="games-filesystem"><a class="header" href="#games-filesystem">Games Filesystem</a></h1>
-<p>Each game is put in the <code>games/</code> folder. The directory architecture is strict and must be followed as such:</p>
-<p><em>Files/Folders in <strong>bold</strong> are required for the project to be valid.</em></p>
-<ul>
-<li><strong>manifest.json</strong></li>
-<li>assets/</li>
-<li><strong>lua/</strong>
-<ul>
-<li><strong>index.lua</strong> <em>entrypoint for every game</em></li>
-</ul>
-</li>
-</ul>
-<h2 id="manifestjson"><a class="header" href="#manifestjson">manifest.json</a></h2>
-<p>The manifest file is used for the server to know the presence of a valid game and retrieve basic information to send to the players on join attempts.</p>
-<pre><code class="language-json">{
-    "name": "string",
-    "description": "string",
-    "max_players": 4,
-    "authors": ["string", "string"],
-    "version": 1.0
-}
-</code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="luau"><a class="header" href="#luau">LUAU</a></h1>
-<p>The engine uses <a href="https://luau.org/">LUAU</a> for game scripting.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="libraries"><a class="header" href="#libraries">Libraries</a></h1>
-<p>The engine makes use of multiple libraries to get the job done, some of those come from native LUAU.</p>
-<p>They can be found in the LUAU documentation:</p>
-<ul>
-<li><a href="https://luau.org/library#global-functions">Global functions</a></li>
-<li><a href="https://luau.org/library#math-library">math</a></li>
-<li><a href="https://luau.org/library#table-library">table</a></li>
-<li><a href="https://luau.org/library#string-library">string</a></li>
-<li><a href="https://luau.org/library#coroutine-library">coroutine</a></li>
-<li><a href="https://luau.org/library#bit32-library">bit32</a></li>
-<li><a href="https://luau.org/library#utf8-library">utf8</a></li>
-<li><a href="https://luau.org/library#os-library">os</a></li>
-<li><a href="https://luau.org/library#debug-library">debug</a></li>
-<li><a href="https://luau.org/library#buffer-library">buffer</a></li>
-<li><a href="https://luau.org/library#vector-library">vector</a></li>
-</ul>
-<h2 id="custom-libraries"><a class="header" href="#custom-libraries">Custom libraries</a></h2>
-<p>We also implemented our own set of libraries to make controlling the engine easier.</p>
-<ul>
-<li><a href="game/libs.html#hook-library">hook</a> - Assign logic that needs to be triggered on specific events.</li>
-<li><a href="game/libs.html#json-library">json</a> - JSON Parser and Serializer.</li>
-<li><a href="game/libs.html#utils-library">utils</a> - Set of functions that accomplish all sorts of stuff.</li>
-</ul>
-<hr />
-<h2 id="hook-library"><a class="header" href="#hook-library">Hook library</a></h2>
-<p>This library is used to create events and assign logic to them.</p>
-<h3 id="hookadd"><a class="header" href="#hookadd">hook.Add</a></h3>
-<p>Adds a hook to the global hook table.</p>
-<h4 id="prototype"><a class="header" href="#prototype">Prototype</a></h4>
-<pre><code class="language-luau">hook.Add(eventName: string, hookName: string, callback: (...any) -&gt; any)
-</code></pre>
-<h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
-<ul>
-<li><code>eventName: string</code> Name of the event.</li>
-<li><code>hookName: string</code> Name of the hook.</li>
-<li><code>callback: (...any) -&gt; any</code> Callback function that will be executed when the event is triggered.</li>
-</ul>
-<h4 id="example"><a class="header" href="#example">Example</a></h4>
-<pre><code class="language-lua">hook.Add("RType:InitServer", "hello_name", function(name: string)
-    print("Hello " .. name)
-end)
-</code></pre>
-<h3 id="hookremove"><a class="header" href="#hookremove">hook.Remove</a></h3>
-<p>Removes a hook from the global hook table</p>
-<h4 id="prototype-1"><a class="header" href="#prototype-1">Prototype</a></h4>
-<pre><code class="language-luau">hook.Remove(eventName: string, hookName: string)
-</code></pre>
-<h4 id="arguments-1"><a class="header" href="#arguments-1">Arguments</a></h4>
-<ul>
-<li><code>eventName: string</code> Name of the event the hook is stored in.</li>
-<li><code>hookName: string</code> Name of the hook to be deleted.</li>
-</ul>
-<h4 id="example-1"><a class="header" href="#example-1">Example</a></h4>
-<pre><code class="language-lua">hook.Remove("RType:InitServer", "hello_name")
-</code></pre>
-<h3 id="hookcall"><a class="header" href="#hookcall">hook.Call</a></h3>
-<p>Calls all hooks under the eventName</p>
-<h4 id="prototype-2"><a class="header" href="#prototype-2">Prototype</a></h4>
-<pre><code class="language-luau">hook.Call(eventName: string, ...)
-</code></pre>
-<h4 id="arguments-2"><a class="header" href="#arguments-2">Arguments</a></h4>
-<ul>
-<li><code>eventName: string</code> Name of the event under which all hooks will get triggered.</li>
-<li><code>...</code> Varargs, represent all arguments that will be passed to each hook's callback.</li>
-</ul>
-<hr />
-<div style="break-before: page; page-break-before: always;"></div><h1 id="r-type"><a class="header" href="#r-type">R-Type</a></h1>
-<h2 id="our-implementation"><a class="header" href="#our-implementation">Our implementation</a></h2>
-<p>Our R-Type is a online multiplayer side-scrolling shoot 'em up game. The player controls a spaceship that can move horizontally and vertically. The player must dodge or destroy enemy ships and projectiles to survive. The goal is to defeat the boss.</p>
-<h3 id="controls"><a class="header" href="#controls">Controls</a></h3>
-<ul>
-<li><code>z</code> to move up</li>
-<li><code>s</code> to move down</li>
-<li><code>q</code> to move left</li>
-<li><code>d</code> to move right</li>
-<li><code>space</code> to shoot</li>
-<li><code>alt</code> to auto-shoot</li>
-</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
+                            <a rel="next prefetch" href="engine/building.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -498,7 +332,13 @@ end)
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
+                    <a rel="next prefetch" href="engine/building.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>
@@ -521,11 +361,6 @@ end)
 
         <!-- Custom JS scripts -->
 
-        <script>
-        window.addEventListener('load', function() {
-            window.setTimeout(window.print, 100);
-        });
-        </script>
 
     </div>
     </body>

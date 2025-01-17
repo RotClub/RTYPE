@@ -155,7 +155,10 @@
                         <h1 id="building"><a class="header" href="#building">Building</a></h1>
 <p>The engine is a shared library that is used by the server and the client.
 The server and the client are two separate executables that use the engine library.
-You can build all the project with the following command:</p>
+Before building the project, you need to pull the submodules with the following command:</p>
+<pre><code class="language-bash">git submodule update --init --recursive
+</code></pre>
+<p>Then you can build all the project with the following command:</p>
 <pre><code class="language-bash">./build.sh release
 </code></pre>
 <p>This command will build the engine, the server and the client in release mode.
@@ -175,12 +178,21 @@ The executables will be at the root of the project.</p>
 ./build.sh debug client
 </code></pre>
 <p>This will build the engine, the server or the client in debug mode.</p>
+<p>You can also build the project in profile mode with the following command:</p>
+<pre><code class="language-bash">./build.sh profile
+</code></pre>
+<p>or</p>
+<pre><code class="language-bash">./build.sh profile engine
+./build.sh profile server
+./build.sh profile client
+</code></pre>
+<p>This mode is used tu use a profiler to analyze the performance of the engine and the game.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../https://github.com/RotClub/RTYPE/tree/main/docs/rfc.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../rfc.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -194,7 +206,7 @@ The executables will be at the root of the project.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../https://github.com/RotClub/RTYPE/tree/main/docs/rfc.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../rfc.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

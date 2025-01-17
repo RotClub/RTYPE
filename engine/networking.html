@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Filesystem - R-TYPE</title>
+        <title>Networking - R-TYPE</title>
 
 
         <!-- Custom HTML head -->
@@ -152,38 +152,18 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="games-filesystem"><a class="header" href="#games-filesystem">Games Filesystem</a></h1>
-<p>Each game is put in the <code>games/</code> folder. The directory architecture is strict and must be followed as such:</p>
-<p><em>Files/Folders in <strong>bold</strong> are required for the project to be valid.</em></p>
-<ul>
-<li><strong>manifest.json</strong></li>
-<li>assets/</li>
-<li><strong>lua/</strong>
-<ul>
-<li><strong>index.lua</strong> <em>entrypoint for every game</em></li>
-</ul>
-</li>
-</ul>
-<h2 id="manifestjson"><a class="header" href="#manifestjson">manifest.json</a></h2>
-<p>The manifest file is used for the server to know the presence of a valid game and retrieve basic information to send to the players on join attempts.</p>
-<pre><code class="language-json">{
-    "name": "string",
-    "description": "string",
-    "max_players": 4,
-    "authors": ["string", "string"],
-    "version": 1.0
-}
-</code></pre>
+                        <h1 id="networking"><a class="header" href="#networking">Networking</a></h1>
+<p><a href="../../rfc.html">RFC</a></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../engine/networking.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../engine/client.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../game/luau.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../game/filesystem.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -193,11 +173,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../engine/networking.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../engine/client.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../game/luau.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../game/filesystem.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
