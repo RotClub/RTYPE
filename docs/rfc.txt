@@ -8,6 +8,10 @@ RFC: RTYPE
     the server and clients over TCP and UDP sockets for efficient data
     transfer.
 
+    +------------+        TCP/UDP         +-----------+
+    |   Client   | <--------------------> |   Server  |
+    +------------+                        +-----------+
+
 2. Terminology
     - Server: The central game server that manages the game state.
     - Client: A player's game client that connects to the server.
@@ -29,32 +33,62 @@ RFC: RTYPE
 3.1 Protocol Specification
     Every communication exchange between the server and clients will occur in
     this order:
-        - Integer: represents the size of the packet.
         - Packet:
-            - Integer: represents the size of the data.
-            - Data: the actual data being sent.
-                The data contains serialized string or/and an integer, so the
-                data content is in binary. The data will be read in the same
-                order it was written.
+            - Unsigned long: represents the size of the data.
             - Integer: represents the type of the packet:
                 - NONE = 0 (No action will be taken, this packet is ignored)
                 - CONNECT = 1 (A new client is connecting to the server)
                 - DISCONNECT = 2 (A client is disconnecting from the server)
                 - NET = 3 (Message will be handled by the lua virtual machine)
                 - NEW_MESSAGE = 4 (Create a new channel for the NET messages)
+            - Char[16]: Token used to identify the client.
+            - Data: the actual data being sent.
+                The data contains serialized string or/and an integer, so the
+                data content is in binary. The data will be read in the same
+                order it was written.
 
-3.2. Handshake
+            +---------------------------+
+            | Unsigned long (Data Size) |
+            +---------------------------+
+            | Integer (Packet Type)     |
+            +---------------------------+
+            | Char[16] (Token)          |
+            +---------------------------+
+            | Binary Data               |
+            +---------------------------+
+
+3.2 Handshake
     Clients establish a TCP connection to the server using the server's IP
     address and port number. The server listens for incoming connections and
-    accepts new clients. The client sends a "CONNECT" packet to the server to
-    initiate the connection. The server send a challenge key to the client, the
-    client must respond with the correct answer to the challenge to be
-    authenticated. If the client fails to respond with the correct answer, the
-    server will close the connection. Then the server sends a 'CONNECT' packet
-    to the client to confirm the connection with the data being a single string
-    that contains "AUTHENTICATED". The client will then send a 'CONNECT' packet
-    with no data to request available channels. The server will respond with
-    all the available channels send in individual 'NEW_MESSAGE' packets.
+    accepts new clients.
+
+    The client sends a "CONNECT" packet to the server to initiate the
+    connection. The server sends a challenge key to the client, the client must
+    respond with the correct answer to the challenge to be authenticated.
+
+    If the client fails to respond with the correct answer, the server will
+    close the connection. If the client responds with the correct answer, the
+    server will respond with all the available channels send in individual
+    "NEW_MESSAGE" packets with the string being the name of the channel and an
+    integer indicating the type of communication (TCP/UDP).
+
+    Then the server sends a "CONNECT" packet to the client to confirm the
+    connection with the data being a single string that contains
+    "AUTHENTICATED".
+
+    Client                                   Server
+      | ------------- "CONNECT" --------------> |
+      |                                         |
+      | <------------ "CONNECT" --------------- | Send Challenge Key
+      | -------- Response to Challenge -------> | Validate Response
+      |                                         |
+      |                                         | If invalid, close connection
+      |                                         | If valid, send channels
+      | <-- "NEW_MESSAGE" (New Channel Info) -- |
+      | <-- "NEW_MESSAGE" (New Channel Info) -- |
+      |                                         | ... (Repeated for all channels)
+      | <------------- "CONNECT" -------------- | Send "AUTHENTICATED"
+      |          Connection Established         |
 
 3.3 Data Transfer
     Once the connection is established, the server and client can exchange
@@ -69,8 +103,13 @@ RFC: RTYPE
         this command will be ignored and discarded.
 
     4.2 CONNECT
+        The CONNECT packet is used for the handshake between the server and
+        clients.
 
     4.3 DISCONNECT
+        The DISCONNECT packet is used to indicate that a client is
+        disconnecting from the server. The server will close the connection
+        with the client.
 
     4.4 NET
         The NET packet command is used to send messages between the server and
@@ -79,9 +118,42 @@ RFC: RTYPE
         where the message will be sent.
 
     4.5 NEW_MESSAGE
-        Only sent from server, the packet command `NEW_MESSAGE` indicates to
+        Only sent from server, the packet command "NEW_MESSAGE" indicates to
         create a new communication channel between client and server
         with a specific name. The new channel can be either TCP or UDP.
         The choice for the type of communication (TCP/UDP) is indicated
-        by a boolean in the `data` sent in the packet.
+        by a boolean in the "data" sent in the packet.
         A channel is characterized by its name.
+
+5. Channel
+    In networking, a channel refers to a communication pathway that facilitates
+    the transfer of data between devices.
+    Differents type of communication characterized by differents protocols are
+    used depending of the needs. The type of communication (TCP/UDP) is defined
+    by the engine when the channel is created by "NEW_MESSAGE".
+
+5.1 Channel lifetime
+    After the creation of a channel, it's not deleted until the end of the
+    game.
+
+5.2 TCP channel
+    Transport Control Protocol (TCP) is connection-oriented and establishes a
+    three-way handshake before data transfer. Packet architecture ensures
+    delivery in the correct order.
+    Used for Connexion, Handshake and all cases where data is important and
+    cannot be lost.
+
+5.3 UDP channel
+    User Datagram Protocol (UDP) is connectionless and does not establish a
+    connection before sending data. Does not guarantee delivery, order, or
+    error checking.
+    Used for large transfers without precision and where data loss is
+    acceptable.
+
+    +--------+---------+-------------------------+----------------------------+
+    | Type   | Ordered | Reliable Communication  | Used for                   |
+    +--------+---------+-------------------------+----------------------------+
+    | TCP    |   Yes   | Yes                     | Handshakes, Authentication |
+    +--------+---------+-------------------------+----------------------------+
+    | UDP    |   No    | No                      | Real-time Game Updates     |
+    +--------+---------+-------------------------+----------------------------+

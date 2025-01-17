@@ -9,17 +9,22 @@
 #define SERVER_HPP_
 
 #include <iostream>
-#include "connection/ServerConnection.hpp"
-#include "client/Client.hpp"
+#include <signal.h>
 #include <vector>
 #include "Engine.hpp"
+#include "client/Client.hpp"
+#include "connection/ServerConnection.hpp"
 
-class Server {
+#define TICKRATE 128
+
+class Server
+{
     public:
         Server(int port);
         ~Server();
         void start();
-        void loop();
+        void loop(std::chrono::time_point<std::chrono::steady_clock> &nextCallTime, const std::chrono::milliseconds &interval);
+        void networkLoop();
         void stop();
         int getPort() const;
         void broadcastNewPackets();

@@ -8,21 +8,19 @@
 #include "ServerConnection.hpp"
 
 #include <Engine.hpp>
+#include <arpa/inet.h>
 #include <cstddef>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
-ServerConnection::ServerConnection(int port)
-    : _port(port)
-{
-}
+ServerConnection::ServerConnection(int port) : _port(port) {}
 
-ServerConnection::~ServerConnection()
-{
-    stop();
-}
+ServerConnection::~ServerConnection() { stop(); }
 
 void ServerConnection::start()
 {
-    if (_running) return;
+    if (_running)
+        return;
     _running = true;
     _createSocket();
     _networkThread = std::thread(&ServerConnection::_loop, this);
@@ -30,12 +28,15 @@ void ServerConnection::start()
 
 void ServerConnection::stop()
 {
-    if (!_running) return;
+    if (!_running)
+        return;
     _running = false;
+    pthread_cancel(_networkThread.native_handle());
     if (_networkThread.joinable()) {
         _networkThread.join();
     }
     for (const auto *client : _clientConnections) {
+        _disconnectedClients.enqueue(client->getUuid());
         delete client;
     }
     close(_tcpFd);
@@ -54,27 +55,22 @@ void ServerConnection::_loop()
             _receiveLoop();
             _disconnectClients();
             _sendLoop();
-            // for (auto &client : _clientConnections) {
-            //     if (client->getStep() != Client::ConnectionStep::COMPLETE) {
-            //         _authFlow(client);
-            //     }
-            // }
-        } catch (const std::exception &e) {
-            spdlog::error("Error in loop: {}", e.what());
+        }
+        catch (const std::exception &e) {
+            spdlog::error("Error in networking loop: {}", e.what());
         }
     }
 }
 
 void ServerConnection::_disconnectClients()
 {
-    _clientConnections.erase(std::ranges::remove_if(_clientConnections, [](Client *client) {
-        if (client->shouldDisconnect()) {
-            spdlog::debug("Client (fd {}) disconnected", client->getTcpFd());
-            delete client;
-            return true;
-        }
-        return false;
-    }).begin(), _clientConnections.end());
+    std::lock_guard guard(_clientsMutex);
+    if (auto it = std::find_if(_clientConnections.begin(), _clientConnections.end(), [](Client *client) { return client->shouldDisconnect(); }); it != _clientConnections.end()) {
+        Client *client = *it;
+        _clientConnections.erase(it, _clientConnections.end());
+        _disconnectedClients.enqueue(client->getUuid());
+        delete client;
+    }
 }
 
 void ServerConnection::_receiveLoop()
@@ -82,33 +78,38 @@ void ServerConnection::_receiveLoop()
     for (auto &client : _clientConnections) {
         if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
             try {
-                Packet *packet = _tryReceiveTCP(client);
-                client->addTcpPacketInput(packet);
-            } catch (const std::exception &e) {
+                _tryReceiveTCP(client);
+            }
+            catch (const std::exception &e) {
                 client->disconnect();
             }
         }
     }
-}
-
-void ServerConnection::_authFlow(Client *client)
-{
-    // PacketBuilder builder;
-    // Packet *packet = builder.writeString(Engine::GetInstance().getGameInfo()->getName()).build();
-    //
-    // client->addTcpPacketOutput(packet);
-    // client->setStep(Client::ConnectionStep::COMPLETE);
+    if (FD_ISSET(_udpFd, &_readfds)) {
+        _tryReceiveUDP();
+    }
 }
 
 void ServerConnection::_sendLoop()
 {
     for (auto &client : _clientConnections) {
-        if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_writefds) && client->hasTcpPacketOutput()) {
-            while (client->hasTcpPacketOutput()) {
+        if (!client->shouldDisconnect()) {
+            if (client->hasTcpPacketOutput() && FD_ISSET(client->getTcpFd(), &_writefds)) {
                 Packet *packet = client->popTcpPacketOutput();
-                size_t len = packet->n;
-                write(client->getTcpFd(), &packet, len);
-                std::free(packet->data);
+                PacketBuilder::PackedPacket packed = {0};
+                PacketBuilder::pack(&packed, packet);
+                write(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket));
+                PacketBuilder(packet).reset();
+                delete packet;
+            }
+            if (client->hasUdpPacketOutput()) {
+                Packet *packet = client->popUdpPacketOutput();
+                PacketBuilder::PackedPacket packed = {0};
+                PacketBuilder::pack(&packed, packet);
+                sendto(_udpFd, packed, sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(client->getUdpAddress()),
+                       sizeof(sockaddr_in));
+                PacketBuilder(packet).reset();
+                delete packet;
             }
         }
     }
@@ -116,24 +117,84 @@ void ServerConnection::_sendLoop()
 
 void ServerConnection::_accept()
 {
+    if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers())
+        return;
     if (FD_ISSET(_tcpFd, &_readfds)) {
+        std::lock_guard guard(_clientsMutex);
         _clientConnections.emplace_back(new Client(_tcpFd));
     }
 }
 
-Packet *ServerConnection::_tryReceiveTCP(Client *client)
+void ServerConnection::_tryReceiveTCP(Client *client)
 {
-    Packet *packet = new Packet;
+    std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
+    int n = 0;
+    if ((n = read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+    buffer.resize(n);
+    client->addToTcpBuffer(buffer);
+    _processTcpBuffer(client);
+}
 
-    std::memset(packet, 0, sizeof(Packet));
-    if (read(client->getTcpFd(), packet, sizeof(Packet)) <= 0) {
-        throw std::runtime_error("Disconnect");
+void ServerConnection::_tryReceiveUDP()
+{
+    std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
+
+    sockaddr_in addr{};
+    std::memset(&addr, 0, sizeof(addr));
+    socklen_t len = sizeof(addr);
+    int n = 0;
+    if ((n = recvfrom(_udpFd, buffer.data(), sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&addr), &len)) <= 0) {
+        throw std::runtime_error("Error receiving udp packet");
     }
-    packet->data = std::malloc(packet->n);
-    if (read(client->getTcpFd(), packet->data, packet->n) <= 0) {
-        throw std::runtime_error("Disconnect");
+    buffer.resize(n);
+    if (_udpBuffers.find(std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))) == _udpBuffers.end()) {
+        _udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))] = buffer;
+    } else {
+        _udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))].insert(_udpBuffers[std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port))].end(), buffer.begin(), buffer.end());
     }
-    return packet;
+    _processUdpBuffer(std::make_pair(inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)), &addr);
+}
+
+void ServerConnection::_processTcpBuffer(Client *client)
+{
+    if (client->getTcpBuffer().size() >= PACKED_PACKET_SIZE) {
+        PacketBuilder::PackedPacket packed = {0};
+        std::memcpy(packed, client->getTcpBuffer().data(), sizeof(PacketBuilder::PackedPacket));
+        Packet *packet = new Packet;
+        try {
+            PacketBuilder::unpack(&packed, packet);
+        }
+        catch (const std::exception &e) {
+            delete packet;
+            return;
+        }
+        client->addTcpPacketInput(packet);
+        client->getTcpBuffer().erase(client->getTcpBuffer().begin(), client->getTcpBuffer().begin() + sizeof(PacketBuilder::PackedPacket));
+    }
+}
+
+void ServerConnection::_processUdpBuffer(const std::pair<std::string, int> &addr, sockaddr_in *addr_in)
+{
+    auto &buffer = _udpBuffers[addr];
+    if (buffer.size() >= PACKED_PACKET_SIZE) {
+        PacketBuilder::PackedPacket packed = {0};
+        std::memcpy(packed, buffer.data(), sizeof(PacketBuilder::PackedPacket));
+        auto *packet = new Packet;
+        try {
+            PacketBuilder::unpack(&packed, packet);
+        }
+        catch (const std::exception &e) {
+            delete packet;
+            return;
+        }
+        if (Client *client = _getClientByID(packet->id); client != nullptr) {
+            client->updateUdpAddress(addr_in);
+            client->addUdpPacketInput(packet);
+        }
+        buffer.erase(buffer.begin(), buffer.begin() + sizeof(PacketBuilder::PackedPacket));
+    }
 }
 
 void ServerConnection::_createSocket()
@@ -157,7 +218,7 @@ void ServerConnection::_createSocket()
         throw std::runtime_error("Error binding tcp socket");
     }
 
-    listen(_tcpFd, 0);
+    listen(_tcpFd, SOMAXCONN);
 
     if (bind(_udpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) < 0) {
         throw std::runtime_error("Error binding udp socket");
@@ -192,8 +253,18 @@ int ServerConnection::_selectFd()
     _setClientFds(&_readfds);
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
-    // FD_SET(_udpFd, &_readfds);
-    int maxFd = std::max(_getMaxFd(), _tcpFd);
+    FD_SET(_udpFd, &_readfds);
+    int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
     retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, nullptr);
     return retval;
+}
+
+Client *ServerConnection::_getClientByID(const char id[16])
+{
+    for (auto client : _clientConnections) {
+        if (std::memcmp(client->getID(), id, sizeof(char[16])) == 0) {
+            return client;
+        }
+    }
+    return nullptr;
 }

@@ -5,21 +5,21 @@
 ** main
 */
 
+#include "ArgumentManager/ClientArgumentManager.hpp"
 #include "Client.hpp"
-#include "Networking/PacketBuilder.hpp"
 
-#include "spdlog/spdlog.h"
 #include <cstdlib>
 
-int main(void)
+
+int main(int argc, char **argv)
 {
-    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT, "rtype");
-    Client &client = Client::InitiateInstance("127.0.0.1", 25777);
-    client.setupLua();
-    try {
-        client.getClientConnectionTcp().connectToServer();
-    } catch (const std::exception &e) {
-        spdlog::error(e.what());
+    ClientArgumentManager argManager(argc, argv);
+    if (!argManager.checkClientArguments())
         return 84;
-    }
+    char *ip = argv[2];
+    int port = static_cast<int>(std::strtol(argv[4], nullptr, 10));
+    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT, "rtype");
+    Client &client = Client::InitiateInstance(ip, port);
+    client.getClientConnection().connectToServer();
+    client.startGame();
 }

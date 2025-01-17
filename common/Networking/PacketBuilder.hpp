@@ -6,37 +6,51 @@
 */
 
 #ifndef PACKETUTILS_HPP_
-    #define PACKETUTILS_HPP_
+#define PACKETUTILS_HPP_
 
-    #include "Packet.hpp"
+#define PACKED_PACKET_SIZE 128
 
-    #include <cstddef>
-    #include <string>
+#include "Packet.hpp"
 
-    class PacketBuilder {
-        public:
-            PacketBuilder();
-            PacketBuilder(Packet *packet);
-            ~PacketBuilder() = default;
+#include <cstddef>
+#include <string>
 
-            void loadFromPacket(Packet *packet);
+class PacketBuilder
+{
+    public:
+        static const std::string integrityChallenge;
+        PacketBuilder();
+        PacketBuilder(Packet *packet);
+        ~PacketBuilder() = default;
 
-            PacketBuilder setCmd(PacketCmd cmd);
+        void loadFromPacket(Packet *packet);
 
-            PacketBuilder &writeInt(int nb);
-            PacketBuilder &writeString(const std::string &str);
+        PacketBuilder &setCmd(PacketCmd cmd);
 
-            int readInt();
-            std::string readString();
+        PacketBuilder &writeInt(int nb);
+        PacketBuilder &writeFloat(float nb);
+        PacketBuilder &writeBool(bool nb);
+        PacketBuilder &writeString(const std::string &str);
 
-            Packet *build();
-            void destroyPacket();
+        [[nodiscard]] int readInt();
+        [[nodiscard]] float readFloat();
+        [[nodiscard]] bool readBool();
+        [[nodiscard]] std::string readString();
 
-        private:
-            size_t _n;
-            PacketCmd _cmd;
-            void *_data;
+        Packet *build();
+        void reset();
+        static void copy(Packet *dest, const Packet *src);
 
-    };
+        using PackedPacket = char[PACKED_PACKET_SIZE];
+
+        static void pack(PackedPacket *packed, const Packet *packet);
+        static void unpack(const PackedPacket *packed, Packet *packet);
+
+    private:
+        size_t _n;
+        PacketCmd _cmd;
+        char _id[16];
+        void *_data;
+};
 
 #endif /* !PACKETUTILS_HPP_ */
