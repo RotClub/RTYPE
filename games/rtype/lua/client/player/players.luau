@@ -1,4 +1,6 @@
 
+Game.playersSize.x = 32 * 2
+Game.playersSize.y = 14 * 2
 
 function setPlayerColor(playerSprite, playerNum)
     debug(playerSprite:GetName())
@@ -11,7 +13,7 @@ local function createPlayer(id: number)
     local player = root:CreateChild("Node2D", "player" .. id)
     local playerSprite = player:CreateChild("Sprite2D", "playerSprite" .. id, "assets/sprites/r-typesheet42.png")
     player:SetPosition(0, 0)
-    playerSprite:SetSize(32 * 2, 14 * 2)
+    playerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     setPlayerColor(playerSprite, id)
     otherPlayers[id] = player
 end
@@ -51,8 +53,8 @@ net.Receive("SpaceshipPosition", function(len, ply)
     local x = net.ReadFloat()
     local y = net.ReadFloat()
     if Game.localId == id then
-        netLocalPlrX = x
-        netLocalPlrY = y
+        Game.localPly.netX = x
+        Game.localPly.netY = y
         return
     end
     updatePlayerPosition(id, x, y)

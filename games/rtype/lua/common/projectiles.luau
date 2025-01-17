@@ -1,0 +1,61 @@
+
+Game.projectiles = {}
+
+local PLAYER_PROJECTILE_SPEED = 700
+local PROJECTILE_LIFETIME = 2
+
+local projectileId = 0
+
+function createProjectile(x, y, damage, owner)
+    local plrVecX, plrVecY = owner:GetVelocity()
+    local fX = x + Game.playersSize.x
+    local fY = y + Game.playersSize.y / 2
+    local projectile = root:CreateChild("RigidBody2D", "projectile" .. projectileId, fX, fY, PLAYER_PROJECTILE_SPEED + plrVecX, plrVecY)
+    local projectileSprite = nil
+    if CLIENT then
+        projectileSprite = projectile:CreateChild("Sprite2D", "projectileSprite" .. projectileId, "assets/sprites/r-typesheet1.png")
+        projectileSprite:SetSource(249, 90, 16, 4)
+    end
+    table.insert(Game.projectiles, {
+        node = projectile,
+        sprite = projectileSprite,
+        damage = damage,
+        owner = owner,
+        lifetime = 0
+    })
+    projectileId += 1
+    return Game.projectiles[#Game.projectiles]
+end
+
+function getProjectileByName(name: string)
+    for i = 1, #Game.projectiles do
+        if Game.projectiles[i].node:GetName() == name then
+            return Game.projectiles[i]
+        end
+    end
+end
+
+function getProjectile(projectile)
+    return table.find(Game.projectiles, projectile)
+end
+
+function playerShoot(player)
+    local x, y = player:GetGlobalPosition()
+    createProjectile(x, y, 10, player)
+end
+
+function updateProjectiles(dt)
+    table.foreach(Game.projectiles, function(i, projectile)
+        projectile.lifetime += dt
+        if projectile.lifetime > PROJECTILE_LIFETIME then
+            projectile.node:Destroy()
+            table.remove(Game.projectiles, i)
+            return
+        end
+        if projectile.node:GetName() == nil then
+            table.remove(Game.projectiles, i)
+            return
+        end
+    end)
+end
+

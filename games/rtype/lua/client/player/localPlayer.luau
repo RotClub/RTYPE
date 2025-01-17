@@ -1,5 +1,6 @@
-netLocalPlrX = 0
-netLocalPlrY = 0
+Game.localPly = {}
+Game.localPly.netX = 0
+Game.localPly.netY = 0
 
 function spawnLocalPlayer()
     Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0, 0, 0)
@@ -7,7 +8,7 @@ function spawnLocalPlayer()
     localPlayerSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
 
     Game.localPlayer:SetPosition(0, 0)
-    localPlayerSprite:SetSize(32 * 2, 14 * 2)
+    localPlayerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     debug(localPlayerSprite:GetGlobalPosition())
     setPlayerColor(localPlayerSprite, 1)
 end
@@ -31,6 +32,10 @@ function sendAction(direction, start)
     end
 end
 
+function calculateDistance(x1: number, y1: number, x2: number, y2: number)
+    return math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+end
+
 Keys = {}
 Keys.LeftKey = 65
 Keys.RightKey = 68
@@ -39,6 +44,9 @@ Keys.DownKey = 83
 Keys.CycleKey = 67
 Keys.ShootKey = 74
 Keys.SpecialKey1 = 72
+
+local SHOOT_RATE = 0.1
+local shootTimer = 0
 
 function localPlayerMovement(dt)
     local direction = {}
@@ -56,6 +64,14 @@ function localPlayerMovement(dt)
     end
     if IsKeyPressed(Keys.DownKey) then
         direction.y = 1
+    end
+    if IsKeyPressed(Keys.ShootKey) then
+        shootTimer += dt
+        if shootTimer > SHOOT_RATE then
+            shootTimer = 0
+            playerShoot(Game.localPlayer)
+            createFireFlash(Game.localPlayer)
+        end
     end
     if IsKeyJustPressed(Keys.LeftKey) then
         sendAction(1, true)
@@ -85,6 +101,9 @@ function localPlayerMovement(dt)
         CycleColorBlindnessShader()
     end
     if IsKeyJustPressed(Keys.ShootKey) then
+        shootTimer = 0
+        playerShoot(Game.localPlayer)
+        createFireFlash(Game.localPlayer)
         sendAction(5, true)
     end
     if IsKeyReleased(Keys.ShootKey) then
@@ -95,6 +114,10 @@ function localPlayerMovement(dt)
         -- net.SendToServer()
         explodePlayer(Game.localPlayer)
     end
-    Game.localPlayer:SetPosition(netLocalPlrX, netLocalPlrY)
-    -- Game.localPlayer:SetVelocity(direction.x * 100, direction.y * 100)
+
+    Game.localPlayer:SetVelocity(direction.x * 100, direction.y * 100)
+    local x, y = Game.localPlayer:GetGlobalPosition()
+    if calculateDistance(x, y, Game.localPly.netX, Game.localPly.netY) > 10 then
+        Game.localPlayer:SetPosition(Game.localPly.netX, Game.localPly.netY)
+    end
 end

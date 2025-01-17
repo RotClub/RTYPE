@@ -12,7 +12,7 @@ function defaultSpaceship()
     }
 end
 
-local SPACESHIP_SPEED = 50
+local SPACESHIP_SPEED = 100
 
 function getSpaceshipByPlayer(ply: string)
     for i = 1, #spaceships do
