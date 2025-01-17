@@ -1,12 +1,30 @@
 include("client/utils.luau")
 
+local function generateBallVelocity()
+    -- Generate a random angle between 30 and 150 degrees (or the equivalent in radians)
+    local angle = math.rad(math.random(30, 150))
+
+    -- Calculate velocity components based on the angle
+    local x_vel = math.cos(angle) * BALL_VELOCITY_COEFFICIENT
+    local y_vel = math.sin(angle) * BALL_VELOCITY_COEFFICIENT
+
+    -- Randomly invert the direction
+    if math.random(0, 1) == 0 then
+        x_vel = -x_vel
+    end
+    if math.random(0, 1) == 0 then
+        y_vel = -y_vel
+    end
+
+    return x_vel, y_vel
+end
+
 -- Desc: Ball generation function
 -- Arguments: None
 -- Returns: Node2D
 function generateBall()
     local ball = root:CreateChild("Node2D", "ball")
-    local x_vel = math.random(-1, 1) * BALL_VELOCITY_COEFFICIENT
-    local y_vel = math.random(-1, 1) * BALL_VELOCITY_COEFFICIENT
+    local x_vel, y_vel = generateBallVelocity()
     local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, ENTITY_WIDTH, ENTITY_WIDTH, x_vel, y_vel)
     local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/player.png")
 
@@ -44,7 +62,6 @@ function ballPlayerBounce(ball, player)
     local player_hitbox = player:GetChild("player_hitbox")
 
     if ball_rgbd:Collide(player_hitbox) then
-        info("colliding")
         local x_vel, y_vel = ball_rgbd:GetVelocity()
         local _, y_pos = ball_rgbd:GetGlobalPosition()
         local _, player_y = player:GetPosition()
