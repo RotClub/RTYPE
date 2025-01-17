@@ -6,9 +6,12 @@ function spawnLocalPlayer()
     Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0, 0, 0)
     localPlayerPoint = Game.localPlayer:CreateChild("Node2D", "localPlayerPoint")
     localPlayerSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
+    localPlayerArrowSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerArrowSprite", "assets/sprites/arrow.png")
 
     Game.localPlayer:SetPosition(0, 0)
     localPlayerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
+    localPlayerArrowSprite:SetSize(32, 32)
+    localPlayerArrowSprite:SetPosition(Game.playersSize.x / 2 - 16, -30)
     setPlayerColor(localPlayerSprite, 1)
 end
 
@@ -98,7 +101,7 @@ function localPlayerMovement(dt)
     if IsKeyJustPressed(Keys.SpecialKey1) then
         -- net.Start("Hello")
         -- net.SendToServer()
-        explodePlayer(Game.localPlayer)
+        -- explodePlayer(Game.localPlayer)
     end
 
     Game.localPlayer:SetPosition(Game.localPly.netX, Game.localPly.netY)
