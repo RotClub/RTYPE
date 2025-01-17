@@ -10,7 +10,7 @@ function createProjectile(x, y, damage, owner, id)
     local plrVecX, plrVecY = owner:GetVelocity()
     local fX = x + Game.playersSize.x
     local fY = y + Game.playersSize.y / 2
-    local projectile = root:CreateChild("RigidBody2D", "projectile" .. projectileId, fX, fY, PLAYER_PROJECTILE_SPEED + plrVecX, plrVecY)
+    local projectile = root:CreateChild("RigidBody2D", "projectile" .. projectileId, fX, fY, 16, 4, PLAYER_PROJECTILE_SPEED + plrVecX, plrVecY)
     local projectileSprite = nil
     if CLIENT then
         projectileSprite = projectile:CreateChild("Sprite2D", "projectileSprite" .. id, "assets/sprites/r-typesheet1.png")
