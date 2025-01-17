@@ -67,3 +67,14 @@ net.Receive("SpaceshipShoot", function(len, ply)
         createFireFlash(otherPlayers[id])
     end
 end)
+
+net.Receive("ProjectileEnd", function(len, ply)
+    local id = net.ReadInt()
+    local hit = net.ReadBool()
+    local projectile = getProjectileByName("projectile" .. id)
+    projectile.node:Destroy()
+    table.remove(Game.projectiles, getProjectile(projectile))
+    if hit then
+        -- TODO: BOOOOOOOOOOOOOOOOOM
+    end
+end)
