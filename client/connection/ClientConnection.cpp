@@ -43,7 +43,6 @@ void ClientConnection::disconnectFromServer()
         return;
     }
     _connected = false;
-    pthread_kill(_thread.native_handle(), SIGKILL);
     try {
         if (_thread.joinable())
             _thread.join();
