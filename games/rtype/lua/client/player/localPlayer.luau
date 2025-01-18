@@ -13,7 +13,7 @@ function spawnLocalPlayer()
     localPlayerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     localPlayerArrowSprite:SetSize(32, 32)
     localPlayerArrowSprite:SetPosition(Game.playersSize.x / 2 - 16, -30)
-    localPlayerShootingSound:SetVolume(0.05)
+    localPlayerShootingSound:SetVolume(0.1)
     localPlayerShootingSound:SetPitch(1.0)
     setPlayerColor(localPlayerSprite, 1)
 end

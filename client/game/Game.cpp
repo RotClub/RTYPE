@@ -22,15 +22,15 @@ Game::~Game()
 
 void Game::run()
 {
-    _window = raylib::Window();
+    SetAudioStreamBufferSizeDefault(4096);
     const std::string gameName = Engine::GetInstance().getGameInfo()->getName();
     _window.Init(800, 600, gameName);
     _window.SetPosition(GetScreenWidth() / 2, GetScreenHeight() / 2);
     _window.SetExitKey(KeyboardKey::KEY_NULL);
     if (_window.IsReady() == false)
         throw std::runtime_error("Window is not ready");
-    _audioDevice.Init();
-    SetAudioStreamBufferSizeDefault(4096);
+    if (_audioDevice.IsReady() == false)
+        throw std::runtime_error("Audio device is not ready");
     Engine::GetInstance().clientStarted = true;
     Client &client = Client::GetInstance();
     client.getClientConnection().establishConnection();
