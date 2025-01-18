@@ -19,6 +19,7 @@ Packet *GlobalConnection::getLatestUDPPacket() { return std::get<IN>(_udpQueues)
 int GlobalConnection::_selectFd()
 {
     int retval;
+    timeval timeout = {2, 0};
 
     FD_ZERO(&_readfds);
     FD_ZERO(&_writefds);
@@ -26,7 +27,7 @@ int GlobalConnection::_selectFd()
     FD_SET(_tcpFd, &_writefds);
     FD_SET(_udpFd, &_readfds);
     FD_SET(_udpFd, &_writefds);
-    retval = select(std::max(_tcpFd, _udpFd) + 1, &_readfds, &_writefds, nullptr, nullptr);
+    retval = select(std::max(_tcpFd, _udpFd) + 1, &_readfds, &_writefds, nullptr, &timeout);
     if (retval == -1) {
         throw std::runtime_error("Error selecting socket");
     }
