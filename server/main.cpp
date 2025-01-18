@@ -6,7 +6,7 @@
 */
 
 #include "Server.hpp"
-#include "argumentManager/ArgumentManager.hpp"
+#include "ArgumentManager/ArgumentManager.hpp"
 
 static void sigHandler(const int sig, Server *srv)
 {
@@ -22,10 +22,17 @@ static void sigHandler(const int sig, Server *srv)
 int main(int argc, char **argv)
 {
     try {
-        ArgumentManager argManager(argc, argv);
-        if (!argManager.checkArguments())
-            return 84;
-        Server srv(argc == 1 ? 25777 : std::stoi(argv[2]));
+        ArgumentManager manager(argc, argv);
+        manager.addRequiredArgument("game");
+        manager.addDefaultArgument("port", "25777");
+        manager.parseArguments();
+        if (!manager.checkServerArguments()) {
+            ArgumentManager::DisplayServerUsage();
+            throw std::runtime_error("Invalid arguments");
+        }
+
+        Server srv(manager.getArgument("game"), std::stoi(manager.getArgument("port")));
+
         signal(SIGINT, reinterpret_cast<void (*)(int)>(sigHandler));
         signal(SIGTERM, reinterpret_cast<void (*)(int)>(sigHandler));
         sigHandler(-1, &srv);

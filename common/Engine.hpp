@@ -54,6 +54,7 @@ class Engine
 
         [[nodiscard]] Types::VMState getState() const { return _state; }
 
+        void loadGame(const std::string &game);
         void displayGameInfo();
         [[nodiscard]] const GameInfo *getGameInfo() const { return _gameInfo; }
 

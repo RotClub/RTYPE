@@ -20,7 +20,7 @@
 class Server
 {
     public:
-        Server(int port);
+        Server(const std::string &game, int port);
         ~Server();
         void start();
         void loop(std::chrono::time_point<std::chrono::steady_clock> &nextCallTime, const std::chrono::milliseconds &interval);
@@ -46,6 +46,7 @@ class Server
         };
 
     private:
+        const std::string &_game;
         int _port;
         bool _isRunning;
         ServerConnection _serverConnection;
