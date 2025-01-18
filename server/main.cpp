@@ -26,8 +26,10 @@ int main(int argc, char **argv)
         manager.addRequiredArgument("game");
         manager.addDefaultArgument("port", "25777");
         manager.parseArguments();
-        if (!manager.checkServerArguments())
+        if (!manager.checkServerArguments()) {
             ArgumentManager::DisplayServerUsage();
+            return 84;
+        }
 
         Server srv(manager.getArgument("game"), std::stoi(manager.getArgument("port")));
 
