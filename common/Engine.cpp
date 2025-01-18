@@ -16,19 +16,38 @@
 
 #include "nlohmann/json.hpp"
 
-Engine::Engine(Types::VMState state, const std::string &gamePath) :
-    root(new Node("root")), L(luaL_newstate()), _gamePath("games/" + gamePath), _libPath("libs"), _state(state)
+Engine::Engine(Types::VMState state, const std::string &gamePath)
+    : root(new Node("root")), L(luaL_newstate()), _gamePath(gamePath), _libPath("libs"), _state(state), _gameInfo(nullptr)
 {
     if (!L)
         throw std::runtime_error("Failed to create Lua state");
 
     _timeLast = std::chrono::high_resolution_clock::now();
 
+    luaL_openlibs(L);
+    luau_ExposeFunctions(L);
+    if (_state == Types::VMState::SERVER)
+        loadGame(_gamePath);
+}
+
+void Engine::loadGame(const std::string &game)
+{
+    _gamePath = "games/" + game;
+    if (!std::filesystem::exists(_gamePath))
+        throw std::runtime_error("Game not found: " + game);
     std::ifstream manifestFile(_gamePath / "manifest.json");
-    nlohmann::json manifestData = nlohmann::json::parse(manifestFile);
+    nlohmann::json manifestData;
+    try {
+        manifestData = nlohmann::json::parse(manifestFile);
+    }
+    catch (const std::exception &e) {
+        throw std::runtime_error("Failed to parse manifest.json: " + std::string(e.what()));
+    }
     manifestFile.close();
 
     try {
+        if (_gameInfo != nullptr)
+            delete _gameInfo;
         _gameInfo = new GameInfo(manifestData);
     }
     catch (const std::exception &e) {
@@ -37,33 +56,33 @@ Engine::Engine(Types::VMState state, const std::string &gamePath) :
 
     std::vector<spdlog::sink_ptr> sinks;
     sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-    switch (state) {
+    switch (_state) {
         case Types::VMState::SERVER:
             sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>(
                 "logs/" + _gameInfo->getName() + "/server", 23, 59));
-            break;
+        break;
         case Types::VMState::CLIENT:
             sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>(
                 "logs/" + _gameInfo->getName() + "/client", 23, 59));
-            break;
+        break;
     }
     auto engineLogger = std::make_shared<spdlog::logger>("EngineLogger", begin(sinks), end(sinks));
     spdlog::set_default_logger(engineLogger);
-    switch (state) {
+    switch (_state) {
         case Types::VMState::SERVER:
 #ifdef RTYPE_DEBUG
             spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] <%t> %v");
 #else
-            spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] %v");
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [SERVER] [%^%-5l%$] %v");
 #endif
-            break;
+        break;
         case Types::VMState::CLIENT:
 #ifdef RTYPE_DEBUG
             spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] <%t> %v");
 #else
-            spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] %v");
+                spdlog::set_pattern("[%Y-%m-%d %T.%e] [CLIENT] [%^%-5l%$] %v");
 #endif
-            break;
+        break;
     }
     spdlog::flush_every(std::chrono::seconds(5));
 #ifdef RTYPE_DEBUG
@@ -72,10 +91,8 @@ Engine::Engine(Types::VMState state, const std::string &gamePath) :
     spdlog::set_level(spdlog::level::info);
 #endif
 
-    luaL_openlibs(L);
     luau_ExposeGameInfoTable(L, _gameInfo);
-    luau_ExposeConstants(L, state);
-    luau_ExposeFunctions(L);
+    luau_ExposeConstants(L, _state);
 }
 
 Engine::~Engine()
