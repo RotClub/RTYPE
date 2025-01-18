@@ -60,7 +60,7 @@ void SoundPlayer::setPan(float pan)
 
 void SoundPlayer::setSound(const std::string &sound)
 {
-    _sound = sound;
+    _sound = Engine::GetInstance().getGamePath() / sound;
     Engine::GetInstance().getResourceManager().loadResource(_sound);
 }
 

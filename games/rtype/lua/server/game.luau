@@ -3,9 +3,6 @@ function defaultSpaceship(id: number)
         id = id,
         bound_player = nil,
         node = nil,
-        sounds = {
-            shoot = nil
-        },
         actions = {
             MOVE_LEFT = false,
             MOVE_RIGHT = false,
@@ -31,7 +28,6 @@ end
 function spawnSpaceship(id: number, ply: string)
     spaceships[id].bound_player = ply
     spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, Game.playersSize.x, Game.playersSize.y, 0, 0)
-    spaceships[id].sounds.shoot = node:CreateChild("SoundSource", "SpaceshipShoot" .. id, "assets/sounds/player_shoot.mp3")
 end
 
 function syncNewPlayer(ply: string)

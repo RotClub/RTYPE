@@ -7,11 +7,14 @@ function spawnLocalPlayer()
     localPlayerPoint = Game.localPlayer:CreateChild("Node2D", "localPlayerPoint")
     localPlayerSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
     localPlayerArrowSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerArrowSprite", "assets/sprites/arrow.png")
+    localPlayerShootingSound = Game.localPlayer:CreateChild("SoundPlayer", "localSpaceshipShootSoundPlayer", "assets/sounds/player_shoot.mp3")
 
     Game.localPlayer:SetPosition(0, 0)
     localPlayerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     localPlayerArrowSprite:SetSize(32, 32)
     localPlayerArrowSprite:SetPosition(Game.playersSize.x / 2 - 16, -30)
+    localPlayerShootingSound:SetVolume(0.05)
+    localPlayerShootingSound:SetPitch(1.0)
     setPlayerColor(localPlayerSprite, 1)
 end
 

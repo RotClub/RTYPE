@@ -24,8 +24,7 @@ void Game::run()
 {
     _window = raylib::Window();
     _audioDevice.Init();
-    raylib::Sound sound;
-    sound.
+    SetAudioStreamBufferSizeDefault(4096);
     const std::string gameName = Engine::GetInstance().getGameInfo()->getName();
     _window.Init(800, 600, gameName);
     _window.SetPosition(GetScreenWidth() / 2, GetScreenHeight() / 2);
