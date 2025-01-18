@@ -11,6 +11,7 @@
     #include <string>
     #include <regex>
     #include <spdlog/spdlog.h>
+    #include <filesystem>
 
     class ArgumentManager {
         public:
@@ -24,6 +25,7 @@
             char **_argv;
             bool validateIp(const std::string &ip);
             bool validatePort(const std::string &portStr, unsigned long min, unsigned long max);
+            bool validateGameName(const std::string &gameName);
     };
 
 #endif /* !ARGUMENTMANAGER_HPP_ */

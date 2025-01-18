@@ -15,15 +15,21 @@ bool ArgumentManager::checkServerArguments()
 {
     if (_argc == 1)
         return true;
-    if (_argc != 3) {
-        spdlog::error("Usage: ./rtype_server --port [port]");
+    if (_argc != 5) {
+        spdlog::error("Usage: ./rtype_server --port [port] --game [game name]");
         return false;
     }
-    if (std::string(_argv[1]) != "--port") {
-        spdlog::error("Usage: ./rtype_server --port [port]");
+    if (std::string(_argv[1]) != "--port" || std::string(_argv[3]) != "--game") {
+        spdlog::error("Usage: ./rtype_server --port [port] --game [game name]");
         return false;
     }
-    return validatePort(_argv[2], 1024, 65535);
+    if (!validatePort(_argv[2], 0, 65535)) {
+        return false;
+    }
+    if (!validateGameName(_argv[4])) {
+        return false;
+    }
+    return true;
 }
 
 bool ArgumentManager::checkClientArguments()
@@ -70,6 +76,19 @@ bool ArgumentManager::validatePort(const std::string &portStr, unsigned long min
     }
     catch (const std::out_of_range &) {
         spdlog::error("Invalid port: out of range");
+        return false;
+    }
+    return true;
+}
+
+bool ArgumentManager::validateGameName(const std::string &gameName)
+{
+    if (gameName.empty()) {
+        return false;
+    }
+    std::filesystem::path gamePath = std::filesystem::path("games") / gameName;
+    if (!std::filesystem::exists(gamePath) || !std::filesystem::is_directory(gamePath)) {
+        spdlog::error("Game directory '{}' does not exist in 'games/'", gamePath.string());
         return false;
     }
     return true;
