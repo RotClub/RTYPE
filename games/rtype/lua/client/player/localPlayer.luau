@@ -88,6 +88,9 @@ function localPlayerMovement(dt)
         sendAction(5, false)
     end
 
+    if Game.localPlayer == nil then
+        return
+    end
     Game.localPlayer:SetVelocity(direction.x * SPACESHIP_SPEED, direction.y * SPACESHIP_SPEED)
     correctPosition(Game.localPlayer, Game.localPly.netX, Game.localPly.netY)
 end

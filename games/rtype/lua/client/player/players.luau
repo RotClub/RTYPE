@@ -59,6 +59,7 @@ net.Receive("SpaceshipDespawn", function(len, ply)
     local dead = net.ReadBool()
     if not dead then
         if Game.localId == id and Game.localPlayer then
+            debug("Local player despawned")
             Game.localPlayer:Destroy()
             Game.localPlayer = nil
             return
@@ -67,6 +68,7 @@ net.Receive("SpaceshipDespawn", function(len, ply)
     end
     if Game.localId == id then
         explodePlayer(Game.localPlayer)
+        Game.localPlayer = nil
         return
     end
     explodePlayer(otherPlayers[id])
