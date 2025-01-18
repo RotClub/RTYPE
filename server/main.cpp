@@ -28,7 +28,7 @@ int main(int argc, char **argv)
         manager.parseArguments();
         if (!manager.checkServerArguments()) {
             ArgumentManager::DisplayServerUsage();
-            return 84;
+            throw std::runtime_error("Invalid arguments");
         }
 
         Server srv(manager.getArgument("game"), std::stoi(manager.getArgument("port")));
