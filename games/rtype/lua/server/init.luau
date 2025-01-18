@@ -1,3 +1,5 @@
+include("common/enemies.luau")
+include("server/enemies.luau")
 include("server/game.luau")
 include("server/channels.luau")
 
@@ -8,6 +10,16 @@ spaceships = {
     defaultSpaceship(4)
 }
 
+function getPlayerCount()
+    local count = 0
+    for i = 1, #spaceships do
+        if spaceships[i].bound_player then
+            count += 1
+        end
+    end
+    return count
+end
+
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 100000000
     for i = 1, #spaceships do
@@ -16,6 +28,9 @@ hook.Add("Tick", "main", function(delta)
         handleShooting(spaceships[i], dt)
         spaceshipBoundaries(spaceships[i])
         sendSpaceshipPosition(i)
+    end
+    if getPlayerCount() > 0 then
+        updateEnemies(dt)
     end
     updateProjectiles(dt)
 end)

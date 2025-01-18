@@ -6,8 +6,10 @@ local parallaxLayers = {
 
 Game.localId = nil
 
+include("common/enemies.luau")
+include("client/enemies.luau")
+include("client/lagCompensation.luau")
 include("client/animationsUtils.luau")
-include("client/enemies/enemies.luau")
 include("client/player/localPlayer.luau")
 include("client/player/players.luau")
 include("client/projectiles.luau")

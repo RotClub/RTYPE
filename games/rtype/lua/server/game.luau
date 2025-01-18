@@ -15,8 +15,6 @@ function defaultSpaceship(id: number)
     }
 end
 
-local SPACESHIP_SPEED = 100
-
 function getSpaceshipByPlayer(ply: string)
     for i = 1, #spaceships do
         if spaceships[i].bound_player == ply then
@@ -38,11 +36,11 @@ function syncNewPlayer(ply: string)
             net.WriteInt(i)
         net.SendToClient(ply)
     end
+    createEnemiesForNewPlayer(ply)
 end
 
 function sendSpaceshipPosition(i: number)
     local xp, yp = spaceships[i].node:GetGlobalPosition()
-    -- info("sending spaceship position: " .. xp .. ", " .. yp)
     net.Start("SpaceshipPosition")
         net.WriteInt(i)
         net.WriteFloat(xp)

@@ -34,10 +34,6 @@ function sendAction(direction, start)
     end
 end
 
-function calculateDistance(x1: number, y1: number, x2: number, y2: number)
-    return math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-end
-
 Keys = {}
 Keys.LeftKey = 65
 Keys.RightKey = 68
@@ -104,5 +100,6 @@ function localPlayerMovement(dt)
         -- explodePlayer(Game.localPlayer)
     end
 
-    Game.localPlayer:SetPosition(Game.localPly.netX, Game.localPly.netY)
+    Game.localPlayer:SetVelocity(direction.x * SPACESHIP_SPEED, direction.y * SPACESHIP_SPEED)
+    correctPosition(Game.localPlayer, Game.localPly.netX, Game.localPly.netY)
 end

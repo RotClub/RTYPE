@@ -1,23 +1,30 @@
 
 animations = {}
 
-function addAnimation(name: string, sprite, x: number, y: number, w: number, h: number, maxFrames: number, duration: number, frameDistance: number)
+function addAnimation(name: string, sprite, x: number, y: number, w: number, h: number, maxFrames: number, duration: number, looped: boolean, frameDistance: number)
+    if looped == nil then
+        looped = true
+    end
     if frameDistance == nil then
         frameDistance = w
     end
-    animations[name] = {
+    table.insert(animations, {
+        name = name,
         sprite = sprite,
         frameZone = {x = x, y = y, w = w, h = h},
         maxFrames = maxFrames,
         frameDistance = frameDistance,
         duration = duration,
+        looped = looped,
         timer = 0
-    }
-    return animations[name]
+    })
+    return animations[#animations]
 end
 
 function getAnimation(name: string)
-    return animations[name]
+    return table.find(animations, function(animation)
+        return animation.name == name
+    end)
 end
 
 function setAnimationFrame(animation, frame: number)
@@ -32,6 +39,9 @@ end
 
 function updateAnimations(dt)
     table.foreach(animations, function(name, animation)
+        if not animation.looped then
+            return
+        end
         animation.timer += dt
         if animation.timer > animation.duration then
             animation.timer = 0
