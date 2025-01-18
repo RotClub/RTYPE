@@ -34,6 +34,7 @@ class Game
         void _renderPreGameText(std::string text);
 
         raylib::Window _window;
+        raylib::AudioDevice _audioDevice;
         bool _shouldClose = false;
 };
 

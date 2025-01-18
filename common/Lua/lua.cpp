@@ -16,6 +16,7 @@
 #include <Nodes/Node2D/Node2D.hpp>
 #include <Nodes/Node2D/Sprite2D/Sprite2D.hpp>
 #include <Nodes/Shape2D/Rectangle2D/Rectangle2D.hpp>
+#include <Nodes/Sound/SoundPlayer.hpp>
 
 LUA_API int luau_Include(lua_State *L)
 {
@@ -276,7 +277,7 @@ static Node *luau_FindNodeFactory(lua_State *L, int pos)
     Node *node = nullptr;
     const char *metatables[] = {"NodeMetaTable", "Node2DMetaTable", "CollisionShape2DMetaTable", "Sprite2DMetaTable",
                                  "Area2DMetaTable", "ParallaxMetaTable", "RigidBody2DMetaTable", "StaticBody2DMetaTable",
-                                 "LabelMetaTable", "BoxMetaTable"};
+                                 "LabelMetaTable", "BoxMetaTable", "SoundPlayerMetaTable"};
     for (const char *metatable : metatables) {
         try {
             node = *static_cast<Node **>(luaL_checkudata(L, pos, metatable));
@@ -367,6 +368,10 @@ static Node *luau_NodeFactory(lua_State *L, const std::string &type)
         double size_y = luaL_checknumber(L, 7);
         child = new Box(name, Types::Vector2(x, y), Types::Vector2(size_x, size_y));
     }
+    else if (type == "SoundPlayer") {
+        const char *sound = luaL_checkstring(L, 4);
+        child = new SoundPlayer(name, sound);
+    }
     else {
         luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
     }
@@ -449,6 +454,13 @@ LUA_API int lua_gcBox(lua_State *L)
     return 0;
 }
 
+LUA_API int lua_gcSoundPlayer(lua_State *L)
+{
+    SoundPlayer *soundPlayer = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    delete soundPlayer;
+    return 0;
+}
+
 /** __gc functions **/
 
 /** Destroy functions **/
@@ -490,6 +502,8 @@ LUA_API int luau_LabelDestroy(lua_State *L) { return luau_TemplateNodeDestroy<La
 
 LUA_API int luau_BoxDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Box>(L, "BoxMetaTable"); }
 
+LUA_API int luau_SoundPlayerDestroy(lua_State *L) { return luau_TemplateNodeDestroy<SoundPlayer>(L, "SoundPlayerMetaTable"); }
+
 /** Destroy functions **/
 
 /** GetName functions **/
@@ -530,6 +544,8 @@ LUA_API int luau_StaticBody2DGetName(lua_State *L)
 LUA_API int luau_LabelGetName(lua_State *L) { return luau_TemplateNodeGetName<Label>(L, "LabelMetaTable"); }
 
 LUA_API int luau_BoxGetName(lua_State *L) { return luau_TemplateNodeGetName<Box>(L, "BoxMetaTable"); }
+
+LUA_API int luau_SoundPlayerGetName(lua_State *L) { return luau_TemplateNodeGetName<SoundPlayer>(L, "SoundPlayerMetaTable"); }
 
 /** GetName functions **/
 
@@ -575,6 +591,11 @@ LUA_API int luau_StaticBody2DSetName(lua_State *L)
 LUA_API int luau_LabelSetName(lua_State *L) { return luau_TemplateNodeSetName<Label>(L, "LabelMetaTable"); }
 
 LUA_API int luau_BoxSetName(lua_State *L) { return luau_TemplateNodeSetName<Box>(L, "BoxMetaTable"); }
+
+LUA_API int luau_SoundPlayerSetName(lua_State *L)
+{
+    return luau_TemplateNodeSetName<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
 
 /** SetName functions **/
 
@@ -630,6 +651,11 @@ LUA_API int luau_LabelGetChildren(lua_State *L) { return luau_TemplateNodeGetChi
 
 LUA_API int luau_BoxGetChildren(lua_State *L) { return luau_TemplateNodeGetChildren<Box>(L, "BoxMetaTable"); }
 
+LUA_API int luau_SoundPlayerGetChildren(lua_State *L)
+{
+    return luau_TemplateNodeGetChildren<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
+
 /** GetChildren functions **/
 
 /** GetChild functions **/
@@ -683,6 +709,11 @@ LUA_API int luau_StaticBody2DGetChild(lua_State *L)
 LUA_API int luau_LabelGetChild(lua_State *L) { return luau_TemplateGetChild<Label>(L, "LabelMetaTable"); }
 
 LUA_API int luau_BoxGetChild(lua_State *L) { return luau_TemplateGetChild<Box>(L, "BoxMetaTable"); }
+
+LUA_API int luau_SoundPlayerGetChild(lua_State *L)
+{
+    return luau_TemplateGetChild<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
 
 /** GetChild functions **/
 
@@ -747,6 +778,11 @@ LUA_API int luau_LabelCreateChild(lua_State *L) { return luau_TemplateCreateChil
 
 LUA_API int luau_BoxCreateChild(lua_State *L) { return luau_TemplateCreateChild<Box>(L, "BoxMetaTable"); }
 
+LUA_API int luau_SoundPlayerCreateChild(lua_State *L)
+{
+    return luau_TemplateCreateChild<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
+
 /** CreateChild functions **/
 
 /** AddChild functions **/
@@ -793,6 +829,11 @@ LUA_API int luau_StaticBody2DAddChild(lua_State *L)
 LUA_API int luau_LabelAddChild(lua_State *L) { return luau_TemplateAddChild<Label>(L, "LabelMetaTable"); }
 
 LUA_API int luau_BoxAddChild(lua_State *L) { return luau_TemplateAddChild<Box>(L, "BoxMetaTable"); }
+
+LUA_API int luau_SoundPlayerAddChild(lua_State *L)
+{
+    return luau_TemplateAddChild<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
 
 /** AddChild functions **/
 
@@ -1314,6 +1355,90 @@ LUA_API int luau_LabelGetGlobalPosition(lua_State *L)
 
 LUA_API int luau_BoxGetGlobalPosition(lua_State *L) { return luau_TemplateGetGlobalPosition<Box>(L, "BoxMetaTable"); }
 
+/** GetGlobalPosition functions **/
+
+
+/** SoundPlayer functions **/
+
+LUA_API int luau_SoundPlayerPlay(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->play();
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerPause(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->pause();
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerStop(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->stop();
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerSetVolume(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->setVolume(luaL_checknumber(L, 2));
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerSetPitch(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->setPitch(luaL_checknumber(L, 2));
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerSetPan(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->setPan(luaL_checknumber(L, 2));
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerSetSound(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->setSound(luaL_checkstring(L, 2));
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerGetSound(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    lua_pushstring(L, node->getSound().c_str());
+    return 1;
+}
+
+LUA_API int luau_SoundPlayerResume(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->resume();
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerIsPlaying(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    lua_pushboolean(L, node->isPlaying());
+    return 1;
+}
+
+LUA_API int luau_SoundPlayerIsStopped(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    lua_pushboolean(L, node->isStopped());
+    return 1;
+}
+
+/** SoundPlayer functions **/
+
 /* NODE LIBRARY */
 
 /* LUA API LIBRARY */
@@ -1648,6 +1773,27 @@ void luau_ExposeFunctions(lua_State *L)
                                        {"__gc", lua_gcBox},
                                        {nullptr, nullptr}};
     luau_ExposeFunctionsAsMetatable(L, boxLibrary, "BoxMetaTable");
+    constexpr luaL_Reg soundPlayerLibrary[] = {{"GetName", luau_SoundPlayerGetName},
+                                        {"SetName", luau_SoundPlayerSetName},
+                                        {"GetChildren", luau_SoundPlayerGetChildren},
+                                        {"GetChild", luau_SoundPlayerGetChild},
+                                        {"AddChild", luau_SoundPlayerAddChild},
+                                        {"CreateChild", luau_SoundPlayerCreateChild},
+                                        {"Destroy", luau_SoundPlayerDestroy},
+                                        {"Play", luau_SoundPlayerPlay},
+                                        {"Stop", luau_SoundPlayerStop},
+                                        {"Pause", luau_SoundPlayerPause},
+                                        {"Resume", luau_SoundPlayerResume},
+                                        {"SetVolume", luau_SoundPlayerSetVolume},
+                                        {"SetPitch", luau_SoundPlayerSetPitch},
+                                        {"SetPan", luau_SoundPlayerSetPan},
+                                        {"SetSound", luau_SoundPlayerSetSound},
+                                        {"GetSound", luau_SoundPlayerGetSound},
+                                        {"IsPlaying", luau_SoundPlayerIsPlaying},
+                                        {"IsStopped", luau_SoundPlayerIsStopped},
+                                        {"__gc", lua_gcSoundPlayer},
+                                        {nullptr, nullptr}};
+    luau_ExposeFunctionsAsMetatable(L, soundPlayerLibrary, "SoundPlayerMetaTable");
     /* NODE LIBRARY */
 
     /* ENGINE LIBRARY */
