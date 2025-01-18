@@ -22,6 +22,7 @@ class Game
         void run();
 
         [[nodiscard]] const Types::Vector2 &getWindowSize() const;
+        [[nodiscard]] raylib::Window &getWindow() { return _window; }
 
     private:
         void _update(int dt);

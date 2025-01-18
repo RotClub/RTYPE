@@ -9,54 +9,90 @@
 
 ArgumentManager::ArgumentManager(int argc, char **argv) : _argc(argc), _argv(argv) {}
 
-ArgumentManager::~ArgumentManager() {}
-
-bool ArgumentManager::checkServerArguments()
+void ArgumentManager::addRequiredArgument(const std::string &argumentName)
 {
-    if (_argc == 1)
-        return true;
-    if (_argc != 5) {
-        spdlog::error("Usage: ./rtype_server --port [port] --game [game name]");
+    _requiredArguments.push_back(argumentName);
+}
+
+void ArgumentManager::addDefaultArgument(const std::string &argumentName, const std::string &defaultValue)
+{
+    _defaultArguments.emplace(argumentName, defaultValue);
+}
+
+void ArgumentManager::parseArguments()
+{
+    for (int i = 1; i < _argc; i++) {
+        if (std::string(_argv[i]).substr(0, 2) == "--") {
+            std::string argumentName = std::string(_argv[i]).substr(2);
+            if (i + 1 < _argc && std::string(_argv[i + 1]).substr(0, 2) != "--") {
+                _arguments[argumentName] = _argv[i + 1];
+            }
+        }
+    }
+    for (const auto &requiredArgument : _requiredArguments) {
+        if (!_arguments.contains(requiredArgument)) {
+            throw ArgumentManagerException("Missing required argument: --" + requiredArgument);
+        }
+    }
+    for (const auto &defaultArgument : _defaultArguments) {
+        if (!_arguments.contains(defaultArgument.first)) {
+            _arguments[defaultArgument.first] = defaultArgument.second;
+        }
+    }
+}
+
+void ArgumentManager::DisplayServerUsage()
+{
+    spdlog::info("Usage of ./rtype_server:");
+    spdlog::info("  --port [port] : port to listen on (default: 25777)");
+    spdlog::info("  --game [game name] : game to load from 'games/' directory");
+}
+
+void ArgumentManager::DisplayClientUsage()
+{
+    spdlog::info("Usage of ./rtype_client:");
+    spdlog::info("  --ip [ip] : server IP address");
+    spdlog::info("  --port [port] : server port");
+}
+
+const std::string &ArgumentManager::getArgument(const std::string &argumentName) const
+{
+    if (!_arguments.contains(argumentName))
+        throw ArgumentManagerException("Argument not found: " + argumentName);
+    return _arguments.at(argumentName);
+}
+
+bool ArgumentManager::checkServerArguments() const
+{
+    if (!validatePort()) {
         return false;
     }
-    if (std::string(_argv[1]) != "--port" || std::string(_argv[3]) != "--game") {
-        spdlog::error("Usage: ./rtype_server --port [port] --game [game name]");
-        return false;
-    }
-    if (!validatePort(_argv[2], 0, 65535)) {
-        return false;
-    }
-    if (!validateGameName(_argv[4])) {
+    if (!validateGameName()) {
         return false;
     }
     return true;
 }
 
-bool ArgumentManager::checkClientArguments()
+bool ArgumentManager::checkClientArguments() const
 {
-    if (_argc != 5) {
-        spdlog::error("Usage: ./rtype_client --ip [ip] --port [port]");
-        return false;
-    }
-    if (std::string(_argv[1]) != "--ip" || std::string(_argv[3]) != "--port") {
-        spdlog::error("Usage: ./rtype_client --ip [ip] --port [port]");
-        return false;
-    }
-    if (!validateIp(_argv[2])) {
+    if (!validateIp()) {
         spdlog::error("Invalid IP: must be a valid IPv4 address");
         return false;
     }
-    return validatePort(_argv[4], 1024, 65535);
+    return validatePort();
 }
 
-bool ArgumentManager::validateIp(const std::string &ip)
+bool ArgumentManager::validateIp() const
 {
     std::regex ip_pattern(R"(^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$)");
-    return std::regex_match(ip, ip_pattern);
+    return std::regex_match(getArgument("ip"), ip_pattern);
 }
 
-bool ArgumentManager::validatePort(const std::string &portStr, unsigned long min, unsigned long max)
+bool ArgumentManager::validatePort() const
 {
+    const std::string &portStr = getArgument("port");
+    const unsigned int min = 1024;
+    const unsigned int max = 65535;
     for (int i = 0; portStr[i]; i++) {
         if (!std::isdigit(portStr[i])) {
             spdlog::error("Port must be a valid number");
@@ -81,12 +117,12 @@ bool ArgumentManager::validatePort(const std::string &portStr, unsigned long min
     return true;
 }
 
-bool ArgumentManager::validateGameName(const std::string &gameName)
+bool ArgumentManager::validateGameName() const
 {
-    if (gameName.empty()) {
+    if (getArgument("game").empty()) {
         return false;
     }
-    std::filesystem::path gamePath = std::filesystem::path("games") / gameName;
+    std::filesystem::path gamePath = std::filesystem::path("games") / getArgument("game");
     if (!std::filesystem::exists(gamePath) || !std::filesystem::is_directory(gamePath)) {
         spdlog::error("Game directory '{}' does not exist in 'games/'", gamePath.string());
         return false;

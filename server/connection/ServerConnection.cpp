@@ -8,6 +8,7 @@
 #include "ServerConnection.hpp"
 
 #include <Engine.hpp>
+#include <csignal>
 #include <arpa/inet.h>
 #include <cstddef>
 #include <netinet/in.h>
@@ -31,7 +32,6 @@ void ServerConnection::stop()
     if (!_running)
         return;
     _running = false;
-    pthread_cancel(_networkThread.native_handle());
     if (_networkThread.joinable()) {
         _networkThread.join();
     }
@@ -250,12 +250,13 @@ int ServerConnection::_selectFd()
 {
     int retval;
 
+    timeval timeout = {2, 0};
     _setClientFds(&_readfds);
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
     FD_SET(_udpFd, &_readfds);
     int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
-    retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, nullptr);
+    retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, &timeout);
     return retval;
 }
 
