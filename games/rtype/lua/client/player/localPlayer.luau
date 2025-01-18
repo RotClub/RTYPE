@@ -13,6 +13,7 @@ function spawnLocalPlayer()
     localPlayerArrowSprite:SetSize(32, 32)
     localPlayerArrowSprite:SetPosition(Game.playersSize.x / 2 - 16, -30)
     setPlayerColor(localPlayerSprite, 1)
+    setParallaxReference(localPlayerPoint)
 end
 
 function sendAction(direction, start)
