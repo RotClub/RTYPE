@@ -6,7 +6,7 @@
 */
 
 #include "Server.hpp"
-#include "../common/ArgumentManager/ArgumentManager.hpp"
+#include "ArgumentManager/ArgumentManager.hpp"
 
 static void sigHandler(const int sig, Server *srv)
 {

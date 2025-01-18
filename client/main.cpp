@@ -5,7 +5,7 @@
 ** main
 */
 
-#include "../common/ArgumentManager/ArgumentManager.hpp"
+#include "ArgumentManager/ArgumentManager.hpp"
 #include "Client.hpp"
 
 #include <cstdlib>
