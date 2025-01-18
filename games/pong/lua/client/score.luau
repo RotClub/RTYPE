@@ -7,10 +7,10 @@ end
 
 function drawScore(score, player)
     if player == 1 then
-        local score_text = root:CreateChild("Label", "score_text", 800/2 - 70, 10, score[1], "assets/bit5x3.ttf", 50)
+        local score_text = root:CreateChild("Label", "score_text", WINDOW_WIDTH/2 - 70, 10, score[1], "assets/bit5x3.ttf", 50)
         return score_text
     elseif player == 2 then
-        local score_text_player2 = root:CreateChild("Label", "score_text_player2", 800/2 + 30, 10, score[2], "assets/bit5x3.ttf", 50)
+        local score_text_player2 = root:CreateChild("Label", "score_text_player2", WINDOW_WIDTH/2 + 30, 10, score[2], "assets/bit5x3.ttf", 50)
         return score_text_player2
     end
 end
