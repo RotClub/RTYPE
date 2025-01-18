@@ -11,7 +11,8 @@ function defaultSpaceship(id: number)
             SHOOT = false
         },
         buffered_shot = false,
-        shoot_cd = 0.0
+        shoot_cd = 0.0,
+        respawn_cd = 0.0
     }
 end
 
@@ -26,6 +27,18 @@ end
 function spawnSpaceship(id: number, ply: string)
     spaceships[id].bound_player = ply
     spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, Game.playersSize.x, Game.playersSize.y, 0, 0)
+end
+
+function despawnSpaceship(id: number)
+    if spaceships[id].node ~= nil then
+        spaceships[id].node:Destroy()
+    end
+    spaceships[id].node = nil
+    spaceships[id].shoot_cd = 0.0
+    spaceships[id].respawn_cd = RESPAWN_TIME
+    table.foreach(spaceships[id].actions, function(k, v)
+        spaceships[id].actions[k] = false
+    end)
 end
 
 function syncNewPlayer(ply: string)

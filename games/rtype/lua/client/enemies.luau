@@ -1,11 +1,11 @@
 
 net.Receive("EnemySpawn", function(len, ply)
     local enemyId = net.ReadInt()
-    local x = net.ReadInt()
-    local y = net.ReadInt()
-    local vX = net.ReadInt()
-    local vY = net.ReadInt()
-    local enemy = createPataPata(x, y, vX, vY, enemyId)
+    local x = net.ReadFloat()
+    local y = net.ReadFloat()
+    local vX = net.ReadFloat() -- not used for now
+    local vY = net.ReadFloat() -- not used for now
+    local enemy = createPataPata(x, y, 0, 0, enemyId)
 end)
 
 net.Receive("EnemyDestroyed", function(len, ply)
@@ -16,9 +16,19 @@ end)
 
 net.Receive("EnemyPosition", function(len, ply)
     local enemyId = net.ReadInt()
-    local x = net.ReadInt()
-    local y = net.ReadInt()
-    local enemy = getEnemyById(enemyId)
-    if not enemy then return end
-    enemy.node:SetPosition(x, y)
+    local x = net.ReadFloat()
+    local y = net.ReadFloat()
+    local enemyRcv = nil
+    table.foreach(Game.enemies, function(i, enemy)
+        if enemy.id == enemyId then
+            enemyRcv = enemy
+            return
+        end
+    end)
+    if enemyRcv == nil then return end
+    enemyRcv.node:SetPosition(x, y)
 end)
+
+function enemiesUpdate()
+    checkEnemiesDamaged(Game.projectiles, Game.enemies)
+end

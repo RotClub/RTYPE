@@ -21,9 +21,15 @@ function addAnimation(name: string, sprite, x: number, y: number, w: number, h: 
     return animations[#animations]
 end
 
-function getAnimation(name: string)
+function getAnimationByName(name: string)
     return table.find(animations, function(animation)
         return animation.name == name
+    end)
+end
+
+function getAnimationByNodeName(nodeName: string)
+    return table.find(animations, function(animation)
+        return animation.sprite:GetName() == nodeName
     end)
 end
 
@@ -33,8 +39,18 @@ function setAnimationFrame(animation, frame: number)
 end
 
 function setAnimationFrameByNode(node, frame: number)
-    local animation = getAnimation(node:GetName())
+    local animation = getAnimationByNodeName(node:GetName())
     setAnimationFrame(animation, frame)
+end
+
+function removeAnimationByName(name: string)
+    table.remove(animations, table.find(animations, function(animation)
+        return animation.name == name
+    end))
+end
+
+function removeAnimation(animation)
+    table.remove(animations, table.find(animations, animation))
 end
 
 function updateAnimations(dt)

@@ -24,7 +24,7 @@ end
 local function removePlayer(id)
     local player = otherPlayers[id]
     if player then
-        -- player:Destroy()
+        player:Destroy()
         otherPlayers[id] = nil
     end
 end
@@ -52,4 +52,22 @@ net.Receive("SpaceshipPosition", function(len, ply)
         return
     end
     updatePlayerPosition(id, x, y)
+end)
+
+net.Receive("SpaceshipDespawn", function(len, ply)
+    local id = net.ReadInt()
+    local dead = net.ReadBool()
+    if not dead then
+        if Game.localId == id and Game.localPlayer then
+            Game.localPlayer:Destroy()
+            Game.localPlayer = nil
+            return
+        end
+        removePlayer(id)
+    end
+    if Game.localId == id then
+        explodePlayer(Game.localPlayer)
+        return
+    end
+    explodePlayer(otherPlayers[id])
 end)

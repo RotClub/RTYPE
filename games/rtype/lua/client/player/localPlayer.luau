@@ -15,13 +15,6 @@ function spawnLocalPlayer()
     setPlayerColor(localPlayerSprite, 1)
 end
 
-function explodePlayer(player)
-    player:Destroy()
-    local explosion = player:CreateChild("Sprite2D", "explosion", "assets/sprites/r-typesheet1.png")
-    explosion:SetPosition(0, -10)
-    explosion:SetSource(1, 334, 32, 28*2)
-end
-
 function sendAction(direction, start)
     if start then
         net.Start("ActionStart")
@@ -41,7 +34,6 @@ Keys.UpKey = 87
 Keys.DownKey = 83
 Keys.CycleKey = 67
 Keys.ShootKey = 74
-Keys.SpecialKey1 = 72
 
 local SHOOT_RATE = 0.1
 local shootTimer = 0
@@ -93,11 +85,6 @@ function localPlayerMovement(dt)
     if IsKeyJustPressed(Keys.ShootKey) then
         sendAction(5, true)
         sendAction(5, false)
-    end
-    if IsKeyJustPressed(Keys.SpecialKey1) then
-        -- net.Start("Hello")
-        -- net.SendToServer()
-        -- explodePlayer(Game.localPlayer)
     end
 
     Game.localPlayer:SetVelocity(direction.x * SPACESHIP_SPEED, direction.y * SPACESHIP_SPEED)

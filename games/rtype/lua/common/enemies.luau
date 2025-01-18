@@ -1,7 +1,7 @@
 
 Game.enemies = {}
 
-local enemiesUpdates = {}
+enemiesUpdates = {}
 
 local enemyId = 0
 
@@ -11,33 +11,42 @@ local enemyId = 0
 local patapatas = {}
 
 function createPataPata(x, y, vx, vy, id)
+    vx = vx or -130
+    vy = vy or 0
     id = id or enemyId
-    local patapata = root:CreateChild("RigidBody2D", "patapata" .. id, x, y, 32, 32, vx, vy)
+    local w, h = 32*2, 36*2
+    local patapata = root:CreateChild("RigidBody2D", "patapata" .. id, x, y, w, h, vx, vy)
     local patapataSprite = nil
     local patapataAnimation = nil
     if CLIENT then
         patapataSprite = patapata:CreateChild("Sprite2D", "patapataSprite" .. id, "assets/sprites/r-typesheet5.png")
-        patapataAnimation = addAnimation("patapataAnimation", patapataSprite, 0, 0, 32, 36, 8, 1, true, 33)
-        patapataSprite:SetSize(32*2, 36*2)
+        patapataAnimation = addAnimation("patapataAnimation" .. id, patapataSprite, 0, 0, 32, 36, 8, 0.6, true, 33)
+        patapataSprite:SetSize(w, h)
     end
     table.insert(Game.enemies, {
         node = patapata,
         sprite = patapataSprite,
-        health = 3,
+        health = 1,
         animation = patapataAnimation,
         spawnPos = {x = x, y = y},
         id = id
     })
     table.insert(patapatas, Game.enemies[#Game.enemies])
     if SERVER then enemyId += 1 end
-    debug("Pata-Pata created")
     return Game.enemies[#Game.enemies]
 end
 
+local PATAPATA_WAVE_FREQUENCY = 40
+local PATAPATA_WAVE_AMPLITUDE = 30
+
 function enemiesUpdates.patapataUpdate(dt)
     table.foreach(patapatas, function(i, patapata)
+        if patapata.node == nil then
+            table.remove(patapatas, i)
+            return
+        end
         local x = patapata.node:GetPosition()
-        local wave = math.sin(x / 60) * 60
+        local wave = math.sin(x / PATAPATA_WAVE_FREQUENCY) * PATAPATA_WAVE_AMPLITUDE
         patapata.node:SetPosition(x, wave + patapata.spawnPos.y)
     end)
 end
@@ -49,63 +58,68 @@ function destroyEnemy(id: number)
     table.foreach(Game.enemies, function(i, enemy)
         if enemy.id == id then
             enemy.node:Destroy()
+            enemy.node = nil
+            if CLIENT then
+                removeAnimation(enemy.animation)
+            end
             table.remove(Game.enemies, i)
         end
     end)
 end
 
-function getEnemyById(id: number)
-    table.foreach(Game.enemies, function(i, enemy)
+function getEnemyById(id: number, enemies: table)
+    enemies = enemies or Game.enemies
+    table.foreach(enemies, function(i, enemy)
         if enemy.id == id then
             return enemy
         end
     end)
+    return nil
 end
 
 function checkEnemiesDamaged(projectiles, enemies)
     table.foreach(projectiles, function(i, projectiles)
         table.foreach(enemies, function(j, enemy)
+            if projectiles.node == nil then return end
             if projectiles.node:Collide(enemy.node) then
-                enemy.health -= 1
-                projectiles.node:Destroy()
                 if SERVER then
+                    enemy.health -= 1
                     net.Start("ProjectileEnd")
-                        net.WriteInt(projectiles.id)
-                        net.WriteBool(true)
+                    net.WriteInt(projectiles.id)
+                    net.WriteBool(true)
                     net.Broadcast()
                 end
+                projectiles.node:Destroy()
+                projectiles.node = nil
+                table.remove(Game.projectiles, i)
             end
         end)
     end)
 end
 
-function enemiesUpdate(dt)
-    table.foreach(Game.enemies, function(i, enemy)
-        local x, y = enemy.node:GetGlobalPosition()
-        if x < -100 then
-            enemy.node:SetPosition(900, math.random(10, 470))
-        end
-        if enemy.health <= 0 then
-            enemy.node:Destroy()
-            table.remove(Game.enemies, i)
-            if SERVER then
-                net.Start("EnemyDestroyed")
-                    net.WriteInt(enemy.id)
-                    net.WriteBool(true)
-                net.Broadcast()
+function checkEnemiesDamagePlayers(enemies, players)
+    table.foreach(enemies, function(i, enemy)
+        if enemy.node == nil then return end
+        table.foreach(players, function(j, player)
+            if player.node == nil then return end
+            if player.node:Collide(enemy.node) then
+                if SERVER then
+                    net.Start("SpaceshipDespawn")
+                        net.WriteInt(player.id)
+                        net.WriteBool(true)
+                    net.Broadcast()
+                end
+                despawnSpaceship(player.id)
             end
-            return
-        end
-        if SERVER then
-            local x, y = enemy.node:GetGlobalPosition()
-            net.Start("EnemyPosition")
-                net.WriteInt(enemy.id)
-                net.WriteFloat(x)
-                net.WriteFloat(y)
-            net.Broadcast()
+        end)
+    end)
+end
+
+function cleanNilEnemiesNodes(enemies)
+    table.foreach(enemies, function(i, enemy)
+        if enemy.node == nil then
+            removeEnemy(i)
         end
     end)
-    for i, update in enemiesUpdates do
-        update(dt)
-    end
 end
+
