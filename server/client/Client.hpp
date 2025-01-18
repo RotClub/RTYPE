@@ -8,7 +8,14 @@
 #include <Networking/Packet.hpp>
 #include <Networking/SafeQueue.hpp>
 #include <cstring>
-#include <netinet/in.h>
+
+#ifdef WIN32
+    #include <windows.h>
+    #include <winsock2.h>
+#else
+    #include <netinet/in.h>
+#endif
+
 #include <string>
 #include <tuple>
 #include <cstdint>
@@ -52,7 +59,7 @@ class Client
         bool hasUdpPacketInput();
 
         // TODO REMOVE
-        int getUdpQueueSize() { return std::get<OUT>(_udpQueues).size(); }
+        int getUdpQueueSize() { return std::get<PACKET_OUT>(_udpQueues).size(); }
 
         void addToTcpBuffer(const std::vector<uint8_t> &buffer) { _tcpBuffer.insert(_tcpBuffer.end(), buffer.begin(), buffer.end()); }
         std::vector<uint8_t> &getTcpBuffer() { return _tcpBuffer; }

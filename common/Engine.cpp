@@ -10,7 +10,12 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <unistd.h>
+
+#ifdef _WIN32
+    #include <direct.h>
+#else
+    #include <unistd.h>
+#endif
 
 #include "Lua/lua.hpp"
 
@@ -27,7 +32,7 @@ Engine::Engine(Types::VMState state, const std::string &gamePath)
     luaL_openlibs(L);
     luau_ExposeFunctions(L);
     if (_state == Types::VMState::SERVER)
-        loadGame(_gamePath);
+        loadGame(_gamePath.string());
 }
 
 void Engine::loadGame(const std::string &game)
@@ -185,7 +190,8 @@ void Engine::callHook(const std::string &eventName, ...)
     lua_pushstring(L, eventName.c_str());
 
     va_list args;
-    va_start(args, eventName);
+    const char *event = eventName.c_str();
+    va_start(args, event);
     int argCount = 0;
     while (true) {
         const char *type = va_arg(args, const char *);

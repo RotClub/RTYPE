@@ -10,6 +10,10 @@
 #include <random>
 #include <stdexcept>
 #include <unistd.h>
+
+#ifdef WIN32
+#include <ws2tcpip.h>
+#endif
 #include "spdlog/spdlog.h"
 
 static std::string generateUUID()
@@ -48,32 +52,32 @@ Client::~Client()
     spdlog::info("Client {} disconnected", uuid);
 }
 
-void Client::addTcpPacketInput(Packet *packet) { std::get<IN>(_tcpQueues).enqueue(packet); }
+void Client::addTcpPacketInput(Packet *packet) { std::get<PACKET_IN>(_tcpQueues).enqueue(packet); }
 
-void Client::addUdpPacketInput(Packet *packet) { std::get<IN>(_udpQueues).enqueue(packet); }
+void Client::addUdpPacketInput(Packet *packet) { std::get<PACKET_IN>(_udpQueues).enqueue(packet); }
 
-Packet *Client::popTcpPacketInput() { return std::get<IN>(_tcpQueues).dequeue(); }
+Packet *Client::popTcpPacketInput() { return std::get<PACKET_IN>(_tcpQueues).dequeue(); }
 
-Packet *Client::popUdpPacketInput() { return std::get<IN>(_udpQueues).dequeue(); }
+Packet *Client::popUdpPacketInput() { return std::get<PACKET_IN>(_udpQueues).dequeue(); }
 
 void Client::addTcpPacketOutput(Packet *packet)
 {
-    std::get<OUT>(_tcpQueues).enqueue(packet);
+    std::get<PACKET_OUT>(_tcpQueues).enqueue(packet);
 }
 
 void Client::addUdpPacketOutput(Packet *packet)
 {
-    std::get<OUT>(_udpQueues).enqueue(packet);
+    std::get<PACKET_OUT>(_udpQueues).enqueue(packet);
 }
 
-Packet *Client::popTcpPacketOutput() { return std::get<OUT>(_tcpQueues).dequeue(); }
+Packet *Client::popTcpPacketOutput() { return std::get<PACKET_OUT>(_tcpQueues).dequeue(); }
 
-Packet *Client::popUdpPacketOutput() { return std::get<OUT>(_udpQueues).dequeue(); }
+Packet *Client::popUdpPacketOutput() { return std::get<PACKET_OUT>(_udpQueues).dequeue(); }
 
-bool Client::hasTcpPacketOutput() { return !std::get<OUT>(_tcpQueues).empty(); }
+bool Client::hasTcpPacketOutput() { return !std::get<PACKET_OUT>(_tcpQueues).empty(); }
 
-bool Client::hasUdpPacketOutput() { return !std::get<OUT>(_udpQueues).empty(); }
+bool Client::hasUdpPacketOutput() { return !std::get<PACKET_OUT>(_udpQueues).empty(); }
 
-bool Client::hasTcpPacketInput() { return !std::get<IN>(_tcpQueues).empty(); }
+bool Client::hasTcpPacketInput() { return !std::get<PACKET_IN>(_tcpQueues).empty(); }
 
-bool Client::hasUdpPacketInput() { return !std::get<IN>(_udpQueues).empty(); }
+bool Client::hasUdpPacketInput() { return !std::get<PACKET_IN>(_udpQueues).empty(); }

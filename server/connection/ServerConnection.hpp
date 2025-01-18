@@ -10,12 +10,20 @@
 
 #include <client/Client.hpp>
 #include <map>
-#include <netinet/in.h>
+
+#ifdef WIN32
+    #include <windows.h>
+    #include <winsock2.h>
+    #include <io.h>
+#else
+    #include <netinet/in.h>
+    #include <sys/select.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+#endif
+
 #include <set>
-#include <sys/select.h>
-#include <sys/socket.h>
 #include <thread>
-#include <unistd.h>
 #include "Networking/Defines.hpp"
 #include "Networking/Packet.hpp"
 #include "Networking/PacketBuilder.hpp"

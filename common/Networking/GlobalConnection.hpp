@@ -12,17 +12,23 @@
 #include "Packet.hpp"
 #include "SafeQueue.hpp"
 
-#include <arpa/inet.h>
+#ifdef WIN32
+    #include <winsock2.h>
+#else
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <sys/select.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+#endif
+
 #include <atomic>
 #include <cstring>
 #include <iostream>
-#include <netinet/in.h>
+
 #include <string>
-#include <sys/select.h>
-#include <sys/socket.h>
 #include <thread>
 #include <tuple>
-#include <unistd.h>
 
 class GlobalConnection
 {

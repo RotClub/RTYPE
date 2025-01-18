@@ -22,7 +22,7 @@ Parallax::~Parallax() {}
 
 Parallax &Parallax::setTexture(const std::string &texture)
 {
-    this->_texture = Engine::GetInstance().getGamePath() / texture;
+    this->_texture = (Engine::GetInstance().getGamePath() / texture).string();
     Engine::GetInstance().getResourceManager().loadResource(_texture);
     return *this;
 }

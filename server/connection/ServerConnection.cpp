@@ -9,10 +9,14 @@
 
 #include <Engine.hpp>
 #include <csignal>
+#ifdef WIN32
+#include <ws2tcpip.h>
+#elif
 #include <arpa/inet.h>
-#include <cstddef>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#endif
+#include <cstddef>
 
 ServerConnection::ServerConnection(int port) : _port(port) {}
 
@@ -145,7 +149,7 @@ void ServerConnection::_tryReceiveUDP()
     std::memset(&addr, 0, sizeof(addr));
     socklen_t len = sizeof(addr);
     int n = 0;
-    if ((n = recvfrom(_udpFd, buffer.data(), sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&addr), &len)) <= 0) {
+    if ((n = recvfrom(_udpFd, reinterpret_cast<char *>(buffer.data()), sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&addr), &len)) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
     buffer.resize(n);
@@ -207,8 +211,8 @@ void ServerConnection::_createSocket()
     _addr.sin_port = htons(_port);
     _addr.sin_addr.s_addr = INADDR_ANY;
     int optval = 1;
-    setsockopt(_tcpFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-    setsockopt(_udpFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    setsockopt(_tcpFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&optval), sizeof(optval));
+    setsockopt(_udpFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&optval), sizeof(optval));
 
     if (_udpFd == -1 || _tcpFd == -1) {
         throw std::runtime_error("Error creating socket");

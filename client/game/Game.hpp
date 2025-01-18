@@ -8,10 +8,10 @@
 #ifndef GAME_HPP_
 #define GAME_HPP_
 
-#include "../../common/Engine.hpp"
-#include "Networking/Packet.hpp"
-
 #include <raylib-cpp.hpp>
+
+#include <Engine.hpp>
+#include "Networking/Packet.hpp"
 
 class Game
 {
