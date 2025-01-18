@@ -37,3 +37,6 @@ net.CreatePacket("SpaceshipPosition", false)
 
 net.CreatePacket("SpaceshipShoot", true)
 net.CreatePacket("ProjectileEnd", true)
+net.CreatePacket("EnemySpawn", true)
+net.CreatePacket("EnemyDestroyed", true)
+net.CreatePacket("EnemyPosition", false)

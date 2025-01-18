@@ -11,11 +11,10 @@ function defaultSpaceship(id: number)
             SHOOT = false
         },
         buffered_shot = false,
-        shoot_cd = 0.0
+        shoot_cd = 0.0,
+        respawn_cd = 0.0
     }
 end
-
-local SPACESHIP_SPEED = 100
 
 function getSpaceshipByPlayer(ply: string)
     for i = 1, #spaceships do
@@ -30,6 +29,18 @@ function spawnSpaceship(id: number, ply: string)
     spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, Game.playersSize.x, Game.playersSize.y, 0, 0)
 end
 
+function despawnSpaceship(id: number)
+    if spaceships[id].node ~= nil then
+        spaceships[id].node:Destroy()
+    end
+    spaceships[id].node = nil
+    spaceships[id].shoot_cd = 0.0
+    spaceships[id].respawn_cd = RESPAWN_TIME
+    table.foreach(spaceships[id].actions, function(k, v)
+        spaceships[id].actions[k] = false
+    end)
+end
+
 function syncNewPlayer(ply: string)
     for i = 1, #spaceships do
         if spaceships[i].bound_player == nil then continue end
@@ -38,11 +49,11 @@ function syncNewPlayer(ply: string)
             net.WriteInt(i)
         net.SendToClient(ply)
     end
+    createEnemiesForNewPlayer(ply)
 end
 
 function sendSpaceshipPosition(i: number)
     local xp, yp = spaceships[i].node:GetGlobalPosition()
-    -- info("sending spaceship position: " .. xp .. ", " .. yp)
     net.Start("SpaceshipPosition")
         net.WriteInt(i)
         net.WriteFloat(xp)
@@ -83,5 +94,21 @@ function handleShooting(spaceship, delta: number)
         createProjectile(px, py, 10, spaceship.node, spaceship.id)
         spaceship.buffered_shot = false
         spaceship.shoot_cd = 0.0
+    end
+end
+
+function spaceshipBoundaries(spaceship)
+    local xp, yp = spaceship.node:GetGlobalPosition()
+    if xp <= 0.0 then
+        spaceship.node:SetPosition(0.2, yp)
+    end
+    if xp + Game.playersSize.x >= 800.0 then
+        spaceship.node:SetPosition(799.8 - Game.playersSize.x, yp)
+    end
+    if yp <= 0.0 then
+        spaceship.node:SetPosition(xp, 0.2)
+    end
+    if yp + Game.playersSize.y >= 600.0 then
+    spaceship.node:SetPosition(xp, 599.8 - Game.playersSize.y)
     end
 end

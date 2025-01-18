@@ -9,6 +9,7 @@ function createProjectileWithVelocity(x, y, plrVecX, plrVecY, damage, owner, id)
     local projectile = root:CreateChild("RigidBody2D", "projectile" .. id, x, y, 16, 4, PLAYER_PROJECTILE_SPEED + plrVecX, plrVecY)
     local projectileSprite = projectile:CreateChild("Sprite2D", "projectileSprite" .. id, "assets/sprites/r-typesheet1.png")
     projectileSprite:SetSource(249, 90, 16, 4)
+    projectileSprite:SetSize(16 * 2, 4 * 2)
     table.insert(Game.projectiles, {
         node = projectile,
         sprite = projectileSprite,
@@ -43,6 +44,7 @@ function updateFireFlashes(dt)
         fireFlash.lifetime += dt
         if fireFlash.lifetime > FLASH_LIFETIME then
             fireFlash.node:Destroy()
+            fireFlash.node = nil
             table.remove(fireFlashes, i)
             return
         end
@@ -72,8 +74,11 @@ net.Receive("ProjectileEnd", function(len, ply)
     local id = net.ReadInt()
     local hit = net.ReadBool()
     local projectile = getProjectileByName("projectile" .. id)
-    projectile.node:Destroy()
+    local proj = getProjectile(projectile)
+    if proj == nil then return end
     table.remove(Game.projectiles, getProjectile(projectile))
+    projectile.node:Destroy()
+    projectile.node = nil
     if hit then
         -- TODO: BOOOOOOOOOOOOOOOOOM
     end
