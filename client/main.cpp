@@ -18,8 +18,10 @@ int main(int argc, char **argv)
     manager.addRequiredArgument("port");
     manager.parseArguments();
 
-    if (!manager.checkClientArguments())
+    if (!manager.checkClientArguments()) {
         ArgumentManager::DisplayClientUsage();
+        throw std::runtime_error("Invalid arguments");
+    }
 
     int port = static_cast<int>(std::strtol(manager.getArgument("port").c_str(), nullptr, 10));
     Engine::StartInstance(Types::VMState::CLIENT, "");
