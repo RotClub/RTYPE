@@ -6,7 +6,7 @@
 */
 
 #include "Server.hpp"
-#include "argumentManager/ArgumentManager.hpp"
+#include "../common/ArgumentManager/ArgumentManager.hpp"
 
 static void sigHandler(const int sig, Server *srv)
 {
@@ -23,8 +23,9 @@ int main(int argc, char **argv)
 {
     try {
         ArgumentManager argManager(argc, argv);
-        if (!argManager.checkArguments())
+        if (!argManager.checkServerArguments()) {
             return 84;
+        }
         Server srv(argc == 1 ? 25777 : std::stoi(argv[2]));
         signal(SIGINT, reinterpret_cast<void (*)(int)>(sigHandler));
         signal(SIGTERM, reinterpret_cast<void (*)(int)>(sigHandler));
