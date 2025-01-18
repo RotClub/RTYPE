@@ -17,7 +17,7 @@ end
 -- Returns: None
 function playerMovement(player, dt, upKey, downKey)
     local x, y = player:GetPosition()
-    local speed = 240
+    local speed = 600
 
     if IsKeyPressed(downKey) then
         y = y - speed * dt
