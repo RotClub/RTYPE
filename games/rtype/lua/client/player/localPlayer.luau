@@ -16,13 +16,7 @@ function spawnLocalPlayer()
     localPlayerShootingSound:SetVolume(0.1)
     localPlayerShootingSound:SetPitch(1.0)
     setPlayerColor(localPlayerSprite, 1)
-end
-
-function explodePlayer(player)
-    player:Destroy()
-    local explosion = player:CreateChild("Sprite2D", "explosion", "assets/sprites/r-typesheet1.png")
-    explosion:SetPosition(0, -10)
-    explosion:SetSource(1, 334, 32, 28*2)
+    setParallaxReference(localPlayerPoint)
 end
 
 function sendAction(direction, start)
@@ -37,10 +31,6 @@ function sendAction(direction, start)
     end
 end
 
-function calculateDistance(x1: number, y1: number, x2: number, y2: number)
-    return math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-end
-
 Keys = {}
 Keys.LeftKey = 65
 Keys.RightKey = 68
@@ -48,7 +38,6 @@ Keys.UpKey = 87
 Keys.DownKey = 83
 Keys.CycleKey = 67
 Keys.ShootKey = 74
-Keys.SpecialKey1 = 72
 
 local SHOOT_RATE = 0.1
 local shootTimer = 0
@@ -101,11 +90,10 @@ function localPlayerMovement(dt)
         sendAction(5, true)
         sendAction(5, false)
     end
-    if IsKeyJustPressed(Keys.SpecialKey1) then
-        -- net.Start("Hello")
-        -- net.SendToServer()
-        -- explodePlayer(Game.localPlayer)
-    end
 
-    Game.localPlayer:SetPosition(Game.localPly.netX, Game.localPly.netY)
+    if Game.localPlayer == nil then
+        return
+    end
+    Game.localPlayer:SetVelocity(direction.x * SPACESHIP_SPEED, direction.y * SPACESHIP_SPEED)
+    correctPosition(Game.localPlayer, Game.localPly.netX, Game.localPly.netY)
 end

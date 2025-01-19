@@ -8,7 +8,6 @@
 #include "Node.hpp"
 
 #include <Engine.hpp>
-#include <raylib-cpp.hpp>
 
 Node::Node(const std::string &name) : children(std::vector<Node *>()), name(name)
 {

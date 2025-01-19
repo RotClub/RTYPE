@@ -8,12 +8,25 @@
 #include "ServerConnection.hpp"
 
 #include <Engine.hpp>
+#include <csignal>
+#ifdef WIN32
+#include <WindowsCross.hpp>
+#else
 #include <arpa/inet.h>
-#include <cstddef>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#endif
+#include <cstddef>
 
-ServerConnection::ServerConnection(int port) : _port(port) {}
+ServerConnection::ServerConnection(int port) : _port(port)
+{
+#ifdef WIN32
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        throw std::runtime_error("Failed to initialize Winsock.\n");
+    }
+#endif
+}
 
 ServerConnection::~ServerConnection() { stop(); }
 
@@ -31,7 +44,6 @@ void ServerConnection::stop()
     if (!_running)
         return;
     _running = false;
-    pthread_cancel(_networkThread.native_handle());
     if (_networkThread.joinable()) {
         _networkThread.join();
     }
@@ -39,10 +51,20 @@ void ServerConnection::stop()
         _disconnectedClients.enqueue(client->getUuid());
         delete client;
     }
+
+#ifdef WIN32
+    _close(_tcpFd);
+    _close(_udpFd);
+#else
     close(_tcpFd);
     close(_udpFd);
+#endif
+
     _tcpFd = -1;
     _udpFd = -1;
+#ifdef WIN32
+    WSACleanup();
+#endif
 }
 
 void ServerConnection::_loop()
@@ -75,6 +97,9 @@ void ServerConnection::_disconnectClients()
 
 void ServerConnection::_receiveLoop()
 {
+#ifndef far
+#define far
+#endif
     for (auto &client : _clientConnections) {
         if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
             try {
@@ -92,13 +117,22 @@ void ServerConnection::_receiveLoop()
 
 void ServerConnection::_sendLoop()
 {
+#ifndef far
+#define far
+#endif
     for (auto &client : _clientConnections) {
         if (!client->shouldDisconnect()) {
             if (client->hasTcpPacketOutput() && FD_ISSET(client->getTcpFd(), &_writefds)) {
                 Packet *packet = client->popTcpPacketOutput();
                 PacketBuilder::PackedPacket packed = {0};
                 PacketBuilder::pack(&packed, packet);
+
+#ifdef WIN32
+                send(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket), 0);
+#else
                 write(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket));
+#endif
+
                 PacketBuilder(packet).reset();
                 delete packet;
             }
@@ -117,8 +151,13 @@ void ServerConnection::_sendLoop()
 
 void ServerConnection::_accept()
 {
-    if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers())
-        return;
+#ifndef far
+#define far
+#endif
+    if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers()) {
+        Client *cl = new Client(_tcpFd);
+        delete cl;
+    }
     if (FD_ISSET(_tcpFd, &_readfds)) {
         std::lock_guard guard(_clientsMutex);
         _clientConnections.emplace_back(new Client(_tcpFd));
@@ -129,9 +168,15 @@ void ServerConnection::_tryReceiveTCP(Client *client)
 {
     std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
     int n = 0;
+#ifdef WIN32
+    if ((n = recv(client->getTcpFd(), reinterpret_cast<char *>(buffer.data()), PACKED_PACKET_SIZE, 0)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+#else
     if ((n = read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
+#endif
     buffer.resize(n);
     client->addToTcpBuffer(buffer);
     _processTcpBuffer(client);
@@ -145,7 +190,7 @@ void ServerConnection::_tryReceiveUDP()
     std::memset(&addr, 0, sizeof(addr));
     socklen_t len = sizeof(addr);
     int n = 0;
-    if ((n = recvfrom(_udpFd, buffer.data(), sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&addr), &len)) <= 0) {
+    if ((n = recvfrom(_udpFd, reinterpret_cast<char *>(buffer.data()), sizeof(PacketBuilder::PackedPacket), 0, reinterpret_cast<sockaddr *>(&addr), &len)) <= 0) {
         throw std::runtime_error("Error receiving udp packet");
     }
     buffer.resize(n);
@@ -199,18 +244,31 @@ void ServerConnection::_processUdpBuffer(const std::pair<std::string, int> &addr
 
 void ServerConnection::_createSocket()
 {
-    _udpFd = socket(AF_INET, SOCK_DGRAM, 0);
-    _tcpFd = socket(AF_INET, SOCK_STREAM, 0);
+
+    _tcpFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    _udpFd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+    if (_udpFd == -1 || _tcpFd == -1) {
+#ifdef WIN32
+        if (_udpFd != -1) _close(_udpFd);
+        if (_tcpFd != -1) _close(_tcpFd);
+#else
+        if (_udpFd != -1) close(_udpFd);
+        if (_tcpFd != -1) close(_tcpFd);
+#endif
+        throw std::runtime_error("Error creating sockets");
+    }
 
     std::memset(&_addr, 0, sizeof(_addr));
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
     _addr.sin_addr.s_addr = INADDR_ANY;
     int optval = 1;
-    setsockopt(_tcpFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-    setsockopt(_udpFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    setsockopt(_tcpFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&optval), sizeof(optval));
+    setsockopt(_udpFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&optval), sizeof(optval));
 
     if (_udpFd == -1 || _tcpFd == -1) {
+
         throw std::runtime_error("Error creating socket");
     }
 
@@ -218,7 +276,9 @@ void ServerConnection::_createSocket()
         throw std::runtime_error("Error binding tcp socket");
     }
 
-    listen(_tcpFd, SOMAXCONN);
+    if (listen(_tcpFd, SOMAXCONN) < 0) {
+        throw std::runtime_error("Error listening on socket");
+    }
 
     if (bind(_udpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) < 0) {
         throw std::runtime_error("Error binding udp socket");
@@ -227,6 +287,9 @@ void ServerConnection::_createSocket()
 
 void ServerConnection::_setClientFds(fd_set *set)
 {
+#ifndef far
+#define far
+#endif
     FD_ZERO(set);
 
     for (const auto &client : _clientConnections) {
@@ -241,7 +304,11 @@ int ServerConnection::_getMaxFd()
     for (const auto &client : _clientConnections) {
         if (client->shouldDisconnect())
             continue;
+#ifdef WIN32
+        max = max(max, client->getTcpFd());
+#else
         max = std::max(max, client->getTcpFd());
+#endif
     }
     return max;
 }
@@ -250,12 +317,21 @@ int ServerConnection::_selectFd()
 {
     int retval;
 
+#ifndef far
+#define far
+#endif
+
+    timeval timeout = {2, 0};
     _setClientFds(&_readfds);
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
     FD_SET(_udpFd, &_readfds);
+#ifdef WIN32
+    int maxFd = max(max(_getMaxFd(), _tcpFd), _udpFd);
+#else
     int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
-    retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, nullptr);
+#endif
+    retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, &timeout);
     return retval;
 }
 

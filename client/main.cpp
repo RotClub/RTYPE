@@ -5,21 +5,39 @@
 ** main
 */
 
-#include "ArgumentManager/ClientArgumentManager.hpp"
+#include "ArgumentManager/ArgumentManager.hpp"
 #include "Client.hpp"
+#include "Engine.hpp"
+#include "config/Config.hpp"
 
 #include <cstdlib>
+#include <string>
 
 
 int main(int argc, char **argv)
 {
-    ClientArgumentManager argManager(argc, argv);
-    if (!argManager.checkClientArguments())
-        return 84;
-    char *ip = argv[2];
-    int port = static_cast<int>(std::strtol(argv[4], nullptr, 10));
-    Engine &engine = Engine::StartInstance(Types::VMState::CLIENT, "rtype");
-    Client &client = Client::InitiateInstance(ip, port);
+    ArgumentManager manager(argc, argv);
+    manager.addRequiredArgument("ip");
+    manager.addDefaultArgument("port", "25777");
+    manager.addDefaultArgument("colorblindness", "none");
+    manager.parseArguments();
+
+    if (!manager.checkClientArguments()) {
+        ArgumentManager::DisplayClientUsage();
+        throw std::runtime_error("Invalid arguments");
+    }
+
+    std::string colorBlindness = manager.getArgument("colorblindness");
+    if (colorBlindness == "protanopia")
+        Config::GetInstance().setColorBlindnessMode(Config::ColorBlindnessMode::PROTANOPIA);
+    else if (colorBlindness == "deuteranopia")
+        Config::GetInstance().setColorBlindnessMode(Config::ColorBlindnessMode::DEUTERANOPIA);
+    else if (colorBlindness == "tritanopia")
+        Config::GetInstance().setColorBlindnessMode(Config::ColorBlindnessMode::TRITANOPIA);
+
+    int port = static_cast<int>(std::strtol(manager.getArgument("port").c_str(), nullptr, 10));
+    Engine::StartInstance(Types::VMState::CLIENT, "");
+    Client &client = Client::InitiateInstance(manager.getArgument("ip"), port);
     client.getClientConnection().connectToServer();
     client.startGame();
 }

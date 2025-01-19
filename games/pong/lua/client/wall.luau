@@ -3,10 +3,10 @@
 -- Returns: Node2D
 function generateMiddle(size, space)
     local wall_list = root:CreateChild("Node2D", "wall_list")
-    local x_middle = GetWindowWidth() / 2 -- engine:GetRenderWidth() / 2
-    local number_of_walls =  math.floor(GetWindowHeight() / (size + space)) -- math.floor(engine:GetRenderHeight() / (size + space))
+    local x_middle = WINDOW_WIDTH / 2
+    local number_of_walls =  math.floor(WINDOW_HEIGHT / (size + space))
     local total_wall_height = number_of_walls * size
-    local remaining_space = GetWindowHeight() - total_wall_height -- WINDOW_HEIGHT - total_wall_height
+    local remaining_space = WINDOW_HEIGHT - total_wall_height
     local gap = remaining_space / (number_of_walls + 1)
 
     for i = 0, number_of_walls - 1 do

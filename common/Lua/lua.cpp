@@ -1604,7 +1604,7 @@ void luau_ExposeFunctions(lua_State *L)
     luau_ExposeGlobalFunction(L, luau_Debug, "debug");
 
     /* NODE LIBRARY */
-    constexpr luaL_Reg nodeLibrary[] = {{"GetName", luau_NodeGetName},
+    constexpr luaL_Reg nodeRegistry[] = {{"GetName", luau_NodeGetName},
                                         {"SetName", luau_NodeSetName},
                                         {"GetChildren", luau_NodeGetChildren},
                                         {"GetChild", luau_NodeGetChild},
@@ -1613,8 +1613,8 @@ void luau_ExposeFunctions(lua_State *L)
                                         {"Destroy", luau_NodeDestroy},
                                         {"__gc", lua_gcNode},
                                         {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, nodeLibrary, "NodeMetaTable");
-    constexpr luaL_Reg node2DLibrary[] = {{"GetName", luau_Node2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, nodeRegistry, "NodeMetaTable");
+    constexpr luaL_Reg node2DRegistry[] = {{"GetName", luau_Node2DGetName},
                                           {"SetName", luau_Node2DSetName},
                                           {"GetChildren", luau_Node2DGetChildren},
                                           {"GetChild", luau_Node2DGetChild},
@@ -1626,8 +1626,8 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"Destroy", luau_Node2DDestroy},
                                           {"__gc", lua_gcNode2D},
                                           {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, node2DLibrary, "Node2DMetaTable");
-    constexpr luaL_Reg sprite2DLibrary[] = {{"GetName", luau_Sprite2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, node2DRegistry, "Node2DMetaTable");
+    constexpr luaL_Reg sprite2DRegistry[] = {{"GetName", luau_Sprite2DGetName},
                                             {"SetName", luau_Sprite2DSetName},
                                             {"GetChildren", luau_Sprite2DGetChildren},
                                             {"GetChild", luau_Sprite2DGetChild},
@@ -1636,18 +1636,14 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"SetPosition", luau_Sprite2DSetPosition},
                                             {"GetGlobalPosition", luau_Sprite2DGetGlobalPosition},
                                             {"CreateChild", luau_Sprite2DCreateChild},
-                                            {"GetPosition", luau_Sprite2DGetPosition},
-                                            {"SetPosition", luau_Sprite2DSetPosition},
-                                            {"SetSize", luau_Sprite2DSetSize},
-                                            {"GetGlobalPosition", luau_Sprite2DGetGlobalPosition},
                                             {"SetSize", luau_Sprite2DSetSize},
                                             {"SetTexture", luau_Sprite2DSetTexture},
                                             {"SetSource", luau_Sprite2DSetSource},
                                             {"Destroy", luau_Sprite2DDestroy},
                                             {"__gc", lua_gcSprite2D},
                                             {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, sprite2DLibrary, "Sprite2DMetaTable");
-    constexpr luaL_Reg collisionshape2DLibrary[] = {{"GetName", luau_CollisionShape2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, sprite2DRegistry, "Sprite2DMetaTable");
+    constexpr luaL_Reg collisionshape2DRegistry[] = {{"GetName", luau_CollisionShape2DGetName},
                                                     {"SetName", luau_CollisionShape2DSetName},
                                                     {"GetChildren", luau_CollisionShape2DGetChildren},
                                                     {"GetChild", luau_CollisionShape2DGetChild},
@@ -1656,7 +1652,6 @@ void luau_ExposeFunctions(lua_State *L)
                                                     {"SetPosition", luau_CollisionShape2DSetPosition},
                                                     {"GetGlobalPosition", luau_CollisionShape2DGetGlobalPosition},
                                                     {"CreateChild", luau_CollisionShape2DCreateChild},
-
                                                     {"GetBoundingBox", luau_CollisionShape2DGetBoundingBox},
                                                     {"ToggleCollision", luau_CollisionShape2DToggleCollision},
                                                     {"IsCollisionEnabled", luau_CollisionShape2DIsCollisionEnabled},
@@ -1664,8 +1659,8 @@ void luau_ExposeFunctions(lua_State *L)
                                                     {"Destroy", luau_CollisionShape2DDestroy},
                                                     {"__gc", lua_gcCollisionShape2D},
                                                     {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, collisionshape2DLibrary, "CollisionShape2DMetaTable");
-    constexpr luaL_Reg area2DLibrary[] = {{"GetName", luau_Area2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, collisionshape2DRegistry, "CollisionShape2DMetaTable");
+    constexpr luaL_Reg area2DRegistry[] = {{"GetName", luau_Area2DGetName},
                                           {"SetName", luau_Area2DSetName},
                                           {"GetChildren", luau_Area2DGetChildren},
                                           {"GetChild", luau_Area2DGetChild},
@@ -1674,7 +1669,6 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"SetPosition", luau_Area2DSetPosition},
                                           {"GetGlobalPosition", luau_Area2DGetGlobalPosition},
                                           {"CreateChild", luau_Area2DCreateChild},
-
                                           {"ToggleCollision", luau_Area2DToggleCollision},
                                           {"IsCollisionEnabled", luau_Area2DIsCollisionEnabled},
                                           {"Collide", luau_Area2DCollide},
@@ -1682,8 +1676,8 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"SetSize", luau_Area2DSetSize},{"Destroy", luau_Area2DDestroy},
                                           {"__gc", lua_gcArea2D},
                                           {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
-    constexpr luaL_Reg parallaxLibrary[] = {{"GetName", luau_ParallaxGetName},
+    luau_ExposeFunctionsAsMetatable(L, area2DRegistry, "Area2DMetaTable");
+    constexpr luaL_Reg parallaxRegistry[] = {{"GetName", luau_ParallaxGetName},
                                             {"SetName", luau_ParallaxSetName},
                                             {"GetChildren", luau_ParallaxGetChildren},
                                             {"GetChild", luau_ParallaxGetChild},
@@ -1693,15 +1687,14 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},{"Destroy", luau_ParallaxDestroy},
                                             {"__gc", lua_gcParallax},
                                             {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
-    constexpr luaL_Reg rgbd2DLibrary[] = {{"GetName", luau_RigidBody2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, parallaxRegistry, "ParallaxMetaTable");
+    constexpr luaL_Reg rgbd2DRegistry[] = {{"GetName", luau_RigidBody2DGetName},
                                           {"SetName", luau_RigidBody2DSetName},
                                           {"GetChildren", luau_RigidBody2DGetChildren},
                                           {"GetChild", luau_RigidBody2DGetChild},
                                           {"AddChild", luau_RigidBody2DAddChild},
                                           {"GetPosition", luau_RigidBody2DGetPosition},
                                           {"SetPosition", luau_RigidBody2DSetPosition},
-                                          {"GetGlobalPosition", luau_RigidBody2DGetGlobalPosition},
                                           {"GetGlobalPosition", luau_RigidBody2DGetGlobalPosition},
                                           {"GetVelocity", luau_RigidBody2DGetVelocity},
                                           {"SetVelocity", luau_RigidBody2DSetVelocity},
@@ -1714,8 +1707,8 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"Destroy", luau_RigidBody2DDestroy},
                                           {"__gc", lua_gcRigidBody2D},
                                           {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, rgbd2DLibrary, "RigidBody2DMetaTable");
-    constexpr luaL_Reg stbd2DLibrary[] = {{"GetName", luau_StaticBody2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, rgbd2DRegistry, "RigidBody2DMetaTable");
+    constexpr luaL_Reg stbd2DRegistry[] = {{"GetName", luau_StaticBody2DGetName},
                                           {"SetName", luau_StaticBody2DSetName},
                                           {"GetChildren", luau_StaticBody2DGetChildren},
                                           {"GetChild", luau_StaticBody2DGetChild},
@@ -1730,8 +1723,8 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"Destroy", luau_StaticBody2DDestroy},
                                           {"__gc", lua_gcStaticBody2D},
                                           {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, stbd2DLibrary, "StaticBody2DMetaTable");
-    constexpr luaL_Reg labelLibrary[] = {{"GetName", luau_LabelGetName},
+    luau_ExposeFunctionsAsMetatable(L, stbd2DRegistry, "StaticBody2DMetaTable");
+    constexpr luaL_Reg labelRegistry[] = {{"GetName", luau_LabelGetName},
                                          {"SetName", luau_LabelSetName},
                                          {"GetChildren", luau_LabelGetChildren},
                                          {"GetChild", luau_LabelGetChild},
@@ -1742,8 +1735,6 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"CreateChild", luau_LabelCreateChild},
                                          {"SetColor", luau_LabelSetColor},
                                          {"SetAlpha", luau_LabelSetAlpha},
-                                         {"GetColor", luau_BoxGetColor},
-                                         {"GetAlpha", luau_BoxGetAlpha},
                                          {"SetFont", luau_LabelSetFont},
                                          {"GetFont", luau_LabelGetFont},
                                          {"SetText", luau_LabelSetText},
@@ -1753,8 +1744,8 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"Destroy", luau_LabelDestroy},
                                          {"__gc", lua_gcLabel},
                                          {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, labelLibrary, "LabelMetaTable");
-    constexpr luaL_Reg boxLibrary[] = {{"GetName", luau_BoxGetName},
+    luau_ExposeFunctionsAsMetatable(L, labelRegistry, "LabelMetaTable");
+    constexpr luaL_Reg boxRegistry[] = {{"GetName", luau_BoxGetName},
                                        {"SetName", luau_BoxSetName},
                                        {"GetChildren", luau_BoxGetChildren},
                                        {"GetChild", luau_BoxGetChild},
@@ -1764,15 +1755,15 @@ void luau_ExposeFunctions(lua_State *L)
                                        {"GetGlobalPosition", luau_BoxGetGlobalPosition},
                                        {"CreateChild", luau_BoxCreateChild},
                                        {"SetColor", luau_BoxSetColor},
-                                       {"SetAlpha", luau_BoxSetAlpha},
                                        {"GetColor", luau_BoxGetColor},
+                                       {"SetAlpha", luau_BoxSetAlpha},
                                        {"GetAlpha", luau_BoxGetAlpha},
                                        {"SetSize", luau_BoxSetSize},
                                        {"GetSize", luau_BoxGetSize},
                                        {"Destroy", luau_BoxDestroy},
                                        {"__gc", lua_gcBox},
                                        {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, boxLibrary, "BoxMetaTable");
+    luau_ExposeFunctionsAsMetatable(L, boxRegistry, "BoxMetaTable");
     constexpr luaL_Reg soundPlayerLibrary[] = {{"GetName", luau_SoundPlayerGetName},
                                         {"SetName", luau_SoundPlayerSetName},
                                         {"GetChildren", luau_SoundPlayerGetChildren},
