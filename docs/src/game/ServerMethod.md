@@ -130,9 +130,9 @@
   ```
   
   #### Arguments  
-  - `packetName` (string): The name of the packet to trigger the callback for.  
-  - `length` (number): The length of the packet data.  
-  - `ply` (Player): The player who is calling the packet.  
+  `string`: The name of the packet to trigger the callback for.  
+  `number`: The length of the packet data.  
+  `ply` (Player): The player who is calling the packet.  
   
   #### Example  
   ```lua
