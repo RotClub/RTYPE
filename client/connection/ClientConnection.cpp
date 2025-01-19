@@ -48,7 +48,7 @@ void ClientConnection::disconnectFromServer()
             _thread.join();
     }
     catch (const std::exception &e) {
-        std::cerr << "Thread Error: " << e.what() << std::endl;
+        spdlog::error("Thread Error: {}", e.what());
     }
     close(_tcpFd);
     close(_udpFd);

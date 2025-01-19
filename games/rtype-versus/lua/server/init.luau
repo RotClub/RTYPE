@@ -26,6 +26,7 @@ hook.Add("Tick", "main", function(delta)
         sendSpaceshipPosition(i)
     end
     updateProjectiles(dt)
+    projectileCollisions(dt)
 end)
 
 hook.Add("PlayerJoin", "main", function(ply)

@@ -9,7 +9,7 @@ function createProjectile(x, y, damage, owner, id)
     local plrVecX, plrVecY = owner:GetVelocity()
     local fX = x + (Game.playersSize.x * (2 - id)) - (20 * (id - 1))
     local fY = y + Game.playersSize.y / 2
-    local projectile = root:CreateChild("RigidBody2D", "projectile" .. projectileId, fX, fY, 16, 4, (PLAYER_PROJECTILE_SPEED * (3 - 2 * id)) + plrVecX, plrVecY)
+    local projectile = root:CreateChild("RigidBody2D", id .. "-projectile-" .. projectileId, fX, fY, 16, 4, (PLAYER_PROJECTILE_SPEED * (3 - 2 * id)) + plrVecX, plrVecY)
     local projectileSprite = nil
     net.Start("SpaceshipShoot")
         net.WriteInt(id)
@@ -26,7 +26,8 @@ function createProjectile(x, y, damage, owner, id)
         damage = damage,
         owner = owner,
         lifetime = 0,
-        id = projectileId
+        id = projectileId,
+        name = id .. "-projectile-" .. projectileId
     })
     return Game.projectiles[#Game.projectiles]
 end
@@ -91,4 +92,3 @@ function destroyProjectile(projectile)
     projectile.node = nil
     table.remove(Game.projectiles, getProjectile(projectile))
 end
-
