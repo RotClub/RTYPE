@@ -10,5 +10,4 @@ Our R-Type is a online multiplayer side-scrolling shoot 'em up game. The player 
 - `s` to move down
 - `q` to move left
 - `d` to move right
-- `space` to shoot
-- `alt` to auto-shoot
+- `j` to shoot
