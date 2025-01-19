@@ -1583,6 +1583,8 @@
         print("No collision detected")
     end
     ```
+
+
 - ### Destroy
     Permanently deletes the RigidBody2D and its associated resources.
     #### Prototype
@@ -1760,95 +1762,158 @@
     print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
     ```
 - ### SetColor
+    Set the color of the current `Label`. Using RGB.
     #### Prototype
-        ```lua
+    ```lua
+    label:SetColor(r, g, b)
     ```
-
     #### Arguments
+    - `number`: Red component of the color (from 0 to 1).
+    - `number`: Green component of the color (from 0 to 1).
+    - `number`: Blue component of the color (from 0 to 1).
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    label:SetColor(1, 0, 0)  -- Set the color to red
     ```
+
 - ### GetColor
+    Retrieve the color of the current `Label`. Using RGB.
     #### Prototype
-        ```lua
+    ```lua
+    label:GetColor() -> r, g, b
     ```
-
     #### Arguments
+    `None`
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    label:SetColor(1, 0, 0)  -- Set the color to red
+    
+    local r, g, b = label:GetColor()  -- Get the red, green, and blue components
+    print("Red: " .. r .. ", Green: " .. g .. ", Blue: " .. b)
     ```
+
 - ### SetAlpha
+    Set the alpha (transparency) of the current `Label`.
     #### Prototype
-        ```lua
+    ```lua
+    label:SetAlpha(alpha: number) -> nil
     ```
-
     #### Arguments
+    - `alpha` (`number`): The alpha value (transparency) to set, ranging from 0 (completely transparent) to 1 (completely opaque).
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    label:SetAlpha(0.5)  -- Set the transparency to 50%
     ```
+
 - ### GetAlpha
+    Retrieve the alpha (transparency) value of the current `Label`.
     #### Prototype
-        ```lua
+    ```lua
+    label:GetAlpha() -> number
     ```
-
     #### Arguments
+    `None`
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    label:SetAlpha(0.7)  -- Set the transparency to 70%
+    local alpha = label:GetAlpha()
+    print(alpha)  -- Should print 0.7
     ```
+
 - ### SetText
+    Set the text of the Label.
     #### Prototype
-        ```lua
+    ```lua
+    label:SetText(text)
     ```
-
     #### Arguments
+    `string` : The text to set for the Label.
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    label:SetText("New Text")  -- Changes the label's text
+
+    print("Label text : ", label:GetText()) -- should print "New text"
     ```
 - ### GetText
+    Get the text of the Label.
     #### Prototype
-        ```lua
+    ```lua
+    label:GetText() -> string
     ```
-
     #### Arguments
+    `None`
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    print(label:GetText())  -- Should print "Hello World"
     ```
 - ### SetFont
+    Set the path to the font source.
     #### Prototype
-        ```lua
+    ```lua
+    label:SetFont(fontSource)
     ```
-
     #### Arguments
+    `string`: The path to the font source to use for the Label.
+
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    
+    label:SetFont("newFont.ttf")
+    print(label:GetFont())  -- should print "newFont.ttf"
     ```
 - ### GetFont
+    Get the font file name.
     #### Prototype
-        ```lua
+    ```lua
+    label:GetFont() -> string
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    print(label:GetFont())  -- should print "font.ttf"
     ```
 - ### SetFontSize
+    Set the font size of the Label.
     #### Prototype
-        ```lua
+    ```lua
+    label:SetFontSize(fontSize)
     ```
 
     #### Arguments
+    `number`: font size to set.
+
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+    label:SetFontSize(32)  -- Change the font size of 'label'
     ```
+
 - ### GetFontSize
+    Get the font  size of the Label.
     #### Prototype
-        ```lua
+    ```lua
+    label:GetFontSize() -> number | nil
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+
+    print(label:GetFontSize())  -- should print "24"
     ```
+
 - ### Destroy
     Permanently deletes the Label and its associated resources.
     #### Prototype
@@ -2203,58 +2268,103 @@
     ```
 
 - ### SetColor
+    Set the color of the current `Box`. Using RGB
     #### Prototype
-        ```lua
+    ```lua
+    box:SetColor(r, g, b)
     ```
-
     #### Arguments
+    - `number`: Red component of the color (from 0 to 1).
+    - `number`: Green component of the color (from 0 to 1).
+    - `number`: Blue component of the color (from 0 to 1).
     #### Example
     ```lua
+    local box = scene:GetRoot():CreateChild("Box", "myBox", 50, 50, 100, 100)
+    box:SetColor(0, 0, 1)  -- Set the color to blue
     ```
+
 - ### GetColor
+    Retrieve the color of the current `Box`. Using RGB.
     #### Prototype
-        ```lua
+    ```lua
+    box:GetColor() -> r, g, b
     ```
-
     #### Arguments
+    `None`
     #### Example
     ```lua
+    local box = scene:GetRoot():CreateChild("Box", "myBox", 50, 50, 100, 100)
+    box:SetColor(0, 0, 1)  -- Set the color to blue
+    
+    local r, g, b = box:GetColor()  -- Get the red, green, and blue components
+    print("Red: " .. r .. ", Green: " .. g .. ", Blue: " .. b)
     ```
+
 - ### SetAlpha
+    Set the alpha (transparency) of the current `Box`.
     #### Prototype
-        ```lua
+    ```lua
+    box:SetAlpha(alpha: number) -> nil
     ```
-
     #### Arguments
+    - `alpha` (`number`): The alpha value (transparency) to set, ranging from 0 (completely transparent) to 1 (completely opaque).
     #### Example
     ```lua
+    local box = scene:GetRoot():CreateChild("Box", "myBox", 50, 50, 100, 100)
+    box:SetAlpha(0.3)  -- Set the transparency to 30%
     ```
+
 - ### GetAlpha
+    Retrieve the alpha (transparency) value of the current `Box`.
     #### Prototype
-        ```lua
+    ```lua
+    box:GetAlpha() -> number
     ```
-
     #### Arguments
+    `None`
     #### Example
     ```lua
+    local box = scene:GetRoot():CreateChild("Box", "myBox", 50, 50, 100, 100)
+    box:SetAlpha(0.8)  -- Set the transparency to 80%
+    local alpha = box:GetAlpha()  -- Retrieve the transparency value
+    print(alpha)  -- Should print 0.8
     ```
+
+
 - ### SetSize
+    Set the box size.
     #### Prototype
-        ```lua
+    ```lua
+    box:SetSize(width, height)
     ```
 
     #### Arguments
+    - `number`: The width to set for the `Box`.
+    - `number`: The height to set for the `Box`.
+
     #### Example
     ```lua
+    local box = scene:GetRoot():CreateChild("Box", "myBox", 10, 10, 100, 200)
+    box:SetSize(150, 300)  -- Changes the size of the box to 150x300
+
+    print("Width: " .. width .. ", Height: " .. height)  -- Should print "Width: 150, Height: 300"
     ```
+
 - ### GetSize
+    Get the box size.
     #### Prototype
-        ```lua
+    ```lua
+    box:GetSize() -> width, height
     ```
 
     #### Arguments
+    - `None`
+
     #### Example
     ```lua
+    local box = scene:GetRoot():CreateChild("Box", "myBox", 10, 10, 100, 200)
+    local width, height = box:GetSize()
+    print("Width: " .. width .. ", Height: " .. height)  -- Should print "Width: 100, Height: 200"
     ```
 - ### Destroy
     Permanently deletes the Box and its associated resources.
