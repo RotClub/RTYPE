@@ -21,7 +21,7 @@
 - [LUAU](./game/luau.md)
   - [Libraries](./game/libs.md)
   - [Server]()
-  - [Client]()
+  - [Client](./game/ClientMethod.md)
   - [Common](./game/common.md)
     - [Node](./game/NodeLibrary.md)
     - [Node2D](./game/Node2DLibrary.md)
