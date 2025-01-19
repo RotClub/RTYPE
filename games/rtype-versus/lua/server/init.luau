@@ -24,7 +24,9 @@ hook.Add("Tick", "main", function(delta)
         handleShooting(spaceships[i], dt)
         spaceshipBoundaries(spaceships[i])
         sendSpaceshipPosition(i)
+        playerUpdate(spaceships[i], dt)
     end
+    playerHitUpdate(spaceships)
     updateProjectiles(dt)
 end)
 

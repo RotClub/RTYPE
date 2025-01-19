@@ -17,6 +17,7 @@ function defaultSpaceship(id: number)
 end
 
 function getSpaceshipByPlayer(ply: string)
+    debug("Getting spaceship by player " .. ply)
     for i = 1, #spaceships do
         if spaceships[i].bound_player == ply then
             return spaceships[i]
@@ -26,7 +27,9 @@ end
 
 function spawnSpaceship(id: number, ply: string)
     spaceships[id].bound_player = ply
-    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, Game.playersSize.x, Game.playersSize.y, 0, 0)
+    local x = 50
+    if id == 2 then x = 650 end
+    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, x, 100, Game.playersSize.x, Game.playersSize.y, 0, 0)
 end
 
 function despawnSpaceship(id: number)
@@ -39,6 +42,19 @@ function despawnSpaceship(id: number)
     table.foreach(spaceships[id].actions, function(k, v)
         spaceships[id].actions[k] = false
     end)
+end
+
+function playerUpdate(player, dt: number)
+    if player == nil then return end
+    if player.respawn_cd > 0 then
+        debug(player.respawn_cd)
+        player.respawn_cd -= dt
+        debug("Player " .. player.id .. " respawn in " .. player.respawn_cd)
+        if player.respawn_cd <= 0 then
+            debug("Respawning player " .. player.id)
+            spawnSpaceship(player.id, player.bound_player)
+        end
+    end
 end
 
 function syncNewPlayer(ply: string)

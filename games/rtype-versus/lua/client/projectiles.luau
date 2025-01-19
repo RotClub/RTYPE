@@ -47,16 +47,28 @@ function createFireFlash(player, id)
     local fireFlash = player:CreateChild("Sprite2D", "fireFlash" .. flashId, "assets/sprites/r-typesheet1.png")
     fireFlash:SetSize(w, h)
     fireFlash:SetPosition(x, h / 2.9)
-    setFlashFrame(fireFlash, 0)
+    if id == 1 then
+        setFlashFrame(fireFlash, 0, false)
+    else
+        setFlashFrame(fireFlash, 0, true)
+    end
     flashId += 1
     table.insert(fireFlashes, {
         node = fireFlash,
-        lifetime = 0
+        lifetime = 0,
+        reversed = id == 2
     })
 end
 
-function setFlashFrame(fireflash, frame: number)
-    fireflash:SetSource(215 + (frame * 18), 85, 14, 12)
+function setFlashFrame(fireflash, frame: number, reversed: boolean)
+    if frame > 1 then
+        frame = 1
+    end
+    if reversed then
+        fireflash:SetSource(303 - (frame * 18), 85, 14, 12)
+    else
+        fireflash:SetSource(215 + (frame * 18), 85, 14, 12)
+    end
 end
 
 function updateFireFlashes(dt)
@@ -69,7 +81,7 @@ function updateFireFlashes(dt)
             return
         end
         if fireFlash.lifetime > FLASH_LIFETIME / 2 then
-            setFlashFrame(fireFlash.node, 1)
+            setFlashFrame(fireFlash.node, 1, fireFlash.reversed)
         end
     end)
 end
