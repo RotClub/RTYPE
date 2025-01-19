@@ -1,0 +1,7 @@
+{
+    "name": "R-TYPE VERSUS",
+    "description": "R-TYPE VERSUS is a local multiplayer game where you play as a spaceship and fight against your friends.",
+    "max_players": 2,
+    "authors": ["Kapsulon", "lmaoleo", "IceBird", "Kloups", "Garover"],
+    "version": "1.0"
+}
