@@ -1530,13 +1530,20 @@
     print("Label position: ", label:GetPosition()) -- should print (500, 400)
     ```
 - ### GetGlobalPosition
+    Retrieves the global position of the current Label.
     #### Prototype
-        ```lua
+    ```lua
+    label:GetGlobalPosition() -> (number, number)
     ```
-
     #### Arguments
+    `None`
     #### Example
     ```lua
+    local label = scene:GetRoot():CreateChild("Label", "my_label", 50, 100, "Hello World", "Arial.ttf", 20)
+    label:SetPosition(300, 400)
+
+    local globalX, globalY = label:GetGlobalPosition()
+    print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
     ```
 - ### SetColor
     #### Prototype
@@ -1903,6 +1910,7 @@
     parent:AddChild(child)
     print(parent:GetChild("child_box"):GetName()) -- should print "child_box"
     ```
+
 - ### GetPosition
     Retrieve the position of the current `Box`.
     #### Prototype
@@ -1917,7 +1925,7 @@
     local box = root:CreateChild("Box", "box", 15, 25, 200, 100)
 
     local x, y = box:GetPosition()
-    print("Position:", x, y) -- should print "Position: 15 25"
+    print("Position:", x, y) -- should print "15, 25"
     ```
 
 - ### SetPosition
@@ -1934,9 +1942,26 @@
     ```lua
     local box = root:CreateChild("Box", "example_box", 0, 0, 100, 50)
     box:SetPosition(150, 75)
-    print("Box position: ", box:GetPosition()) -- should print (150, 75)
+    print("Box position: ", box:GetPosition()) -- should print "150, 75"
     ```
 
+- ### GetGlobalPosition
+    Retrieves the global position of the current `Box`.
+    #### Prototype
+    ```lua
+    box:GetGlobalPosition() -> (number, number)
+    ```
+    #### Arguments
+    `None`
+
+    #### Example
+    ```lua
+    local box = scene:GetRoot():CreateChild("Box", "my_box", 100, 150, 200, 300)
+    box:SetPosition(500, 600)
+
+    local globalX, globalY = box:GetGlobalPosition()
+    print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+    ```
 
 - ### SetColor
     #### Prototype
