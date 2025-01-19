@@ -45,7 +45,6 @@ int GlobalConnection::_selectFd()
     FD_SET(_udpFd, &_readfds);
     FD_SET(_udpFd, &_writefds);
 
-    // Use 0 for nfds on Windows
 #ifdef WIN32
     retval = select(0, &_readfds, &_writefds, nullptr, &timeout);
 #else
@@ -68,6 +67,17 @@ void GlobalConnection::_createSocket()
 {
     _tcpFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     _udpFd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+    if (_udpFd == -1 || _tcpFd == -1) {
+#ifdef WIN32
+        if (_udpFd != -1) _close(_udpFd);
+        if (_tcpFd != -1) _close(_tcpFd);
+#else
+        if (_udpFd != -1) close(_udpFd);
+        if (_tcpFd != -1) close(_tcpFd);
+#endif
+        throw std::runtime_error("Error creating sockets");
+    }
 
     if (_tcpFd == INVALID_SOCKET || _udpFd == INVALID_SOCKET) {
         throw std::runtime_error("Error creating socket");

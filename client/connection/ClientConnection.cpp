@@ -100,7 +100,7 @@ void ClientConnection::_tryReceiveTCP()
     int n = 0;
 
 #ifdef WIN32
-    if ((n = _read(_tcpFd, buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
+    if ((n = recv(_tcpFd, reinterpret_cast<char *>(buffer.data()), PACKED_PACKET_SIZE, 0)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
 #else

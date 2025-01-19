@@ -167,7 +167,7 @@ void ServerConnection::_tryReceiveTCP(Client *client)
     std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
     int n = 0;
 #ifdef WIN32
-    if ((n = _read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
+    if ((n = recv(_tcpFd, reinterpret_cast<char *>(buffer.data()), PACKED_PACKET_SIZE, 0)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
 #else
@@ -244,6 +244,17 @@ void ServerConnection::_createSocket()
 {
     _udpFd = socket(AF_INET, SOCK_DGRAM, 0);
     _tcpFd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (_udpFd == -1 || _tcpFd == -1) {
+#ifdef WIN32
+        if (_udpFd != -1) _close(_udpFd);
+        if (_tcpFd != -1) _close(_tcpFd);
+#else
+        if (_udpFd != -1) close(_udpFd);
+        if (_tcpFd != -1) close(_tcpFd);
+#endif
+        throw std::runtime_error("Error creating sockets");
+    }
 
     std::memset(&_addr, 0, sizeof(_addr));
     _addr.sin_family = AF_INET;
