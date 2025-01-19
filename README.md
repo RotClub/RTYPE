@@ -2,7 +2,7 @@
 
 ## Information:
 
-The purpose of this project is to create a game engine and a game based on the R-TYPE license. The game engine is a 2D game engine that uses a Node System to manage the game objects qui s'inspire de l'engine de [Godot](https://docs.godotengine.org/en/stable/getting_started/step_by_step/nodes_and_scenes.html). Our engine is written in C++ and the game is written in Luau, like Roblox.
+The purpose of this project is to create a game engine and a game based on the R-TYPE license. The game engine is a 2D game engine that uses a Node System to manage the game objects, is inspired by [Godot](https://docs.godotengine.org/en/stable/getting_started/step_by_step/nodes_and_scenes.html). The engine is written in C++ and the games are written in Luau, like Roblox.
 
 This project uses a mirroring system for repository management. This ensures synchronization between multiple instances of the source code, promoting its availability and long-term sustainability.
 
@@ -15,7 +15,7 @@ You can find it [here](https://github.com/RotClub/RTYPE)
 
 ## Build:
 
-This project work only on Linux and MacOS and build with CMake.
+This project works only on Linux and MacOS and is built with CMake.
 Before building the project, you need to pull the submodules with the following command:
 
 ```bash
