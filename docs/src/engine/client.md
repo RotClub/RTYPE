@@ -8,10 +8,7 @@ The client can be run with the following options:
 - `--ip` to specify the server IP address
 - `--port` to specify the server port
 
-<<<<<<< Updated upstream
 It can be run with the following command:
 ```bash
 ./r-type_client --ip [ip_address] --port [port]
 ```
-=======
->>>>>>> Stashed changes
