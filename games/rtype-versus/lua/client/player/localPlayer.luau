@@ -15,6 +15,14 @@ function spawnLocalPlayer()
     setPlayerColor(localPlayerSprite, 1)
 end
 
+function destroyLocalPlayer()
+    if Game.localPlayer == nil then
+        return
+    end
+    Game.localPlayer:Destroy()
+    Game.localPlayer = nil
+end
+
 function sendAction(direction, start)
     if start then
         net.Start("ActionStart")

@@ -17,6 +17,7 @@ function defaultSpaceship(id: number)
 end
 
 function getSpaceshipByPlayer(ply: string)
+    debug("Getting spaceship by player " .. ply)
     for i = 1, #spaceships do
         if spaceships[i].bound_player == ply then
             return spaceships[i]
@@ -26,7 +27,8 @@ end
 
 function spawnSpaceship(id: number, ply: string)
     spaceships[id].bound_player = ply
-    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, Game.playersSize.x, Game.playersSize.y, 0, 0)
+    local spawnX = 50 + (id - 1) * 650
+    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, spawnX, 300, Game.playersSize.x, Game.playersSize.y, 0, 0)
 end
 
 function despawnSpaceship(id: number)
@@ -39,6 +41,19 @@ function despawnSpaceship(id: number)
     table.foreach(spaceships[id].actions, function(k, v)
         spaceships[id].actions[k] = false
     end)
+end
+
+function playerUpdate(player, dt: number)
+    if player == nil then return end
+    if player.respawn_cd > 0 then
+        debug(player.respawn_cd)
+        player.respawn_cd -= dt
+        debug("Player " .. player.id .. " respawn in " .. player.respawn_cd)
+        if player.respawn_cd <= 0 then
+            debug("Respawning player " .. player.id)
+            spawnSpaceship(player.id, player.bound_player)
+        end
+    end
 end
 
 function syncNewPlayer(ply: string)
@@ -110,4 +125,28 @@ function spaceshipBoundaries(spaceship)
     if yp + Game.playersSize.y >= 600.0 then
     spaceship.node:SetPosition(xp, 599.8 - Game.playersSize.y)
     end
+end
+
+function projectileCollisions(dt)
+    table.foreach(Game.projectiles, function(i, projectile)
+        if projectile.node == nil then return end
+        local x, y = projectile.node:GetGlobalPosition()
+        local source = tonumber(string.match(projectile.name, "^(%d+)-"))
+        local target = source == 1 and 2 or 1
+        local targetSpaceship = spaceships[target]
+        if targetSpaceship.node == nil then return end
+        if projectile.node:Collide(targetSpaceship.node) then
+            targetSpaceship.node:Destroy()
+            targetSpaceship.node = nil
+            targetSpaceship.respawn_cd = RESPAWN_TIME
+            net.Start("SpaceshipDespawn")
+                net.WriteInt(target)
+                net.WriteBool(true)
+            net.Broadcast()
+            projectile.node:Destroy()
+            projectile.node = nil
+            table.remove(Game.projectiles, i)
+            return
+        end
+    end)
 end
