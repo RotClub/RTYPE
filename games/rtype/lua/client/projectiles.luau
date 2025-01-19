@@ -84,3 +84,4 @@ net.Receive("ProjectileEnd", function(len, ply)
         -- TODO: BOOOOOOOOOOOOOOOOOM
     end
 end)
+
