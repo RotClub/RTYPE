@@ -228,8 +228,8 @@
     integer indicating the type of communication (TCP/UDP).
 
     Then the server sends a "CONNECT" packet to the client to confirm the
-    connection with the data being a single string that contains
-    "AUTHENTICATED".
+    connection with the data that contains "AUTHENTICATED", a char[16] ID for
+    the client and the name of the game.
 
     Client                                   Server
       | ------------- "CONNECT" --------------&gt; |
@@ -241,8 +241,9 @@
       |                                         | If valid, send channels
       | &lt;-- "NEW_MESSAGE" (New Channel Info) -- |
       | &lt;-- "NEW_MESSAGE" (New Channel Info) -- |
-      |                                         | ... (Repeated for all channels)
-      | &lt;------------- "CONNECT" -------------- | Send "AUTHENTICATED"
+      |                                         | (Repeated for all channels)
+      | &lt;------------- "CONNECT" -------------- | Send "AUTHENTICATED",
+      |                                         | char[16] client ID, Game Name
       |          Connection Established         |
 
 3.3 Data Transfer

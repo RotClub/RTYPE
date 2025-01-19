@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Networking - R-TYPE</title>
+        <title>Client - R-TYPE</title>
 
 
         <!-- Custom HTML head -->
@@ -152,18 +152,117 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="networking"><a class="header" href="#networking">Networking</a></h1>
-<p><a href="../../rfc.html">RFC</a></p>
+                        <h2 id="client-luau-methods"><a class="header" href="#client-luau-methods">Client Luau Methods</a></h2>
+<p>Documentation for Luau client methods, providing functions for key events, FPS counter, color blindness modes, and window size.</p>
+<p>The keys code is the one included in the ASCII specification.</p>
+<h3 id="iskeypressed"><a class="header" href="#iskeypressed">IsKeyPressed</a></h3>
+<p>Check if a key is currently being pressed down.</p>
+<h4 id="prototype"><a class="header" href="#prototype">Prototype</a></h4>
+<pre><code class="language-lua">IsKeyPressed(key: number) -&gt; boolean
+</code></pre>
+<h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
+<p><code>number</code>: The key code to check if it is pressed.</p>
+<h4 id="example"><a class="header" href="#example">Example</a></h4>
+<pre><code class="language-lua">if IsKeyPressed(KEY_SPACE) then
+    print("Space key is pressed!")
+end
+</code></pre>
+<h3 id="iskeyjustpressed"><a class="header" href="#iskeyjustpressed">IsKeyJustPressed</a></h3>
+<p>Check if a key was just pressed.</p>
+<h4 id="prototype-1"><a class="header" href="#prototype-1">Prototype</a></h4>
+<pre><code class="language-lua">IsKeyJustPressed(key: number) -&gt; boolean
+</code></pre>
+<h4 id="arguments-1"><a class="header" href="#arguments-1">Arguments</a></h4>
+<p><code>number</code>: The key code to check if it was just pressed.</p>
+<h4 id="example-1"><a class="header" href="#example-1">Example</a></h4>
+<pre><code class="language-lua">if IsKeyJustPressed(KEY_ENTER) then
+    print("Enter key was just pressed!")
+end
+</code></pre>
+<h3 id="iskeyreleased"><a class="header" href="#iskeyreleased">IsKeyReleased</a></h3>
+<p>Check if a key was just released.</p>
+<h4 id="prototype-2"><a class="header" href="#prototype-2">Prototype</a></h4>
+<pre><code class="language-lua">IsKeyReleased(key: number) -&gt; boolean
+</code></pre>
+<h4 id="arguments-2"><a class="header" href="#arguments-2">Arguments</a></h4>
+<p><code>number</code>: The key code to check if it was released.</p>
+<h4 id="example-2"><a class="header" href="#example-2">Example</a></h4>
+<pre><code class="language-lua">if IsKeyReleased(KEY_A) then
+    print("The 'A' key was released!")
+end
+</code></pre>
+<h3 id="enablefpscounter"><a class="header" href="#enablefpscounter">EnableFpsCounter</a></h3>
+<p>Enables the FPS counter, displaying the current frame rate on the screen.</p>
+<h4 id="prototype-3"><a class="header" href="#prototype-3">Prototype</a></h4>
+<pre><code class="language-lua">EnableFpsCounter() -&gt; nil
+</code></pre>
+<h4 id="arguments-3"><a class="header" href="#arguments-3">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
+<pre><code class="language-lua">EnableFpsCounter()  -- Enables the FPS counter on the screen
+</code></pre>
+<h3 id="disablefpscounter"><a class="header" href="#disablefpscounter">DisableFpsCounter</a></h3>
+<p>Disables the FPS counter, removing the frame rate display from the screen.</p>
+<h4 id="prototype-4"><a class="header" href="#prototype-4">Prototype</a></h4>
+<pre><code class="language-lua">DisableFpsCounter() -&gt; nil
+</code></pre>
+<h4 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
+<pre><code class="language-lua">DisableFpsCounter()  -- Disables the FPS counter on the screen
+</code></pre>
+<h3 id="disablecolorblindnessshader"><a class="header" href="#disablecolorblindnessshader">DisableColorBlindnessShader</a></h3>
+<p>Disables any color blindness shader or mode applied to the game.</p>
+<h4 id="prototype-5"><a class="header" href="#prototype-5">Prototype</a></h4>
+<pre><code class="language-lua">DisableColorBlindnessShader() -&gt; nil
+</code></pre>
+<h4 id="arguments-5"><a class="header" href="#arguments-5">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
+<pre><code class="language-lua">DisableColorBlindnessShader()  -- Disables any color blindness mode in the game
+</code></pre>
+<h3 id="cyclecolorblindnessshader"><a class="header" href="#cyclecolorblindnessshader">CycleColorBlindnessShader</a></h3>
+<p>Cycles through the available color blindness modes if any are enabled.</p>
+<h4 id="prototype-6"><a class="header" href="#prototype-6">Prototype</a></h4>
+<pre><code class="language-lua">CycleColorBlindnessShader() -&gt; nil
+</code></pre>
+<h4 id="arguments-6"><a class="header" href="#arguments-6">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<pre><code class="language-lua">CycleColorBlindnessShader()  -- Cycles through different color blindness modes (if any)
+</code></pre>
+<h3 id="windowheight"><a class="header" href="#windowheight">WindowHeight</a></h3>
+<p>Returns the height of the game window (in pixels).</p>
+<h4 id="prototype-7"><a class="header" href="#prototype-7">Prototype</a></h4>
+<pre><code class="language-lua">WindowHeight() -&gt; number
+</code></pre>
+<h4 id="arguments-7"><a class="header" href="#arguments-7">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
+<pre><code class="language-lua">local height = WindowHeight()
+print("Window Height: " .. height)
+</code></pre>
+<h3 id="windowwidth"><a class="header" href="#windowwidth">WindowWidth</a></h3>
+<p>Returns the width of the game window (in pixels).</p>
+<h4 id="prototype-8"><a class="header" href="#prototype-8">Prototype</a></h4>
+<pre><code class="language-lua">WindowWidth() -&gt; number
+</code></pre>
+<h4 id="arguments-8"><a class="header" href="#arguments-8">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
+<pre><code class="language-lua">local width = WindowWidth()
+print("Window Width: " .. width)
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../engine/client.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../game/libs.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../engine/nodeSystem.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../game/common.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -173,11 +272,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../engine/client.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../game/libs.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../engine/nodeSystem.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../game/common.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

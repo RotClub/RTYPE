@@ -1,0 +1,384 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>NodeEngine - R-TYPE</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">R-TYPE</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h2 id="node-system"><a class="header" href="#node-system">Node System</a></h2>
+<h3 id="introduction"><a class="header" href="#introduction">Introduction</a></h3>
+<h4 id="what-is-the-entity-system-"><a class="header" href="#what-is-the-entity-system-">What is the Entity System ?</a></h4>
+<p>The Entity System Engine is a lightweight 2D framework built to simplify the
+creation and management of entities through a Node-based hierarchy.
+Designed for flexibility and modularity, it provides developers with the tools
+to efficiently structure and manage game objects, UI, and physics in a 2D
+environment.</p>
+<p>The engine is implemented in <code>C++</code> for performance and exposes its
+functionality through <code>Luau</code>, allowing developers to script and control every
+aspect of the system easily.</p>
+<h4 id="inspiration"><a class="header" href="#inspiration">Inspiration</a></h4>
+<p>This Entity System Engine is directly inspired by the one in Godot.
+The design pattern is inspired by the one in Garry's Mod.
+<a href="https://docs.godotengine.org/en/stable/">Godot-Documentation</a></p>
+<h3 id="architecture-overview"><a class="header" href="#architecture-overview">Architecture Overview</a></h3>
+<p>The Node system is the heart of the engine. It is a block-based system designed
+to add functionalities more easily. This approach ensures clearer organization
+and helps avoid scattering during the creation of elements.
+It organizes entities, facilitates their manipulation and modification by
+adding and managing properties.
+Each node can :</p>
+<ul>
+<li>Inherit properties (e.g., position, rotation) from its parent.</li>
+<li>Add specialized behavior through extensions or child nodes.</li>
+</ul>
+<h3 id="core-concepts"><a class="header" href="#core-concepts">Core Concepts</a></h3>
+<p>There is first a basic description of the elements, followed by a detailed
+explanation in <a href="#references--key-methods">References</a>, which includes their usage
+and what they do.
+Below is a schematic of the Node System architecture.</p>
+<h4 id="system-graph"><a class="header" href="#system-graph">System Graph</a></h4>
+<pre><code class="language-mermaid">%%{init: {'themeVariables': {'curve': 'linear'}}}%%
+
+graph LR;
+    Engine--&gt;Node_System;
+    Node_System--&gt;Node;
+    Node--&gt;Node2D;
+
+    Node2D--&gt;Sprite2D;
+    Node2D--&gt;CollisionNode2D;
+
+    CollisionNode2D--&gt;Area2D;
+    CollisionNode2D--&gt;Body2D;
+    Body2D--&gt;RigidBody2D;
+    Body2D--&gt;StaticBody2D;
+    CollisionNode2D-.-o CollisionShape2D;
+    CollisionShape2D-.-&gt;Shape2D;
+    Shape2D--&gt;Circle2D;
+    Shape2D--&gt;Rectangle2D;
+    Node2D&lt;-.-&gt;UI;
+    Node--&gt;UI;
+    UI--&gt;Label;
+    UI--&gt;Button;
+    UI--&gt;Parallax;
+    UI--&gt;Box;
+</code></pre>
+<ul>
+<li>
+<h4 id="node"><a class="header" href="#node">Node</a></h4>
+<p>A node is a module made up of one or more blocks, similar to an Entity System.
+In this Node System, the diversity of blocks is classified and organized
+according to defined functionalities.
+For example, a Node UI does not need to use a collision system.
+In the following, we'll look at each part of the block and its child nodes
+in detail.</p>
+</li>
+<li>
+<h4 id="node2d"><a class="header" href="#node2d">Node2D</a></h4>
+<p>Node2D is the heart of the element management system for our video games.
+It contains all the methods and child nodes needed to manage:</p>
+<ul>
+<li>2D sprites</li>
+<li>2D camera</li>
+<li>Other objects and their collision system</li>
+</ul>
+<p>The system works with functionality assignments. For example, you can
+create a rectangular object and decide whether or not it will conflict
+with other objects, and specify which ones.
+The objects are at least composed by a position and a size.</p>
+<ul>
+<li>
+<h4 id="sprite2d"><a class="header" href="#sprite2d">Sprite2D</a></h4>
+<p>This is the implementation of 2D Sprite handling, managed as a 2D
+object that has no physical constraints and is positioned and drawn
+in the scene. It is reduced as a 2D rectangle.</p>
+</li>
+<li>
+<h4 id="collisionnode2d"><a class="header" href="#collisionnode2d">CollisionNode2D</a></h4>
+<p>CollisionNode2D is the starting point for managing elements with
+physics. This allows you to isolate, identify and simply discriminate
+all 2D objects other than sprites.</p>
+<p>All CollisionNode2D dependent items can be primitively described as
+2D rectangular objects with a position and size defined at the time of
+their creation. These entities can then be detailled into other object
+types, which will be described in more detail below.</p>
+<ul>
+<li>
+<h4 id="area2d"><a class="header" href="#area2d">Area2D</a></h4>
+<p>Area2D is a simple 2D object, dimensioned and positioned in the
+scene, to which a collision zone can be assigned. This object
+cannot be in motion.</p>
+</li>
+<li>
+<h4 id="body2d"><a class="header" href="#body2d">Body2D</a></h4>
+<p>Body2D is a 2D object that can be declined into 2 other items:
+StaticBody2D and RigidBody2D.</p>
+<p>As with most CollisionNode2D child nodes, Body2D and its child
+nodes are represented by a rectangle2D and can have a collision system.</p>
+<ul>
+<li>
+<h4 id="staticbody2d"><a class="header" href="#staticbody2d">StaticBody2D</a></h4>
+<p>It's a 2D object which, as its name suggests, is static.
+It is not in motion, only positioned in the scene. It can
+be used as a decorative element, for example.</p>
+</li>
+<li>
+<h4 id="rigidbody2d"><a class="header" href="#rigidbody2d">RigidBody2D</a></h4>
+<p>This is a 2D object which, unlike StaticBody2D, is in motion.
+It takes an additional velocity parameter when constructed.</p>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="collisionshape2d--shape2d"><a class="header" href="#collisionshape2d--shape2d">CollisionShape2D &amp; Shape2D</a></h4>
+<p>CollisionShape2D is directly associated with Shape2D.
+CollisionShape2D groups together collision detection and
+management systems. Together with Shape2D, they also create and
+manage the 2D child objects described below.</p>
+<p>Shape2D is the parent node of 2 other 2D object declinations:
+Rectangle2D and Circle2D. Simply, a 2D Rectangle dimensioned and
+positioned in the scene, and the same for the Circle. Each of these
+2D objects has a Bounding Box, it's an expression of the maximum
+extents of a two-dimensional object (e.g. point, line, polygon) or
+set of objects within its x-y coordinate system. Represented by a
+rectangle.
+<a href="https://en.wikipedia.org/wiki/Minimum_bounding_rectangle">+Infos</a></p>
+<p>Collisions between objects are verified in multiple steps. First,
+a collision check is performed based on the bounding box. If this
+check is true, a more detailed collision verification is performed
+directly between the objects. This approach avoids unnecessary
+complex calculations between shapes like rectangles and circles.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="ui-nodes"><a class="header" href="#ui-nodes">UI Nodes</a></h4>
+<p>UI Nodes is a 2D element management system that differs from Node2D.
+The difference is mainly due to the relative position of
+the elements. In Node2D, positions are relative to the scene, whereas
+UI Nodes' positions are relative to the screen.</p>
+<p>All child elements are managed from this UI Node. It will manage global
+positions and color.</p>
+<p>UI Nodes contains the elements needed to create a UI, i.e. Labels, Buttons,
+Boxes and finally Parallaxes, which are described below.</p>
+<ul>
+<li>
+<h4 id="label"><a class="header" href="#label">Label</a></h4>
+<p>Label is a UI text positioned in the screen. It can be given a font size.</p>
+</li>
+<li>
+<h4 id="parallax"><a class="header" href="#parallax">Parallax</a></h4>
+<p>The parallax node is a 2D graphical element used to create a depth
+effect. It's a texture that can be moved by an offset or relative to a
+Node2D reference (for simultaneous movement).
+Positioned in the scene, it also has a supperposition index. 0 being
+the furthest away from the user.</p>
+</li>
+<li>
+<h4 id="box"><a class="header" href="#box">Box</a></h4>
+<p>Box is a 2D rectangle positioned in the screen. It can be used for UI
+elements such as menus.</p>
+</li>
+</ul>
+</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../engine/networking.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../game/filesystem.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../engine/networking.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../game/filesystem.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

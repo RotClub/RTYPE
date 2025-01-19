@@ -239,8 +239,8 @@
     integer indicating the type of communication (TCP/UDP).
 
     Then the server sends a "CONNECT" packet to the client to confirm the
-    connection with the data being a single string that contains
-    "AUTHENTICATED".
+    connection with the data that contains "AUTHENTICATED", a char[16] ID for
+    the client and the name of the game.
 
     Client                                   Server
       | ------------- "CONNECT" --------------&gt; |
@@ -252,8 +252,9 @@
       |                                         | If valid, send channels
       | &lt;-- "NEW_MESSAGE" (New Channel Info) -- |
       | &lt;-- "NEW_MESSAGE" (New Channel Info) -- |
-      |                                         | ... (Repeated for all channels)
-      | &lt;------------- "CONNECT" -------------- | Send "AUTHENTICATED"
+      |                                         | (Repeated for all channels)
+      | &lt;------------- "CONNECT" -------------- | Send "AUTHENTICATED",
+      |                                         | char[16] client ID, Game Name
       |          Connection Established         |
 
 3.3 Data Transfer
@@ -363,26 +364,207 @@ The executables will be at the root of the project.</p>
 <p>The server is responsible of managing the game state and the communication between the clients and the game.
 When the server is started, it will start the game engine and the connection manager.
 It run on the port "25777" by default but it can be changed with the <code>--port</code> option.
-The server can use two types of connection: TCP and UDP.</p>
+The server can use two types of connection: TCP and UDP.
+The --game option is used to specify the game to run.
+Actually, the server can run the R-Type game and the Pong game.</p>
 <p>The command to run the server is:</p>
 <pre><code class="language-bash">./r-type_server
 </code></pre>
 <p>or with the port option:</p>
-<pre><code class="language-bash">./r-type_server --port 12345
+<pre><code class="language-bash">./r-type_server --port [port] --game [game_name]
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="client"><a class="header" href="#client">Client</a></h1>
 <p>The client runs the game and is responsible for rendering the game state and sending the input to the server.</p>
 <p>The client is written in C++ and uses the Raylib library to render the game.</p>
-<p>The client can be run with the following command:</p>
-<pre><code class="language-bash">./r-type_client
-</code></pre>
 <p>The client can be run with the following options:</p>
 <ul>
 <li><code>--ip</code> to specify the server IP address</li>
 <li><code>--port</code> to specify the server port</li>
+<li><code>--colorblindness</code> to enable colorblindness mode</li>
 </ul>
+<p>It can be run with the following command:</p>
+<pre><code class="language-bash">./r-type_client --ip [ip_address] --port [port] --colorblindness [none|protanopia|deuteranopia|tritanopia]
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="networking"><a class="header" href="#networking">Networking</a></h1>
 <p><a href="engine/../../rfc.html">RFC</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h2 id="node-system"><a class="header" href="#node-system">Node System</a></h2>
+<h3 id="introduction-1"><a class="header" href="#introduction-1">Introduction</a></h3>
+<h4 id="what-is-the-entity-system-"><a class="header" href="#what-is-the-entity-system-">What is the Entity System ?</a></h4>
+<p>The Entity System Engine is a lightweight 2D framework built to simplify the
+creation and management of entities through a Node-based hierarchy.
+Designed for flexibility and modularity, it provides developers with the tools
+to efficiently structure and manage game objects, UI, and physics in a 2D
+environment.</p>
+<p>The engine is implemented in <code>C++</code> for performance and exposes its
+functionality through <code>Luau</code>, allowing developers to script and control every
+aspect of the system easily.</p>
+<h4 id="inspiration"><a class="header" href="#inspiration">Inspiration</a></h4>
+<p>This Entity System Engine is directly inspired by the one in Godot.
+The design pattern is inspired by the one in Garry's Mod.
+<a href="https://docs.godotengine.org/en/stable/">Godot-Documentation</a></p>
+<h3 id="architecture-overview"><a class="header" href="#architecture-overview">Architecture Overview</a></h3>
+<p>The Node system is the heart of the engine. It is a block-based system designed
+to add functionalities more easily. This approach ensures clearer organization
+and helps avoid scattering during the creation of elements.
+It organizes entities, facilitates their manipulation and modification by
+adding and managing properties.
+Each node can :</p>
+<ul>
+<li>Inherit properties (e.g., position, rotation) from its parent.</li>
+<li>Add specialized behavior through extensions or child nodes.</li>
+</ul>
+<h3 id="core-concepts"><a class="header" href="#core-concepts">Core Concepts</a></h3>
+<p>There is first a basic description of the elements, followed by a detailed
+explanation in <a href="engine/nodeSystem.html#references--key-methods">References</a>, which includes their usage
+and what they do.
+Below is a schematic of the Node System architecture.</p>
+<h4 id="system-graph"><a class="header" href="#system-graph">System Graph</a></h4>
+<pre><code class="language-mermaid">%%{init: {'themeVariables': {'curve': 'linear'}}}%%
+
+graph LR;
+    Engine--&gt;Node_System;
+    Node_System--&gt;Node;
+    Node--&gt;Node2D;
+
+    Node2D--&gt;Sprite2D;
+    Node2D--&gt;CollisionNode2D;
+
+    CollisionNode2D--&gt;Area2D;
+    CollisionNode2D--&gt;Body2D;
+    Body2D--&gt;RigidBody2D;
+    Body2D--&gt;StaticBody2D;
+    CollisionNode2D-.-o CollisionShape2D;
+    CollisionShape2D-.-&gt;Shape2D;
+    Shape2D--&gt;Circle2D;
+    Shape2D--&gt;Rectangle2D;
+    Node2D&lt;-.-&gt;UI;
+    Node--&gt;UI;
+    UI--&gt;Label;
+    UI--&gt;Button;
+    UI--&gt;Parallax;
+    UI--&gt;Box;
+</code></pre>
+<ul>
+<li>
+<h4 id="node"><a class="header" href="#node">Node</a></h4>
+<p>A node is a module made up of one or more blocks, similar to an Entity System.
+In this Node System, the diversity of blocks is classified and organized
+according to defined functionalities.
+For example, a Node UI does not need to use a collision system.
+In the following, we'll look at each part of the block and its child nodes
+in detail.</p>
+</li>
+<li>
+<h4 id="node2d"><a class="header" href="#node2d">Node2D</a></h4>
+<p>Node2D is the heart of the element management system for our video games.
+It contains all the methods and child nodes needed to manage:</p>
+<ul>
+<li>2D sprites</li>
+<li>2D camera</li>
+<li>Other objects and their collision system</li>
+</ul>
+<p>The system works with functionality assignments. For example, you can
+create a rectangular object and decide whether or not it will conflict
+with other objects, and specify which ones.
+The objects are at least composed by a position and a size.</p>
+<ul>
+<li>
+<h4 id="sprite2d"><a class="header" href="#sprite2d">Sprite2D</a></h4>
+<p>This is the implementation of 2D Sprite handling, managed as a 2D
+object that has no physical constraints and is positioned and drawn
+in the scene. It is reduced as a 2D rectangle.</p>
+</li>
+<li>
+<h4 id="collisionnode2d"><a class="header" href="#collisionnode2d">CollisionNode2D</a></h4>
+<p>CollisionNode2D is the starting point for managing elements with
+physics. This allows you to isolate, identify and simply discriminate
+all 2D objects other than sprites.</p>
+<p>All CollisionNode2D dependent items can be primitively described as
+2D rectangular objects with a position and size defined at the time of
+their creation. These entities can then be detailled into other object
+types, which will be described in more detail below.</p>
+<ul>
+<li>
+<h4 id="area2d"><a class="header" href="#area2d">Area2D</a></h4>
+<p>Area2D is a simple 2D object, dimensioned and positioned in the
+scene, to which a collision zone can be assigned. This object
+cannot be in motion.</p>
+</li>
+<li>
+<h4 id="body2d"><a class="header" href="#body2d">Body2D</a></h4>
+<p>Body2D is a 2D object that can be declined into 2 other items:
+StaticBody2D and RigidBody2D.</p>
+<p>As with most CollisionNode2D child nodes, Body2D and its child
+nodes are represented by a rectangle2D and can have a collision system.</p>
+<ul>
+<li>
+<h4 id="staticbody2d"><a class="header" href="#staticbody2d">StaticBody2D</a></h4>
+<p>It's a 2D object which, as its name suggests, is static.
+It is not in motion, only positioned in the scene. It can
+be used as a decorative element, for example.</p>
+</li>
+<li>
+<h4 id="rigidbody2d"><a class="header" href="#rigidbody2d">RigidBody2D</a></h4>
+<p>This is a 2D object which, unlike StaticBody2D, is in motion.
+It takes an additional velocity parameter when constructed.</p>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="collisionshape2d--shape2d"><a class="header" href="#collisionshape2d--shape2d">CollisionShape2D &amp; Shape2D</a></h4>
+<p>CollisionShape2D is directly associated with Shape2D.
+CollisionShape2D groups together collision detection and
+management systems. Together with Shape2D, they also create and
+manage the 2D child objects described below.</p>
+<p>Shape2D is the parent node of 2 other 2D object declinations:
+Rectangle2D and Circle2D. Simply, a 2D Rectangle dimensioned and
+positioned in the scene, and the same for the Circle. Each of these
+2D objects has a Bounding Box, it's an expression of the maximum
+extents of a two-dimensional object (e.g. point, line, polygon) or
+set of objects within its x-y coordinate system. Represented by a
+rectangle.
+<a href="https://en.wikipedia.org/wiki/Minimum_bounding_rectangle">+Infos</a></p>
+<p>Collisions between objects are verified in multiple steps. First,
+a collision check is performed based on the bounding box. If this
+check is true, a more detailed collision verification is performed
+directly between the objects. This approach avoids unnecessary
+complex calculations between shapes like rectangles and circles.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="ui-nodes"><a class="header" href="#ui-nodes">UI Nodes</a></h4>
+<p>UI Nodes is a 2D element management system that differs from Node2D.
+The difference is mainly due to the relative position of
+the elements. In Node2D, positions are relative to the scene, whereas
+UI Nodes' positions are relative to the screen.</p>
+<p>All child elements are managed from this UI Node. It will manage global
+positions and color.</p>
+<p>UI Nodes contains the elements needed to create a UI, i.e. Labels, Buttons,
+Boxes and finally Parallaxes, which are described below.</p>
+<ul>
+<li>
+<h4 id="label"><a class="header" href="#label">Label</a></h4>
+<p>Label is a UI text positioned in the screen. It can be given a font size.</p>
+</li>
+<li>
+<h4 id="parallax"><a class="header" href="#parallax">Parallax</a></h4>
+<p>The parallax node is a 2D graphical element used to create a depth
+effect. It's a texture that can be moved by an offset or relative to a
+Node2D reference (for simultaneous movement).
+Positioned in the scene, it also has a supperposition index. 0 being
+the furthest away from the user.</p>
+</li>
+<li>
+<h4 id="box"><a class="header" href="#box">Box</a></h4>
+<p>Box is a 2D rectangle positioned in the screen. It can be used for UI
+elements such as menus.</p>
+</li>
+</ul>
+</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="games-filesystem"><a class="header" href="#games-filesystem">Games Filesystem</a></h1>
 <p>Each game is put in the <code>games/</code> folder. The directory architecture is strict and must be followed as such:</p>
 <p><em>Files/Folders in <strong>bold</strong> are required for the project to be valid.</em></p>
@@ -473,7 +655,2602 @@ end)
 <li><code>...</code> Varargs, represent all arguments that will be passed to each hook's callback.</li>
 </ul>
 <hr />
-<div style="break-before: page; page-break-before: always;"></div><h1 id="r-type"><a class="header" href="#r-type">R-Type</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h2 id="client-luau-methods"><a class="header" href="#client-luau-methods">Client Luau Methods</a></h2>
+<p>Documentation for Luau client methods, providing functions for key events, FPS counter, color blindness modes, and window size.</p>
+<p>The keys code is the one included in the ASCII specification.</p>
+<h3 id="iskeypressed"><a class="header" href="#iskeypressed">IsKeyPressed</a></h3>
+<p>Check if a key is currently being pressed down.</p>
+<h4 id="prototype-3"><a class="header" href="#prototype-3">Prototype</a></h4>
+<pre><code class="language-lua">IsKeyPressed(key: number) -&gt; boolean
+</code></pre>
+<h4 id="arguments-3"><a class="header" href="#arguments-3">Arguments</a></h4>
+<p><code>number</code>: The key code to check if it is pressed.</p>
+<h4 id="example-2"><a class="header" href="#example-2">Example</a></h4>
+<pre><code class="language-lua">if IsKeyPressed(KEY_SPACE) then
+    print("Space key is pressed!")
+end
+</code></pre>
+<h3 id="iskeyjustpressed"><a class="header" href="#iskeyjustpressed">IsKeyJustPressed</a></h3>
+<p>Check if a key was just pressed.</p>
+<h4 id="prototype-4"><a class="header" href="#prototype-4">Prototype</a></h4>
+<pre><code class="language-lua">IsKeyJustPressed(key: number) -&gt; boolean
+</code></pre>
+<h4 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h4>
+<p><code>number</code>: The key code to check if it was just pressed.</p>
+<h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
+<pre><code class="language-lua">if IsKeyJustPressed(KEY_ENTER) then
+    print("Enter key was just pressed!")
+end
+</code></pre>
+<h3 id="iskeyreleased"><a class="header" href="#iskeyreleased">IsKeyReleased</a></h3>
+<p>Check if a key was just released.</p>
+<h4 id="prototype-5"><a class="header" href="#prototype-5">Prototype</a></h4>
+<pre><code class="language-lua">IsKeyReleased(key: number) -&gt; boolean
+</code></pre>
+<h4 id="arguments-5"><a class="header" href="#arguments-5">Arguments</a></h4>
+<p><code>number</code>: The key code to check if it was released.</p>
+<h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
+<pre><code class="language-lua">if IsKeyReleased(KEY_A) then
+    print("The 'A' key was released!")
+end
+</code></pre>
+<h3 id="enablefpscounter"><a class="header" href="#enablefpscounter">EnableFpsCounter</a></h3>
+<p>Enables the FPS counter, displaying the current frame rate on the screen.</p>
+<h4 id="prototype-6"><a class="header" href="#prototype-6">Prototype</a></h4>
+<pre><code class="language-lua">EnableFpsCounter() -&gt; nil
+</code></pre>
+<h4 id="arguments-6"><a class="header" href="#arguments-6">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
+<pre><code class="language-lua">EnableFpsCounter()  -- Enables the FPS counter on the screen
+</code></pre>
+<h3 id="disablefpscounter"><a class="header" href="#disablefpscounter">DisableFpsCounter</a></h3>
+<p>Disables the FPS counter, removing the frame rate display from the screen.</p>
+<h4 id="prototype-7"><a class="header" href="#prototype-7">Prototype</a></h4>
+<pre><code class="language-lua">DisableFpsCounter() -&gt; nil
+</code></pre>
+<h4 id="arguments-7"><a class="header" href="#arguments-7">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<pre><code class="language-lua">DisableFpsCounter()  -- Disables the FPS counter on the screen
+</code></pre>
+<h3 id="disablecolorblindnessshader"><a class="header" href="#disablecolorblindnessshader">DisableColorBlindnessShader</a></h3>
+<p>Disables any color blindness shader or mode applied to the game.</p>
+<h4 id="prototype-8"><a class="header" href="#prototype-8">Prototype</a></h4>
+<pre><code class="language-lua">DisableColorBlindnessShader() -&gt; nil
+</code></pre>
+<h4 id="arguments-8"><a class="header" href="#arguments-8">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
+<pre><code class="language-lua">DisableColorBlindnessShader()  -- Disables any color blindness mode in the game
+</code></pre>
+<h3 id="cyclecolorblindnessshader"><a class="header" href="#cyclecolorblindnessshader">CycleColorBlindnessShader</a></h3>
+<p>Cycles through the available color blindness modes if any are enabled.</p>
+<h4 id="prototype-9"><a class="header" href="#prototype-9">Prototype</a></h4>
+<pre><code class="language-lua">CycleColorBlindnessShader() -&gt; nil
+</code></pre>
+<h4 id="arguments-9"><a class="header" href="#arguments-9">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
+<pre><code class="language-lua">CycleColorBlindnessShader()  -- Cycles through different color blindness modes (if any)
+</code></pre>
+<h3 id="windowheight"><a class="header" href="#windowheight">WindowHeight</a></h3>
+<p>Returns the height of the game window (in pixels).</p>
+<h4 id="prototype-10"><a class="header" href="#prototype-10">Prototype</a></h4>
+<pre><code class="language-lua">WindowHeight() -&gt; number
+</code></pre>
+<h4 id="arguments-10"><a class="header" href="#arguments-10">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-9"><a class="header" href="#example-9">Example</a></h4>
+<pre><code class="language-lua">local height = WindowHeight()
+print("Window Height: " .. height)
+</code></pre>
+<h3 id="windowwidth"><a class="header" href="#windowwidth">WindowWidth</a></h3>
+<p>Returns the width of the game window (in pixels).</p>
+<h4 id="prototype-11"><a class="header" href="#prototype-11">Prototype</a></h4>
+<pre><code class="language-lua">WindowWidth() -&gt; number
+</code></pre>
+<h4 id="arguments-11"><a class="header" href="#arguments-11">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-10"><a class="header" href="#example-10">Example</a></h4>
+<pre><code class="language-lua">local width = WindowWidth()
+print("Window Width: " .. width)
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="common"><a class="header" href="#common">Common</a></h1>
+<h2 id="introduction-2"><a class="header" href="#introduction-2">Introduction</a></h2>
+<p>This section contains the common luau methods for the server and client.</p>
+<h4 id="system-graph-1"><a class="header" href="#system-graph-1">System Graph</a></h4>
+<p><img src="game/../assets/SystemGraph.png" alt="SystemGraph" /></p>
+<h2 id="nodes"><a class="header" href="#nodes">Nodes</a></h2>
+<ul>
+<li><a href="game/./NodeLibrary.html">Node</a></li>
+<li><a href="game/./Node2DLibrary.html">Node2D</a></li>
+<li><a href="game/./Sprite2DLibrary.html">Sprite2D</a></li>
+<li><a href="game/./Area2DLibrary.html">Area2D</a></li>
+<li><a href="game/./RigidBody2DLibrary.html">RigidBody2D</a></li>
+<li><a href="game/./StaticBody2DLibrary.html">StaticBody2D</a></li>
+<li><a href="game/./CollisionShape2DLibrary.html">CollisionShape2D</a></li>
+<li><a href="game/./LabelLibrary.html">Label</a></li>
+<li><a href="game/./ParallaxLibrary.html">Parallax</a></li>
+<li><a href="game/./BoxLibrary.html">Box</a></li>
+</ul>
+<h2 id="registered-node-type--construction-method"><a class="header" href="#registered-node-type--construction-method">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="node-library"><a class="header" href="#node-library">Node Library</a></h2>
+<ul>
+<li>
+<h3 id="getname"><a class="header" href="#getname">GetName</a></h3>
+<p>Get the name of the Node.</p>
+<h4 id="prototype-12"><a class="header" href="#prototype-12">Prototype</a></h4>
+<pre><code class="language-lua">node:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-12"><a class="header" href="#arguments-12">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-11"><a class="header" href="#example-11">Example</a></h4>
+<pre><code class="language-lua">local node_1 = root:CreateChild("Node", "node_1")
+local node_name = node_1:GetName()
+
+print("Node name : " .. node_name) -- should be "node_1"
+</code></pre>
+</li>
+<li>
+<h3 id="setname"><a class="header" href="#setname">SetName</a></h3>
+<p>Set or change the name of the Node.</p>
+<h4 id="prototype-13"><a class="header" href="#prototype-13">Prototype</a></h4>
+<pre><code class="language-lua">node:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-13"><a class="header" href="#arguments-13">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-12"><a class="header" href="#example-12">Example</a></h4>
+<pre><code class="language-lua">local node = root:CreateChild("Node", "node")
+print("New Node name : ", node:GetName()) -- should be "node"
+
+node:SetName("new_node_name")
+print("New Node name : ", node:GetName()) -- should be "new_node_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren"><a class="header" href="#getchildren">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Node.</p>
+<h4 id="prototype-14"><a class="header" href="#prototype-14">Prototype</a></h4>
+<pre><code class="language-lua">node:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-14"><a class="header" href="#arguments-14">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-13"><a class="header" href="#example-13">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local node_1 = root:CreateChild("Node", "node_1")
+local node_2 = root:CreateChild("Node", "node_2")
+
+local children = root:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "node_1" &amp; "node_2"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild"><a class="header" href="#getchild">GetChild</a></h3>
+<p>Retrieve a child node by its name.</p>
+<h4 id="prototype-15"><a class="header" href="#prototype-15">Prototype</a></h4>
+<pre><code class="language-lua">node:GetChild(name: string) -&gt; Node | nil
+</code></pre>
+<h4 id="arguments-15"><a class="header" href="#arguments-15">Arguments</a></h4>
+<p><code>string</code> : The name of the child node to retrieve.</p>
+<h4 id="example-14"><a class="header" href="#example-14">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local node_1 = root:CreateChild("Node", "node_1")
+local node_2 = root:CreateChild("Node", "node_2")
+
+local child = root:GetChild("node_1")
+
+if child then
+    print("Found child with name: " .. child:GetName()) -- should be "node_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild"><a class="header" href="#createchild">CreateChild</a></h3>
+<p>Create and add a child node to the current node. For the child references check the schema <code>system graph</code> in introduction and the valid registered node types.<a href="game/NodeLibrary.html#registered-node-type--construction-method">registered_node</a></p>
+<h4 id="prototype-16"><a class="header" href="#prototype-16">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, + others) -&gt; Node | nil
+</code></pre>
+<h4 id="arguments-16"><a class="header" href="#arguments-16">Arguments</a></h4>
+<p><code>string</code> : The type of the child node to create. It must correspond to a valid registered node type.</p>
+<p><code>name</code> : The name of the child node to create.</p>
+<p><code>+ others</code> : All the additional parameters depending of the node type you want to create.</p>
+<h4 id="example-15"><a class="header" href="#example-15">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local child = root:CreateChild("Node")
+
+print("Created child node with type: " .. child:GetType()) -- should be "Node"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild"><a class="header" href="#addchild">AddChild</a></h3>
+<h4 id="prototype-17"><a class="header" href="#prototype-17">Prototype</a></h4>
+<pre><code class="language-lua">node:AddChild(child: Node) -&gt; nil
+</code></pre>
+<h4 id="arguments-17"><a class="header" href="#arguments-17">Arguments</a></h4>
+<p><code>Node</code> : The node to add as a child of the current node.</p>
+<h4 id="example-16"><a class="header" href="#example-16">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local child = root:CreateChild("Node", "child_node")
+root:AddChild(child)
+
+print("Child added : " .. child:GetName()) -- should be "child_node"
+</code></pre>
+</li>
+<li>
+<h3 id="destroy"><a class="header" href="#destroy">Destroy</a></h3>
+<p>Permanently deletes the current node and its associated resources.</p>
+<h4 id="prototype-18"><a class="header" href="#prototype-18">Prototype</a></h4>
+<pre><code class="language-lua">node:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-18"><a class="header" href="#arguments-18">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-17"><a class="header" href="#example-17">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local node_1 = root:CreateChild("Node", "node_1")
+
+node_1:Destroy()
+-- Trying to access node_1 after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-1"><a class="header" href="#registered-node-type--construction-method-1">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="node2d-library"><a class="header" href="#node2d-library">Node2D Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-1"><a class="header" href="#getname-1">GetName</a></h3>
+<p>Retrieve the name of the Node2D.</p>
+<h4 id="prototype-19"><a class="header" href="#prototype-19">Prototype</a></h4>
+<pre><code class="language-lua">node2d:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-19"><a class="header" href="#arguments-19">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-18"><a class="header" href="#example-18">Example</a></h4>
+<pre><code class="language-lua">local node2d = root:CreateChild("Node2D", "node2d")
+
+local name = node2d:GetName()
+print("Node2D name: " .. name) -- should be "node2d"
+</code></pre>
+</li>
+<li>
+<h3 id="setname-1"><a class="header" href="#setname-1">SetName</a></h3>
+<p>Set or change the name of the Node2D.</p>
+<h4 id="prototype-20"><a class="header" href="#prototype-20">Prototype</a></h4>
+<pre><code class="language-lua">node2d:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-20"><a class="header" href="#arguments-20">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-19"><a class="header" href="#example-19">Example</a></h4>
+<pre><code class="language-lua">local node2d = root:CreateChild("Node2D", "node2d")
+print("Node2D name : ", node2d:GetName()) -- should be "node2d"
+
+node2d:SetName("new_node2d_name")
+print("New Node2D name : ", node2d:GetName()) -- should be "new_node2d_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren-1"><a class="header" href="#getchildren-1">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Node2D.</p>
+<h4 id="prototype-21"><a class="header" href="#prototype-21">Prototype</a></h4>
+<pre><code class="language-lua">node2d:GetChildren() -&gt; {Node2D} | nil
+</code></pre>
+<h4 id="arguments-21"><a class="header" href="#arguments-21">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-20"><a class="header" href="#example-20">Example</a></h4>
+<pre><code class="language-lua">local node2d = root:CreateChild("Node2D", "MainNode2D")
+local childNode1 = node2d:CreateChild("Node2D", "ChildNode2D1")
+local childNode2 = node2d:CreateChild("Sprite2D", "SpriteChild", "sprite1.png")
+
+local children = node2d:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "ChildNode2D1" &amp; "SpriteChild"
+end
+
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-1"><a class="header" href="#getchild-1">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>Node2D</code>.</p>
+<h4 id="prototype-22"><a class="header" href="#prototype-22">Prototype</a></h4>
+<pre><code class="language-lua">node2d:GetChild(childName: string) -&gt; Node2D | nil
+</code></pre>
+<h4 id="arguments-22"><a class="header" href="#arguments-22">Arguments</a></h4>
+<ul>
+<li><code>string</code>: The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-21"><a class="header" href="#example-21">Example</a></h4>
+<pre><code class="language-lua">local node2d = root:CreateChild("Node2D", "parent_node2d")
+local child_1 = node2d:CreateChild("Node2D", "child_1")
+
+local child = node2d:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-1"><a class="header" href="#createchild-1">CreateChild</a></h3>
+<p>Create and add a child node to the current node. For the child references check the schema <code>system graph</code> in introduction and the valid registered node types.<a href="game/Node2DLibrary.html#registered-node-type--construction-method">registered_node</a></p>
+<h4 id="prototype-23"><a class="header" href="#prototype-23">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, + others) -&gt; Node | nil
+</code></pre>
+<h4 id="arguments-23"><a class="header" href="#arguments-23">Arguments</a></h4>
+<p><code>string</code> : The type of the child node to create. It must correspond to a valid registered node type.</p>
+<p><code>name</code> : The name of the child node to create.</p>
+<p><code>+ others</code> : All the additional parameters depending of the node type you want to create.</p>
+<h4 id="example-22"><a class="header" href="#example-22">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local node2d = root:CreateChild("Node2D", "MyNode2D")
+
+print("Created Node2D: ", node2d:GetName()) -- should be "MyNode2D"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-1"><a class="header" href="#addchild-1">AddChild</a></h3>
+<p>Add a child node to the current <code>Node2D</code>.</p>
+<h4 id="prototype-24"><a class="header" href="#prototype-24">Prototype</a></h4>
+<pre><code class="language-lua">node2d:AddChild(childNode: Node2D)
+</code></pre>
+<h4 id="arguments-24"><a class="header" href="#arguments-24">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (Node2D): The child node to add to this node.</li>
+</ul>
+<h4 id="example-23"><a class="header" href="#example-23">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("Node2D", "parent_node2d")
+local child = root:CreateChild("Node2D", "child_node2d")
+
+parent:AddChild(child)
+print(parent:GetChild("child_node2d"):GetName()) -- should print "child_node2d"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition"><a class="header" href="#getposition">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>Node2D</code>.</p>
+<h4 id="prototype-25"><a class="header" href="#prototype-25">Prototype</a></h4>
+<pre><code class="language-lua">node2d:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-25"><a class="header" href="#arguments-25">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-24"><a class="header" href="#example-24">Example</a></h4>
+<pre><code class="language-lua">local node2d = root:CreateChild("CollisionShape2D", "shape", "Rectangle", 10, 20, 50, 50)
+
+local x, y = node2d:GetPosition()
+print("Position:", x, y) -- should print "Position: 10 20"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition"><a class="header" href="#setposition">SetPosition</a></h3>
+<p>Sets the position of the <code>Node2D</code> in the 2D space.</p>
+<h4 id="prototype-26"><a class="header" href="#prototype-26">Prototype</a></h4>
+<pre><code class="language-lua">node2d:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-26"><a class="header" href="#arguments-26">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the node.</li>
+<li><code>number</code>: The new Y-coordinate of the node.</li>
+</ul>
+<h4 id="example-25"><a class="header" href="#example-25">Example</a></h4>
+<pre><code class="language-lua">local node2d = root:CreateChild("Node2D", "example_node")
+node2d:SetPosition(100, 200)
+print("Node2D position: ", node2d:GetPosition()) -- should print (100, 200)
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition"><a class="header" href="#getglobalposition">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current <code>Node2D</code>.</p>
+<h4 id="prototype-27"><a class="header" href="#prototype-27">Prototype</a></h4>
+<pre><code class="language-lua">node2d:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-27"><a class="header" href="#arguments-27">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-26"><a class="header" href="#example-26">Example</a></h4>
+<pre><code class="language-lua">local node2d = scene:GetRoot():CreateChild("Node2D", "node_1")
+node2d:SetPosition(100, 200)
+
+local globalX, globalY = node2d:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-1"><a class="header" href="#destroy-1">Destroy</a></h3>
+<p>Permanently deletes the Node2D and its associated resources.</p>
+<h4 id="prototype-28"><a class="header" href="#prototype-28">Prototype</a></h4>
+<pre><code class="language-lua">node2d:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-28"><a class="header" href="#arguments-28">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-27"><a class="header" href="#example-27">Example</a></h4>
+<pre><code class="language-lua">local node2d = root:CreateChild("Node2D", "node2d")
+
+node2d:Destroy()
+-- Trying to access node2d after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-2"><a class="header" href="#registered-node-type--construction-method-2">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="sprite2d-library"><a class="header" href="#sprite2d-library">Sprite2D Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-2"><a class="header" href="#getname-2">GetName</a></h3>
+<p>Retrieve the name of the Sprite2D.</p>
+<h4 id="prototype-29"><a class="header" href="#prototype-29">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-29"><a class="header" href="#arguments-29">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-28"><a class="header" href="#example-28">Example</a></h4>
+<pre><code class="language-lua">local sprite2d = root:CreateChild("Sprite2D", "sprite2d", "src.png")
+
+local name = sprite2d:GetName()
+print("Sprite2D name: " .. name)-- should be "sprite2d"
+</code></pre>
+</li>
+<li>
+<h3 id="setname-2"><a class="header" href="#setname-2">SetName</a></h3>
+<p>Set or change the name of the Sprite2D.</p>
+<h4 id="prototype-30"><a class="header" href="#prototype-30">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-30"><a class="header" href="#arguments-30">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-29"><a class="header" href="#example-29">Example</a></h4>
+<pre><code class="language-lua">local sprite2d = root:CreateChild("Sprite2D", "sprite", "sprite.png")
+
+sprite2d:SetName("new_sprite_name")
+print("New Sprite2D name : ", sprite2d:GetName()) -- should be "new_sprite_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren-2"><a class="header" href="#getchildren-2">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Sprite2D.</p>
+<h4 id="prototype-31"><a class="header" href="#prototype-31">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-31"><a class="header" href="#arguments-31">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-30"><a class="header" href="#example-30">Example</a></h4>
+<pre><code class="language-lua">local sprite = root:CreateChild("Sprite2D", "MainSprite", "main_sprite.png")
+local labelChild = sprite:CreateChild("Sprite2D", "MainSprite1", "main_sprite.png")
+local boxChild = sprite:CreateChild("Sprite2D", "MainSprite2", "main_sprite.png")
+
+local children = sprite:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "MainSprite1" &amp; "MainSprite2"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-2"><a class="header" href="#getchild-2">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>Sprite2D</code>.</p>
+<h4 id="prototype-32"><a class="header" href="#prototype-32">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:GetChild(childName: string) -&gt; Sprite2D | nil
+</code></pre>
+<h4 id="arguments-32"><a class="header" href="#arguments-32">Arguments</a></h4>
+<ul>
+<li><code>string</code>: The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-31"><a class="header" href="#example-31">Example</a></h4>
+<pre><code class="language-lua">local sprite2d = root:CreateChild("Sprite2D", "parent_sprite", "sprite.png")
+local child_1 = sprite2d:CreateChild("Sprite2D", "child_1", "child_sprite.png")
+
+local child = sprite2d:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-2"><a class="header" href="#createchild-2">CreateChild</a></h3>
+<p>Create and add a <code>Sprite2D</code> node to the current node.</p>
+<h4 id="prototype-33"><a class="header" href="#prototype-33">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, source: string) -&gt; Sprite2D | nil
+</code></pre>
+<h4 id="arguments-33"><a class="header" href="#arguments-33">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"Sprite2D"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>string</code> : The source of the sprite (image file path).</li>
+</ul>
+<h4 id="example-32"><a class="header" href="#example-32">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local sprite = root:CreateChild("Sprite2D", "PlayerSprite", "player.png")
+
+print("Created sprite node with name: ", sprite:GetName()) -- should be "PlayerSprite"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-2"><a class="header" href="#addchild-2">AddChild</a></h3>
+<p>Add a child node to the current <code>Sprite2D</code>.</p>
+<h4 id="prototype-34"><a class="header" href="#prototype-34">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:AddChild(childNode: Sprite2D)
+</code></pre>
+<h4 id="arguments-34"><a class="header" href="#arguments-34">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (Sprite2D): The child node to add to this node.</li>
+</ul>
+<h4 id="example-33"><a class="header" href="#example-33">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("Sprite2D", "parent_sprite", "sprite.png")
+local child = root:CreateChild("Sprite2D", "child_sprite", "child_sprite.png")
+
+parent:AddChild(child)
+print(parent:GetChild("child_sprite"):GetName()) -- should print "child_sprite"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition-1"><a class="header" href="#getposition-1">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>Sprite2D</code>.</p>
+<h4 id="prototype-35"><a class="header" href="#prototype-35">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-35"><a class="header" href="#arguments-35">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-34"><a class="header" href="#example-34">Example</a></h4>
+<pre><code class="language-lua">local sprite = root:CreateChild("Sprite2D", "sprite", "sprite.png")
+sprite:SetPosition(30, 40)
+
+local x, y = sprite:GetPosition()
+print("Position:", x, y) -- should print "Position: 30 40"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition-1"><a class="header" href="#setposition-1">SetPosition</a></h3>
+<h4 id="prototype-36"><a class="header" href="#prototype-36">Prototype</a></h4>
+<p>Sets the position of the <code>Sprite2D</code> in the 2D space.</p>
+<h4 id="prototype-37"><a class="header" href="#prototype-37">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-36"><a class="header" href="#arguments-36">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the sprite.</li>
+<li><code>number</code>: The new Y-coordinate of the sprite.</li>
+</ul>
+<h4 id="example-35"><a class="header" href="#example-35">Example</a></h4>
+<pre><code class="language-lua">local sprite2d = root:CreateChild("Sprite2D", "example_sprite", "sprite.png")
+sprite2d:SetPosition(300, 400)
+print("Sprite2D position: ", sprite2d:GetPosition()) -- should print (300, 400)
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition-1"><a class="header" href="#getglobalposition-1">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current <code>Sprite2D</code>.</p>
+<h4 id="prototype-38"><a class="header" href="#prototype-38">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-37"><a class="header" href="#arguments-37">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-36"><a class="header" href="#example-36">Example</a></h4>
+<pre><code class="language-lua">local sprite2d = scene:GetRoot():CreateChild("Sprite2D", "sprite", "sprite.png")
+sprite2d:SetPosition(300, 400)
+
+local globalX, globalY = sprite2d:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="settexture"><a class="header" href="#settexture">SetTexture</a></h3>
+<p>Sets the texture of the <code>Sprite2D</code>.</p>
+<h4 id="prototype-39"><a class="header" href="#prototype-39">Prototype</a></h4>
+<pre><code class="language-lua">sprite:SetTexture(texturePath: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-38"><a class="header" href="#arguments-38">Arguments</a></h4>
+<ul>
+<li><code>string</code>: The file path to the texture to apply to the <code>Sprite2D</code>.</li>
+</ul>
+<h4 id="example-37"><a class="header" href="#example-37">Example</a></h4>
+<pre><code class="language-lua">local sprite = scene:GetRoot():CreateChild("Sprite2D", "my_sprite", "default_texture.png")
+sprite:SetTexture("new_texture.png")
+</code></pre>
+</li>
+<li>
+<h3 id="setsize"><a class="header" href="#setsize">SetSize</a></h3>
+<p>Sets the size of the <code>Sprite2D</code>.</p>
+<h4 id="prototype-40"><a class="header" href="#prototype-40">Prototype</a></h4>
+<pre><code class="language-lua">sprite:SetSize(width: number, height: number) -&gt; nil
+</code></pre>
+<h4 id="arguments-39"><a class="header" href="#arguments-39">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new width of the sprite.</li>
+<li><code>number</code>: The new height of the sprite.</li>
+</ul>
+<h4 id="example-38"><a class="header" href="#example-38">Example</a></h4>
+<pre><code class="language-lua">local sprite = scene:GetRoot():CreateChild("Sprite2D", "my_sprite", "texture.png")
+sprite:SetSize(100, 150)
+print("Sprite size updated to width = 100, height = 150")
+</code></pre>
+</li>
+<li>
+<h3 id="setsource"><a class="header" href="#setsource">SetSource</a></h3>
+<p>Sets the texture source rectangle of the <code>Sprite2D</code>. This allows defining a sub-region of the texture to use for rendering. Change the texture and not the sprite coordonates in the scene.</p>
+<h4 id="prototype-41"><a class="header" href="#prototype-41">Prototype</a></h4>
+<pre><code class="language-lua">sprite:SetSource(x: number, y: number, width: number, height: number) -&gt; nil
+</code></pre>
+<h4 id="arguments-40"><a class="header" href="#arguments-40">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The X-coordinate of the top-left corner of the source rectangle.</li>
+<li><code>number</code>: The Y-coordinate of the top-left corner of the source rectangle.</li>
+<li><code>number</code>: The width of the source rectangle.</li>
+<li><code>number</code>: The height of the source rectangle.</li>
+</ul>
+<h4 id="example-39"><a class="header" href="#example-39">Example</a></h4>
+<pre><code class="language-lua">local sprite = scene:GetRoot():CreateChild("Sprite2D", "my_sprite", "texture.png")
+sprite:SetSource(10, 20, 50, 60)
+
+print("")
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-2"><a class="header" href="#destroy-2">Destroy</a></h3>
+<p>Permanently deletes the Sprite2D and its associated resources.</p>
+<h4 id="prototype-42"><a class="header" href="#prototype-42">Prototype</a></h4>
+<pre><code class="language-lua">sprite2d:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-41"><a class="header" href="#arguments-41">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-40"><a class="header" href="#example-40">Example</a></h4>
+<pre><code class="language-lua">local sprite2d = root:CreateChild("Sprite2D", "sprite2d", "src.png")
+
+sprite2d:Destroy()
+-- trying access sprite2d after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-3"><a class="header" href="#registered-node-type--construction-method-3">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="area2d-library"><a class="header" href="#area2d-library">Area2D Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-3"><a class="header" href="#getname-3">GetName</a></h3>
+<p>Retrieve the name of the Area2D.</p>
+<h4 id="prototype-43"><a class="header" href="#prototype-43">Prototype</a></h4>
+<pre><code class="language-lua">area2d:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-42"><a class="header" href="#arguments-42">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-41"><a class="header" href="#example-41">Example</a></h4>
+<pre><code class="language-lua">local area2d = CreateChild("Area2D", "area2d", posX : number, posY : number, width : number, height : number)
+
+local name = area2d:GetName()
+print("Area2D name: " .. name) -- should be "area2d"
+</code></pre>
+</li>
+<li>
+<h3 id="setname-3"><a class="header" href="#setname-3">SetName</a></h3>
+<p>Set or change the name of the Area2D.</p>
+<h4 id="prototype-44"><a class="header" href="#prototype-44">Prototype</a></h4>
+<pre><code class="language-lua">area2d:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-43"><a class="header" href="#arguments-43">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-42"><a class="header" href="#example-42">Example</a></h4>
+<pre><code class="language-lua">local area2d = root:CreateChild("Area2D", "area", 20, 20, 100, 100)
+
+area2d:SetName("new_area_name")
+print("New Area2D name", area2d:GetName()) -- should be "new_area_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren-3"><a class="header" href="#getchildren-3">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Area2D.</p>
+<h4 id="prototype-45"><a class="header" href="#prototype-45">Prototype</a></h4>
+<pre><code class="language-lua">area2d:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-44"><a class="header" href="#arguments-44">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-43"><a class="header" href="#example-43">Example</a></h4>
+<pre><code class="language-lua">local area = root:CreateChild("Area2D", "MainArea", 0, 0, 200, 200)
+local staticBody = area:CreateChild("Area2D1", "StaticChild", 20, 20, 50, 50)
+local rigidBody = area:CreateChild("Area2D2", "RigidChild", 100, 100, 30, 30)
+
+local children = area:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "StaticChild" &amp; "RigidChild"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-3"><a class="header" href="#getchild-3">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>Area2D</code>.</p>
+<h4 id="prototype-46"><a class="header" href="#prototype-46">Prototype</a></h4>
+<pre><code class="language-lua">area2d:GetChild(childName: string) -&gt; Area2D | nil
+</code></pre>
+<h4 id="arguments-45"><a class="header" href="#arguments-45">Arguments</a></h4>
+<ul>
+<li><code>string</code>: The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-44"><a class="header" href="#example-44">Example</a></h4>
+<pre><code class="language-lua">local area2d = root:CreateChild("Area2D", "parent_area", 10, 10, 100, 100)
+local child_1 = area2d:CreateChild("Area2D", "child_1", 20, 20, 50, 50)
+
+local child = area2d:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-3"><a class="header" href="#createchild-3">CreateChild</a></h3>
+<p>Create and add an <code>Area2D</code> node to the current node.</p>
+<h4 id="prototype-47"><a class="header" href="#prototype-47">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, posX: number, posY: number, width: number, height: number) -&gt; Area2D | nil
+</code></pre>
+<h4 id="arguments-46"><a class="header" href="#arguments-46">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"Area2D"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>number</code> : The X position of the area.</li>
+<li><code>number</code> : The Y position of the area.</li>
+<li><code>number</code> : The width of the area.</li>
+<li><code>number</code> : The height of the area.</li>
+</ul>
+<h4 id="example-45"><a class="header" href="#example-45">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local area = root:CreateChild("Area2D", "SafeZone", 0, 0, 500, 300)
+
+print("Created area node with name: ", area:GetName()) -- should be "SafeZone"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-3"><a class="header" href="#addchild-3">AddChild</a></h3>
+<p>Add a child node to the current <code>Area2D</code>.</p>
+<h4 id="prototype-48"><a class="header" href="#prototype-48">Prototype</a></h4>
+<pre><code class="language-lua">area2d:AddChild(childNode: Area2D)
+</code></pre>
+<h4 id="arguments-47"><a class="header" href="#arguments-47">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (Area2D): The child node to add to this node.</li>
+</ul>
+<h4 id="example-46"><a class="header" href="#example-46">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("Area2D", "parent_area", 10, 10, 100, 100)
+local child = root:CreateChild("Area2D", "child_area", 20, 20, 50, 50)
+
+parent:AddChild(child)
+print(parent:GetChild("child_area"):GetName()) -- should print "child_area"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition-2"><a class="header" href="#getposition-2">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>Area2D</code>.</p>
+<h4 id="prototype-49"><a class="header" href="#prototype-49">Prototype</a></h4>
+<pre><code class="language-lua">area2d:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-48"><a class="header" href="#arguments-48">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-47"><a class="header" href="#example-47">Example</a></h4>
+<pre><code class="language-lua">local area = root:CreateChild("Area2D", "area", 50, 60, 100, 100)
+
+local x, y = area:GetPosition()
+print("Position:", x, y) -- should print "Position: 50 60"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition-2"><a class="header" href="#setposition-2">SetPosition</a></h3>
+<p>Sets the position of the <code>Area2D</code> in the 2D space.</p>
+<h4 id="prototype-50"><a class="header" href="#prototype-50">Prototype</a></h4>
+<pre><code class="language-lua">area2d:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-49"><a class="header" href="#arguments-49">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the area.</li>
+<li><code>number</code>: The new Y-coordinate of the area.</li>
+</ul>
+<h4 id="example-48"><a class="header" href="#example-48">Example</a></h4>
+<pre><code class="language-lua">local area2d = root:CreateChild("Area2D", "example_area", 10, 10, 100, 100)
+area2d:SetPosition(200, 150)
+print("Area2D position: ", area2d:GetPosition()) -- should print (200, 150)
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition-2"><a class="header" href="#getglobalposition-2">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current <code>Area2D</code>.</p>
+<h4 id="prototype-51"><a class="header" href="#prototype-51">Prototype</a></h4>
+<pre><code class="language-lua">area2d:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-50"><a class="header" href="#arguments-50">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-49"><a class="header" href="#example-49">Example</a></h4>
+<pre><code class="language-lua">local area2d = scene:GetRoot():CreateChild("Area2D", "area", 100, 200, 300, 400)
+area2d:SetPosition(500, 600)
+
+local globalX, globalY = area2d:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="togglecollision"><a class="header" href="#togglecollision">ToggleCollision</a></h3>
+<p>Enable or disable collision for the current <code>Area2D</code> object.</p>
+<h4 id="prototype-52"><a class="header" href="#prototype-52">Prototype</a></h4>
+<pre><code class="language-lua">area2d:ToggleCollision() -&gt; void
+</code></pre>
+<h4 id="arguments-51"><a class="header" href="#arguments-51">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-50"><a class="header" href="#example-50">Example</a></h4>
+<pre><code class="language-lua">local area2d = root:CreateChild("Area2D", "my_area", 20, 20, 200, 100)
+area2d:ToggleCollision()
+print("Collision enabled for Area2D")
+area2d:ToggleCollision()
+print("Collision disabled for Area2D")
+</code></pre>
+</li>
+<li>
+<h3 id="iscollisionenabled"><a class="header" href="#iscollisionenabled">IsCollisionEnabled</a></h3>
+<p>Check whether collision is enabled for the <code>Area2D</code> node.</p>
+<h4 id="prototype-53"><a class="header" href="#prototype-53">Prototype</a></h4>
+<pre><code class="language-lua">area2d:IsCollisionEnabled() -&gt; boolean
+</code></pre>
+<h4 id="arguments-52"><a class="header" href="#arguments-52">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-51"><a class="header" href="#example-51">Example</a></h4>
+<pre><code class="language-lua">local area = root:CreateChild("Area2D", "area", 10, 10, 100, 100)
+local isEnabled = area:IsCollisionEnabled()
+
+if isEnabled then
+    print("Collision is enabled for this area.")
+else
+    print("Collision is disabled for this area.") -- should print this
+end
+</code></pre>
+</li>
+<li>
+<h3 id="collide"><a class="header" href="#collide">Collide</a></h3>
+<p>Check for a collision between the current <code>Area2D</code> and another node.</p>
+<h4 id="prototype-54"><a class="header" href="#prototype-54">Prototype</a></h4>
+<pre><code class="language-lua">area2d:Collide(otherNode: Area2D) -&gt; boolean
+</code></pre>
+<h4 id="arguments-53"><a class="header" href="#arguments-53">Arguments</a></h4>
+<ul>
+<li><code>otherNode</code> (Area2D): The node to check for a collision with.</li>
+</ul>
+<h4 id="example-52"><a class="header" href="#example-52">Example</a></h4>
+<pre><code class="language-lua">local area1 = root:CreateChild("Area2D", "area1", 0, 0, 200, 100)
+local area2 = root:CreateChild("Area2D", "area2", 50, 50, 50, 50)
+
+area1:ToggleCollision()
+area2:ToggleCollision()
+
+if area1:Collide(area2) then
+    print("Collision detected between area1 and area2")
+else
+    print("No collision detected")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getsize"><a class="header" href="#getsize">GetSize</a></h3>
+<p>Retrieve the current size (width and height) of the <code>Area2D</code> node.</p>
+<h4 id="prototype-55"><a class="header" href="#prototype-55">Prototype</a></h4>
+<pre><code class="language-lua">area2d:GetSize() -&gt; width: number, height: number
+</code></pre>
+<h4 id="arguments-54"><a class="header" href="#arguments-54">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-53"><a class="header" href="#example-53">Example</a></h4>
+<pre><code class="language-lua">local area2d = scene:GetRoot():CreateChild("Area2D", "area_node", 10, 10, 200, 100)
+
+local width, height = area2d:GetSize()
+print("Width: " .. width .. ", Height: " .. height)  -- should print "Width: 200, Height: 100"
+</code></pre>
+</li>
+<li>
+<h3 id="setsize-1"><a class="header" href="#setsize-1">SetSize</a></h3>
+<p>Set a new size (width and height) for the <code>Area2D</code> node.</p>
+<h4 id="prototype-56"><a class="header" href="#prototype-56">Prototype</a></h4>
+<pre><code class="language-lua">area2d:SetSize(width: number, height: number)
+</code></pre>
+<h4 id="arguments-55"><a class="header" href="#arguments-55">Arguments</a></h4>
+<ul>
+<li><code>width</code> (number): The new width for the node.</li>
+<li><code>height</code> (number): The new height for the node.</li>
+</ul>
+<h4 id="example-54"><a class="header" href="#example-54">Example</a></h4>
+<pre><code class="language-lua">local area2d = scene:GetRoot():CreateChild("Area2D", "area_node", 10, 10, 200, 100)
+
+area2d:SetSize(300, 150)
+
+local width, height = area2d:GetSize()
+print("New Width: " .. width .. ", New Height: " .. height)  -- should print "New Width: 300, New Height: 150"
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-3"><a class="header" href="#destroy-3">Destroy</a></h3>
+<p>Permanently deletes the Area2D and its associated resources.</p>
+<h4 id="prototype-57"><a class="header" href="#prototype-57">Prototype</a></h4>
+<pre><code class="language-lua">area2d:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-56"><a class="header" href="#arguments-56">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-55"><a class="header" href="#example-55">Example</a></h4>
+<pre><code class="language-lua">local area2d = root:CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)
+
+area2d:Destroy()
+-- trying access to area2d after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-4"><a class="header" href="#registered-node-type--construction-method-4">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="rigidbody2d-library"><a class="header" href="#rigidbody2d-library">RigidBody2D Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-4"><a class="header" href="#getname-4">GetName</a></h3>
+<p>Retrieve the name of the RigidBody2D.</p>
+<h4 id="prototype-58"><a class="header" href="#prototype-58">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-57"><a class="header" href="#arguments-57">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-56"><a class="header" href="#example-56">Example</a></h4>
+<pre><code class="language-lua">local rigidbody2d = root:CreateChild("RigidBody2D", "rgbd2d", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)
+
+local name = rigidbody2d:GetName()
+print("RigidBody2D name: " .. name) -- should be "rgbd2d"
+</code></pre>
+</li>
+<li>
+<h3 id="setname-4"><a class="header" href="#setname-4">SetName</a></h3>
+<p>Set or change the name of the RigidBody2D.</p>
+<h4 id="prototype-59"><a class="header" href="#prototype-59">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-58"><a class="header" href="#arguments-58">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-57"><a class="header" href="#example-57">Example</a></h4>
+<pre><code class="language-lua"></code></pre>
+</li>
+<li>
+<h3 id="getchildren-4"><a class="header" href="#getchildren-4">GetChildren</a></h3>
+<p>Retrieve all child nodes of the RigidBody2D.</p>
+<h4 id="prototype-60"><a class="header" href="#prototype-60">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-59"><a class="header" href="#arguments-59">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-58"><a class="header" href="#example-58">Example</a></h4>
+<pre><code class="language-lua">local rigidbody = root:CreateChild("RigidBody2D", "MainRigidBody", 10, 20, 40, 40, 3, 3)
+local collisionShape1 = rigidbody:CreateChild("RigidBody2D", "ChildCollision", "Rectangle", 15, 15, 30, 30)
+local collisionShape2 = rigidbody:CreateChild("RigidBody2D", "ChildArea", "Rectangle", 15, 15, 30, 30)
+
+local children = rigidbody:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "ChildCollision" &amp; "ChildArea"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-4"><a class="header" href="#getchild-4">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>RigidBody2D</code>.</p>
+<h4 id="prototype-61"><a class="header" href="#prototype-61">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:GetChild(childName: string) -&gt; RigidBody2D | nil
+</code></pre>
+<h4 id="arguments-60"><a class="header" href="#arguments-60">Arguments</a></h4>
+<ul>
+<li><code>childName</code> (string): The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-59"><a class="header" href="#example-59">Example</a></h4>
+<pre><code class="language-lua">local rigidbody2d = root:CreateChild("RigidBody2D", "parent_rigidbody", 30, 30, 100, 100, 5, 5)
+local child_1 = rigidbody2d:CreateChild("RigidBody2D", "child_1", 50, 50, 50, 50, 2, 2)
+
+local child = rigidbody2d:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-4"><a class="header" href="#createchild-4">CreateChild</a></h3>
+<p>Create and add a <code>RigidBody2D</code> node to the current node.</p>
+<h4 id="prototype-62"><a class="header" href="#prototype-62">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, posX: number, posY: number, width: number, height: number, velocityX: number, velocityY: number) -&gt; RigidBody2D | nil
+</code></pre>
+<h4 id="arguments-61"><a class="header" href="#arguments-61">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"RigidBody2D"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>number</code> : The X position of the rigid body.</li>
+<li><code>number</code> : The Y position of the rigid body.</li>
+<li><code>number</code> : The width of the rigid body.</li>
+<li><code>number</code> : The height of the rigid body.</li>
+<li><code>number</code> : The X component of the velocity.</li>
+<li><code>number</code> : The Y component of the velocity.</li>
+</ul>
+<h4 id="example-60"><a class="header" href="#example-60">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local rigidBody = root:CreateChild("RigidBody2D", "FallingBox", 50, 50, 100, 100, 0, -9.8)
+
+print("Created rigid body with name: ", rigidBody:GetName()) -- should be "FallingBox"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-4"><a class="header" href="#addchild-4">AddChild</a></h3>
+<p>Add a child node to the current <code>RigidBody2D</code>.</p>
+<h4 id="prototype-63"><a class="header" href="#prototype-63">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:AddChild(childNode: RigidBody2D)
+</code></pre>
+<h4 id="arguments-62"><a class="header" href="#arguments-62">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (RigidBody2D): The child node to add to this node.</li>
+</ul>
+<h4 id="example-61"><a class="header" href="#example-61">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("RigidBody2D", "parent_rigidbody", 30, 30, 100, 100, 5, 5)
+local child = root:CreateChild("RigidBody2D", "child_rigidbody", 50, 50, 50, 50, 2, 2)
+
+parent:AddChild(child)
+print(parent:GetChild("child_rigidbody"):GetName()) -- should print "child_rigidbody"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition-3"><a class="header" href="#getposition-3">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>RigidBody2D</code>.</p>
+<h4 id="prototype-64"><a class="header" href="#prototype-64">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-63"><a class="header" href="#arguments-63">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-62"><a class="header" href="#example-62">Example</a></h4>
+<pre><code class="language-lua">local rigidbody = root:CreateChild("RigidBody2D", "rigidbody", 70, 80, 50, 50, 5, 5)
+
+local x, y = rigidbody:GetPosition()
+print("Position:", x, y) -- should print "Position: 70 80"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition-3"><a class="header" href="#setposition-3">SetPosition</a></h3>
+<p>Sets the position of the <code>RigidBody2D</code> in the 2D space.</p>
+<h4 id="prototype-65"><a class="header" href="#prototype-65">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-64"><a class="header" href="#arguments-64">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the rigid body.</li>
+<li><code>number</code>: The new Y-coordinate of the rigid body.</li>
+</ul>
+<h4 id="example-63"><a class="header" href="#example-63">Example</a></h4>
+<pre><code class="language-lua">local rigidbody2d = root:CreateChild("RigidBody2D", "example_body", 20, 20, 50, 50, 5, 5)
+rigidbody2d:SetPosition(400, 300)
+print("RigidBody2D position: ", rigidbody2d:GetPosition()) -- should print (400, 300)
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition-3"><a class="header" href="#getglobalposition-3">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current <code>RigidBody2D</code>.</p>
+<h4 id="prototype-66"><a class="header" href="#prototype-66">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-65"><a class="header" href="#arguments-65">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-64"><a class="header" href="#example-64">Example</a></h4>
+<pre><code class="language-lua">local rigidbody2d = scene:GetRoot():CreateChild("RigidBody2D", "rigid_body", 150, 250, 50, 50, 10, 10)
+rigidbody2d:SetPosition(700, 800)
+
+local globalX, globalY = rigidbody2d:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="getvelocity"><a class="header" href="#getvelocity">GetVelocity</a></h3>
+<p>Retrieve the current velocity (X and Y components) of the <code>RigidBody2D</code> node.</p>
+<h4 id="prototype-67"><a class="header" href="#prototype-67">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:GetVelocity() -&gt; velocityX: number, velocityY: number
+</code></pre>
+<h4 id="arguments-66"><a class="header" href="#arguments-66">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-65"><a class="header" href="#example-65">Example</a></h4>
+<pre><code class="language-lua">local rigidbody = scene:GetRoot():CreateChild("RigidBody2D", "rigidbody_node", 10, 10, 50, 50, 100, 200)
+local velocityX, velocityY = rigidbody:GetVelocity()
+print("Velocity X: " .. velocityX .. ", Velocity Y: " .. velocityY)  -- should print "Velocity X: 100, Velocity Y: 200"
+</code></pre>
+</li>
+<li>
+<h3 id="setvelocity"><a class="header" href="#setvelocity">SetVelocity</a></h3>
+<p>Set the velocity (X and Y components) of the <code>RigidBody2D</code> node.</p>
+<h4 id="prototype-68"><a class="header" href="#prototype-68">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:SetVelocity(velocityX: number, velocityY: number)
+</code></pre>
+<h4 id="arguments-67"><a class="header" href="#arguments-67">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The velocity on the X-axis.</li>
+<li><code>number</code>: The velocity on the Y-axis.</li>
+</ul>
+<h4 id="example-66"><a class="header" href="#example-66">Example</a></h4>
+<pre><code class="language-lua">local rigidbody = scene:GetRoot():CreateChild("RigidBody2D", "rigidbody_node", 10, 10, 50, 50, 0, 0)
+
+rigidbody:SetVelocity(100, 200)
+
+local velocityX, velocityY = rigidbody:GetVelocity()
+print("Velocity X: " .. velocityX .. ", Velocity Y: " .. velocityY)  -- should print "Velocity X: 100, Velocity Y: 200"
+</code></pre>
+</li>
+<li>
+<h3 id="togglecollision-1"><a class="header" href="#togglecollision-1">ToggleCollision</a></h3>
+<p>Enable or disable collision for the current <code>RigidBody2D</code> object.</p>
+<h4 id="prototype-69"><a class="header" href="#prototype-69">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:ToggleCollision() -&gt; void
+</code></pre>
+<h4 id="arguments-68"><a class="header" href="#arguments-68">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-67"><a class="header" href="#example-67">Example</a></h4>
+<pre><code class="language-lua">local rigidbody2d = root:CreateChild("RigidBody2D", "my_rigidbody", 30, 30, 150, 75, 5, 5)
+
+rigidbody2d:ToggleCollision()
+print("Collision enabled for RigidBody2D")
+
+rigidbody2d:ToggleCollision()
+print("Collision disabled for RigidBody2D")
+</code></pre>
+</li>
+<li>
+<h3 id="iscollisionenabled-1"><a class="header" href="#iscollisionenabled-1">IsCollisionEnabled</a></h3>
+<p>Check whether collision is enabled for the <code>RigidBody2D</code> node.</p>
+<h4 id="prototype-70"><a class="header" href="#prototype-70">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:IsCollisionEnabled() -&gt; boolean
+</code></pre>
+<h4 id="arguments-69"><a class="header" href="#arguments-69">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-68"><a class="header" href="#example-68">Example</a></h4>
+<pre><code class="language-lua">local body = root:CreateChild("RigidBody2D", "rigid_body", 20, 20, 50, 50, 10, 10)
+local isEnabled = body:IsCollisionEnabled()
+
+if isEnabled then
+    print("Collision is enabled for this rigid body.")
+else
+    print("Collision is disabled for this rigid body.") -- should print this
+end
+</code></pre>
+</li>
+<li>
+<h3 id="collide-1"><a class="header" href="#collide-1">Collide</a></h3>
+<p>Check for a collision between the current <code>RigidBody2D</code> and another node.</p>
+<h4 id="prototype-71"><a class="header" href="#prototype-71">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:Collide(otherNode: RigidBody2D) -&gt; boolean
+</code></pre>
+<h4 id="arguments-70"><a class="header" href="#arguments-70">Arguments</a></h4>
+<ul>
+<li><code>otherNode</code> (RigidBody2D): The node to check for a collision with.</li>
+</ul>
+<h4 id="example-69"><a class="header" href="#example-69">Example</a></h4>
+<pre><code class="language-lua">local body1 = root:CreateChild("RigidBody2D", "body1", 10, 10, 100, 100, 5, 5)
+local body2 = root:CreateChild("RigidBody2D", "body2", 50, 50, 50, 50, -3, -3)
+
+body1:ToggleCollision()
+body2:ToggleCollision()
+
+if body1:Collide(body2) then
+    print("Collision detected between body1 and body2")
+else
+    print("No collision detected")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-4"><a class="header" href="#destroy-4">Destroy</a></h3>
+<p>Permanently deletes the RigidBody2D and its associated resources.</p>
+<h4 id="prototype-72"><a class="header" href="#prototype-72">Prototype</a></h4>
+<pre><code class="language-lua">rigidbody2d:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-71"><a class="header" href="#arguments-71">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-70"><a class="header" href="#example-70">Example</a></h4>
+<pre><code class="language-lua">local rigidbody2d = root:CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)
+
+rigidbody2d:Destroy()
+-- Trying access rgbd2d after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-5"><a class="header" href="#registered-node-type--construction-method-5">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="staticbody2d-library"><a class="header" href="#staticbody2d-library">StaticBody2D Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-5"><a class="header" href="#getname-5">GetName</a></h3>
+<p>Retrieve the name of the StaticBody2D.</p>
+<h4 id="prototype-73"><a class="header" href="#prototype-73">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-72"><a class="header" href="#arguments-72">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-71"><a class="header" href="#example-71">Example</a></h4>
+<pre><code class="language-lua">local staticbody2d = root:CreateChild("StatiCBody2D", "stbd2d", posX : number, posY : number, width : number, height : number)
+
+local name = staticbody2d:GetName()
+print("StaticBody2D name: " .. name) -- should be "stbd2d"
+</code></pre>
+</li>
+<li>
+<h3 id="setname-5"><a class="header" href="#setname-5">SetName</a></h3>
+<p>Set or change the name of the StaticBody2D.</p>
+<h4 id="prototype-74"><a class="header" href="#prototype-74">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-73"><a class="header" href="#arguments-73">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-72"><a class="header" href="#example-72">Example</a></h4>
+<pre><code class="language-lua">local staticbody2d = root:CreateChild("StaticBody2D", "staticbody", 50, 50, 100, 100)
+
+staticbody2d:SetName("new_staticbody_name")
+print("New StaticBody2D name : ", staticbody2d:GetName()) -- should be "new_staticbody_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren-5"><a class="header" href="#getchildren-5">GetChildren</a></h3>
+<p>Retrieve all child nodes of the StaticBody2D.</p>
+<h4 id="prototype-75"><a class="header" href="#prototype-75">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-74"><a class="header" href="#arguments-74">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-73"><a class="header" href="#example-73">Example</a></h4>
+<pre><code class="language-lua">local staticBody = root:CreateChild("StaticBody2D", "MainStaticBody", 50, 50, 100, 100)
+local area1 = staticBody:CreateChild("StaticBody2D", "ChildArea1", 10, 10, 40, 40)
+local area2 = staticBody:CreateChild("StaticBody2D", "ChildArea2", 10, 10, 50, 80)
+
+local children = staticBody:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "ChildArea1" 1 "ChildArea2"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-5"><a class="header" href="#getchild-5">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>StaticBody2D</code>.</p>
+<h4 id="prototype-76"><a class="header" href="#prototype-76">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:GetChild(childName: string) -&gt; StaticBody2D | nil
+</code></pre>
+<h4 id="arguments-75"><a class="header" href="#arguments-75">Arguments</a></h4>
+<ul>
+<li><code>childName</code> (string): The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-74"><a class="header" href="#example-74">Example</a></h4>
+<pre><code class="language-lua">local staticbody2d = root:CreateChild("StaticBody2D", "parent_staticbody", 20, 20, 100, 100)
+local child_1 = staticbody2d:CreateChild("StaticBody2D", "child_1", 40, 40, 50, 50)
+
+local child = staticbody2d:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-5"><a class="header" href="#createchild-5">CreateChild</a></h3>
+<p>Create and add a <code>StaticBody2D</code> node to the current node.</p>
+<h4 id="prototype-77"><a class="header" href="#prototype-77">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, posX: number, posY: number, width: number, height: number) -&gt; StaticBody2D | nil
+</code></pre>
+<h4 id="arguments-76"><a class="header" href="#arguments-76">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"StaticBody2D"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>number</code> : The X position of the static body.</li>
+<li><code>number</code> : The Y position of the static body.</li>
+<li><code>number</code> : The width of the static body.</li>
+<li><code>number</code> : The height of the static body.</li>
+</ul>
+<h4 id="example-75"><a class="header" href="#example-75">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local staticBody = root:CreateChild("StaticBody2D", "Ground", 0, 0, 800, 50)
+
+print("Created static body with name: ", staticBody:GetName()) -- should be "Ground"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-5"><a class="header" href="#addchild-5">AddChild</a></h3>
+<p>Add a child node to the current <code>StaticBody2D</code>.</p>
+<h4 id="prototype-78"><a class="header" href="#prototype-78">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:AddChild(childNode: StaticBody2D)
+</code></pre>
+<h4 id="arguments-77"><a class="header" href="#arguments-77">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (StaticBody2D): The child node to add to this node.</li>
+</ul>
+<h4 id="example-76"><a class="header" href="#example-76">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("StaticBody2D", "parent_staticbody", 20, 20, 100, 100)
+local child = root:CreateChild("StaticBody2D", "child_staticbody", 40, 40, 50, 50)
+
+parent:AddChild(child)
+print(parent:GetChild("child_staticbody"):GetName()) -- should print "child_staticbody"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition-4"><a class="header" href="#getposition-4">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>StaticBody2D</code>.</p>
+<h4 id="prototype-79"><a class="header" href="#prototype-79">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-78"><a class="header" href="#arguments-78">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-77"><a class="header" href="#example-77">Example</a></h4>
+<pre><code class="language-lua">local staticbody = root:CreateChild("StaticBody2D", "staticbody", 90, 100, 50, 50)
+
+local x, y = staticbody:GetPosition()
+print("Position:", x, y) -- should print "Position: 90 100"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition-4"><a class="header" href="#setposition-4">SetPosition</a></h3>
+<p>Sets the position of the <code>StaticBody2D</code> in the 2D space.</p>
+<h4 id="prototype-80"><a class="header" href="#prototype-80">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-79"><a class="header" href="#arguments-79">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the static body.</li>
+<li><code>number</code>: The new Y-coordinate of the static body.</li>
+</ul>
+<h4 id="example-78"><a class="header" href="#example-78">Example</a></h4>
+<pre><code class="language-lua">local staticbody2d = root:CreateChild("StaticBody2D", "staticbody", 10, 10, 100, 50)
+staticbody2d:SetPosition(250, 250)
+print("StaticBody2D position: ", staticbody2d:GetPosition()) -- should print (250, 250)
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition-4"><a class="header" href="#getglobalposition-4">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current <code>StaticBody2D</code>.</p>
+<h4 id="prototype-81"><a class="header" href="#prototype-81">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-80"><a class="header" href="#arguments-80">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-79"><a class="header" href="#example-79">Example</a></h4>
+<pre><code class="language-lua">local staticbody2d = scene:GetRoot():CreateChild("StaticBody2D", "static_body", 50, 100, 200, 150)
+staticbody2d:SetPosition(400, 500)
+
+local globalX, globalY = staticbody2d:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="togglecollision-2"><a class="header" href="#togglecollision-2">ToggleCollision</a></h3>
+<p>Enable or disable collision for the current <code>StaticBody2D</code> object.</p>
+<h4 id="prototype-82"><a class="header" href="#prototype-82">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:ToggleCollision() -&gt; void
+</code></pre>
+<h4 id="arguments-81"><a class="header" href="#arguments-81">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-80"><a class="header" href="#example-80">Example</a></h4>
+<pre><code class="language-lua">local staticbody2d = root:CreateChild("StaticBody2D", "my_staticbody", 50, 50, 300, 150)
+
+staticbody2d:ToggleCollision()
+print("Collision enabled for StaticBody2D")
+
+staticbody2d:ToggleCollision()
+print("Collision disabled for StaticBody2D")
+</code></pre>
+</li>
+<li>
+<h3 id="iscollisionenabled-2"><a class="header" href="#iscollisionenabled-2">IsCollisionEnabled</a></h3>
+<p>Check whether collision is enabled for the <code>StaticBody2D</code> node.</p>
+<h4 id="prototype-83"><a class="header" href="#prototype-83">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:IsCollisionEnabled() -&gt; boolean
+</code></pre>
+<h4 id="arguments-82"><a class="header" href="#arguments-82">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-81"><a class="header" href="#example-81">Example</a></h4>
+<pre><code class="language-lua">local staticBody = root:CreateChild("StaticBody2D", "static_body", 30, 30, 200, 100)
+local isEnabled = staticBody:IsCollisionEnabled()
+
+if isEnabled then
+    print("Collision is enabled for this static body.")
+else
+    print("Collision is disabled for this static body.") -- should print this
+end
+</code></pre>
+</li>
+<li>
+<h3 id="collide-2"><a class="header" href="#collide-2">Collide</a></h3>
+<p>Check for a collision between the current <code>StaticBody2D</code> and another node.</p>
+<h4 id="prototype-84"><a class="header" href="#prototype-84">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:Collide(otherNode: StaticBody2D) -&gt; boolean
+</code></pre>
+<h4 id="arguments-83"><a class="header" href="#arguments-83">Arguments</a></h4>
+<ul>
+<li><code>otherNode</code> (StaticBody2D): The node to check for a collision with.</li>
+</ul>
+<h4 id="example-82"><a class="header" href="#example-82">Example</a></h4>
+<pre><code class="language-lua">local static1 = root:CreateChild("StaticBody2D", "static1", 0, 0, 100, 100)
+local static2 = root:CreateChild("StaticBody2D", "static2", 50, 50, 50, 50)
+
+static1:ToggleCollision()
+static2:ToggleCollision()
+
+if static1:Collide(static2) then
+    print("Collision detected between static1 and static2")
+else
+    print("No collision detected")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-5"><a class="header" href="#destroy-5">Destroy</a></h3>
+<p>Permanently deletes the StaticBody2D and its associated resources.</p>
+<h4 id="prototype-85"><a class="header" href="#prototype-85">Prototype</a></h4>
+<pre><code class="language-lua">staticbody2d:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-84"><a class="header" href="#arguments-84">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-83"><a class="header" href="#example-83">Example</a></h4>
+<pre><code class="language-lua">local staticbody2d = root:CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)
+
+staticbody2d:Destroy()
+-- Trying access stbd2d after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-6"><a class="header" href="#registered-node-type--construction-method-6">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="collisionshape2d-library"><a class="header" href="#collisionshape2d-library">CollisionShape2D Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-6"><a class="header" href="#getname-6">GetName</a></h3>
+<p>Retrieve the name of the CollisionShape2D.</p>
+<h4 id="prototype-86"><a class="header" href="#prototype-86">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-85"><a class="header" href="#arguments-85">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-84"><a class="header" href="#example-84">Example</a></h4>
+<pre><code class="language-lua">local collisionshape2d = root:CreateChild("CollisionShape2D", "clshape2d", type : "Rectangle", posX: number, posY : number, width : number, height : number)
+
+local name = collisionshape2d:GetName()
+print("CollisionShape2D name: " .. name) -- should be "clshape2d"
+</code></pre>
+</li>
+<li>
+<h3 id="setname-6"><a class="header" href="#setname-6">SetName</a></h3>
+<p>Set or change the name of the CollisionShape2D.</p>
+<h4 id="prototype-87"><a class="header" href="#prototype-87">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-86"><a class="header" href="#arguments-86">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-85"><a class="header" href="#example-85">Example</a></h4>
+<pre><code class="language-lua">local collisionshape2d = root:CreateChild("CollisionShape2D", "collisionshape", "Rectangle", 10, 10, 50, 50)
+
+collisionshape2d:SetName("new_collisionshape_name")
+print("New CollisionShape2D name : ", collisionshape2d:GetName()) -- should be "new_collisionshape_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren-6"><a class="header" href="#getchildren-6">GetChildren</a></h3>
+<p>Retrieve all child nodes of the CollisionShape2D.</p>
+<h4 id="prototype-88"><a class="header" href="#prototype-88">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-87"><a class="header" href="#arguments-87">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-86"><a class="header" href="#example-86">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local collisionCircle = root:CreateChild("CollisionShape2D", "PlayerCollider", "Circle", 100, 100, 25)
+
+print("Created collision shape with name: ", collisionCircle:GetName()) -- should be "PlayerCollider"
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-6"><a class="header" href="#getchild-6">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>CollisionShape2D</code>.</p>
+<h4 id="prototype-89"><a class="header" href="#prototype-89">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:GetChild(childName: string) -&gt; CollisionShape2D | nil
+</code></pre>
+<h4 id="arguments-88"><a class="header" href="#arguments-88">Arguments</a></h4>
+<ul>
+<li><code>string</code>: The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-87"><a class="header" href="#example-87">Example</a></h4>
+<pre><code class="language-lua">local collisionshape2d = root:CreateChild("CollisionShape2D", "parent_shape", "Rectangle", 0, 0, 100, 100)
+local child_1 = collisionshape2d:CreateChild("CollisionShape2D", "child_1", "Circle", 50, 50, 20)
+
+local child = collisionshape2d:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-6"><a class="header" href="#createchild-6">CreateChild</a></h3>
+<p>Create and add a child node to the current node. For the child references check the schema <a href="game/CollisionShape2DLibrary.html#system-graph">graph</a> and the valid registered node types.<a href="game/CollisionShape2DLibrary.html#registered-node-type--construction-method">registered_node</a></p>
+<h4 id="prototype-90"><a class="header" href="#prototype-90">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, + others) -&gt; Node | nil
+</code></pre>
+<h4 id="arguments-89"><a class="header" href="#arguments-89">Arguments</a></h4>
+<p><code>string</code> : The type of the child node to create. It must correspond to a valid registered node type.
+<code>name</code> : The name of the child node to create.
+<code>+ others</code> : All the additional parameters depending of the node type you want to create.</p>
+<h4 id="example-88"><a class="header" href="#example-88">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local collisionCircle = root:CreateChild("CollisionShape2D", "PlayerCollider", "Circle", 100, 100, 25)
+
+print("Created collision shape with name: ", collisionCircle:GetName()) -- should be "PlayerCollider"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-6"><a class="header" href="#addchild-6">AddChild</a></h3>
+<p>Add a child node to the current <code>CollisionShape2D</code>.</p>
+<h4 id="prototype-91"><a class="header" href="#prototype-91">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:AddChild(childNode: CollisionShape2D)
+</code></pre>
+<h4 id="arguments-90"><a class="header" href="#arguments-90">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (CollisionShape2D): The child node to add to this node.</li>
+</ul>
+<h4 id="example-89"><a class="header" href="#example-89">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("CollisionShape2D", "parent_shape", "Rectangle", 0, 0, 100, 100)
+local child = root:CreateChild("CollisionShape2D", "child_shape", "Circle", 50, 50, 20)
+
+parent:AddChild(child)
+print(parent:GetChild("child_shape"):GetName()) -- should print "child_shape"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition-5"><a class="header" href="#getposition-5">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>CollisionShape2D</code>.</p>
+<h4 id="prototype-92"><a class="header" href="#prototype-92">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-91"><a class="header" href="#arguments-91">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-90"><a class="header" href="#example-90">Example</a></h4>
+<pre><code class="language-lua">local shape = root:CreateChild("CollisionShape2D", "shape", "Circle", 15, 25, 50)
+
+local x, y = shape:GetPosition()
+print("Position:", x, y) -- should print "Position: 15 25"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition-5"><a class="header" href="#setposition-5">SetPosition</a></h3>
+<p>Sets the position of the <code>CollisionShape2D</code> in the 2D space.</p>
+<h4 id="prototype-93"><a class="header" href="#prototype-93">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-92"><a class="header" href="#arguments-92">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the collision shape.</li>
+<li><code>number</code>: The new Y-coordinate of the collision shape.</li>
+</ul>
+<h4 id="example-91"><a class="header" href="#example-91">Example</a></h4>
+<pre><code class="language-lua">local collisionshape = root:CreateChild("CollisionShape2D", "example_shape", "Rectangle", 0, 0, 100, 100)
+collisionshape:SetPosition(50, 50)
+print("CollisionShape2D position: ", collisionshape:GetPosition()) -- should print (50, 50)
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition-5"><a class="header" href="#getglobalposition-5">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current <code>CollisionShape2D</code>.</p>
+<h4 id="prototype-94"><a class="header" href="#prototype-94">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-93"><a class="header" href="#arguments-93">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-92"><a class="header" href="#example-92">Example</a></h4>
+<pre><code class="language-lua">local collisionshape2d = scene:GetRoot():CreateChild("CollisionShape2D", "collider", "Rectangle", 50, 50, 100, 100)
+collisionshape2d:SetPosition(200, 150)
+
+local globalX, globalY = collisionshape2d:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="getboundingbox"><a class="header" href="#getboundingbox">GetBoundingBox</a></h3>
+<p>Retrieve the bounding box of the current <code>CollisionShape2D</code> Rectangle &amp; Circle.</p>
+<h4 id="prototype-95"><a class="header" href="#prototype-95">Prototype</a></h4>
+<pre><code class="language-lua">collisionShape:GetBoundingBox() -&gt; number, number, number, number
+</code></pre>
+<h4 id="arguments-94"><a class="header" href="#arguments-94">Arguments</a></h4>
+<ul>
+<li><code>None</code></li>
+</ul>
+<h4 id="example-93"><a class="header" href="#example-93">Example</a></h4>
+<pre><code class="language-lua">local rectangleShape = root:CreateChild("CollisionShape2D", "rectangle", "Rectangle", 0, 0, 100, 50)
+
+local x, y, width, height = rectangleShape:GetBoundingBox()
+</code></pre>
+<pre><code class="language-lua">local circleShape = root:CreateChild("CollisionShape2D", "circle", "Circle", 50, 50, 25)
+
+local x, y, width, height = circleShape:GetBoundingBox()
+</code></pre>
+</li>
+<li>
+<h3 id="togglecollision-3"><a class="header" href="#togglecollision-3">ToggleCollision</a></h3>
+<p>Enable or disable collision for the current <code>CollisionShape2D</code> object.</p>
+<h4 id="prototype-96"><a class="header" href="#prototype-96">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:ToggleCollision() -&gt; void
+</code></pre>
+<h4 id="arguments-95"><a class="header" href="#arguments-95">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-94"><a class="header" href="#example-94">Example</a></h4>
+<pre><code class="language-lua">local collisionshape = root:CreateChild("CollisionShape2D", "my_shape", "Rectangle", 10, 10, 100, 50)
+collisionshape:ToggleCollision()
+print("Collision enabled for CollisionShape2D")
+collisionshape:ToggleCollision()
+print("Collision disabled for CollisionShape2D")
+</code></pre>
+</li>
+<li>
+<h3 id="iscollisionenabled-3"><a class="header" href="#iscollisionenabled-3">IsCollisionEnabled</a></h3>
+<p>Check whether collision is enabled for the <code>CollisionShape2D</code> node.</p>
+<h4 id="prototype-97"><a class="header" href="#prototype-97">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:IsCollisionEnabled() -&gt; boolean
+</code></pre>
+<h4 id="arguments-96"><a class="header" href="#arguments-96">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-95"><a class="header" href="#example-95">Example</a></h4>
+<pre><code class="language-lua">local shape = root:CreateChild("CollisionShape2D", "shape", "Rectangle", 0, 0, 100, 100)
+local isEnabled = shape:IsCollisionEnabled()
+
+if isEnabled then
+    print("Collision is enabled for this shape.")
+else
+    print("Collision is disabled for this shape.") -- should print this
+end
+</code></pre>
+</li>
+<li>
+<h3 id="collide-3"><a class="header" href="#collide-3">Collide</a></h3>
+<p>Check for a collision between the current <code>CollisionShape2D</code> and another node.</p>
+<h4 id="prototype-98"><a class="header" href="#prototype-98">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:Collide(otherNode: CollisionShape2D) -&gt; boolean
+</code></pre>
+<h4 id="arguments-97"><a class="header" href="#arguments-97">Arguments</a></h4>
+<ul>
+<li><code>otherNode</code> (CollisionShape2D): The node to check for a collision with.</li>
+</ul>
+<h4 id="example-96"><a class="header" href="#example-96">Example</a></h4>
+<pre><code class="language-lua">local shape1 = root:CreateChild("CollisionShape2D", "shape1", "Rectangle", 0, 0, 100, 100)
+local shape2 = root:CreateChild("CollisionShape2D", "shape2", "Circle", 50, 50, 20)
+
+shape1:ToggleCollision()
+shape2:ToggleCollision()
+
+if shape1:Collide(shape2) then
+    print("Collision detected between shape1 and shape2")
+else
+    print("No collision detected")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-6"><a class="header" href="#destroy-6">Destroy</a></h3>
+<p>Permanently deletes the CollisionShape2D and its associated resources.</p>
+<h4 id="prototype-99"><a class="header" href="#prototype-99">Prototype</a></h4>
+<pre><code class="language-lua">collisionshape2d:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-98"><a class="header" href="#arguments-98">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-97"><a class="header" href="#example-97">Example</a></h4>
+<pre><code class="language-lua">local collisionshape2d = root:CreateChild("CollisionShape2D", "clshape2d", type : "Rectangle", posX: number, posY : number, width : number, height : number)
+
+collisionshape2d:Destroy()
+-- Trying access collisionshape2d after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-7"><a class="header" href="#registered-node-type--construction-method-7">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="label-library"><a class="header" href="#label-library">Label Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-7"><a class="header" href="#getname-7">GetName</a></h3>
+<p>Retrieve the name of the Label.</p>
+<h4 id="prototype-100"><a class="header" href="#prototype-100">Prototype</a></h4>
+<pre><code class="language-lua">label:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-99"><a class="header" href="#arguments-99">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-98"><a class="header" href="#example-98">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "label", posX : number, posY : number, "text", "fontSource", fontSize : number)
+
+local name = label:GetName()
+print("Label name: " .. name) -- should be "label"
+</code></pre>
+</li>
+<li>
+<h3 id="setname-7"><a class="header" href="#setname-7">SetName</a></h3>
+<p>Set or change the name of the Label.</p>
+<h4 id="prototype-101"><a class="header" href="#prototype-101">Prototype</a></h4>
+<pre><code class="language-lua">label:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-100"><a class="header" href="#arguments-100">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-99"><a class="header" href="#example-99">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "label", 10, 10, "Hello World", "font.ttf", 24)
+
+label:SetName("new_label_name")
+print("New Label name : ", label:GetName()) -- should be "new_label_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren-7"><a class="header" href="#getchildren-7">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Label.</p>
+<h4 id="prototype-102"><a class="header" href="#prototype-102">Prototype</a></h4>
+<pre><code class="language-lua">label:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-101"><a class="header" href="#arguments-101">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-100"><a class="header" href="#example-100">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "MainLabel", 0, 0, "Hello World", "font.ttf", 18)
+local label1 = label:CreateChild("Label", "Label1", 10, 0, "Hello World !", "font.ttf", 18)
+local label2 = label:CreateChild("Label", "Label2", 20, 0, "Hello World ?", "font.ttf", 18)
+
+local children = label:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "ChildButton"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-7"><a class="header" href="#getchild-7">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>Label</code>.</p>
+<h4 id="prototype-103"><a class="header" href="#prototype-103">Prototype</a></h4>
+<pre><code class="language-lua">label:GetChild(childName: string) -&gt; Label | nil
+</code></pre>
+<h4 id="arguments-102"><a class="header" href="#arguments-102">Arguments</a></h4>
+<ul>
+<li><code>childName</code> (string): The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-101"><a class="header" href="#example-101">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "parent_label", 10, 10, "Parent Text", "font.ttf", 24)
+local child_1 = label:CreateChild("Label", "child_1", 20, 20, "Child Text", "font.ttf", 18)
+
+local child = label:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-7"><a class="header" href="#createchild-7">CreateChild</a></h3>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, posX: number, posY: number, text: string, fontSource: string, fontSize: number) -&gt; Label | nil
+</code></pre>
+<h4 id="arguments-103"><a class="header" href="#arguments-103">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"Label"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>number</code> : The X position of the label.</li>
+<li><code>number</code> : The Y position of the label.</li>
+<li><code>string</code> : The text to display.</li>
+<li><code>string</code> : The font source (file path).</li>
+<li><code>number</code> : The font size.</li>
+</ul>
+<h4 id="example-102"><a class="header" href="#example-102">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local label = root:CreateChild("Label", "TitleLabel", 100, 50, "Welcome!", "font.ttf", 24)
+
+print("Created label node with name: ", label:GetName()) -- should be "TitleLabel"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-7"><a class="header" href="#addchild-7">AddChild</a></h3>
+<p>Add a child node to the current <code>Label</code>.</p>
+<h4 id="prototype-104"><a class="header" href="#prototype-104">Prototype</a></h4>
+<pre><code class="language-lua">label:AddChild(childNode: Label)
+</code></pre>
+<h4 id="arguments-104"><a class="header" href="#arguments-104">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (Label): The child node to add to this node.</li>
+</ul>
+<h4 id="example-103"><a class="header" href="#example-103">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("Label", "parent_label", 10, 10, "Parent Text", "font.ttf", 24)
+local child = root:CreateChild("Label", "child_label", 20, 20, "Child Text", "font.ttf", 18)
+
+parent:AddChild(child)
+print(parent:GetChild("child_label"):GetName()) -- should print "child_label"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition-6"><a class="header" href="#getposition-6">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>Label</code>.</p>
+<h4 id="prototype-105"><a class="header" href="#prototype-105">Prototype</a></h4>
+<pre><code class="language-lua">label:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-105"><a class="header" href="#arguments-105">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-104"><a class="header" href="#example-104">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "label", 10, 20, "Hello World", "font.ttf", 24)
+
+local x, y = label:GetPosition()
+print("Position:", x, y) -- should print "Position: 10 20"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition-6"><a class="header" href="#setposition-6">SetPosition</a></h3>
+<p>Sets the position of the <code>Label</code> in the 2D space.</p>
+<h4 id="prototype-106"><a class="header" href="#prototype-106">Prototype</a></h4>
+<pre><code class="language-lua">label:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-106"><a class="header" href="#arguments-106">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the label.</li>
+<li><code>number</code>: The new Y-coordinate of the label.</li>
+</ul>
+<h4 id="example-105"><a class="header" href="#example-105">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "example_label", 10, 10, "Hello, World!", "font.ttf", 24)
+label:SetPosition(500, 400)
+print("Label position: ", label:GetPosition()) -- should print (500, 400)
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition-6"><a class="header" href="#getglobalposition-6">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current Label.</p>
+<h4 id="prototype-107"><a class="header" href="#prototype-107">Prototype</a></h4>
+<pre><code class="language-lua">label:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-107"><a class="header" href="#arguments-107">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-106"><a class="header" href="#example-106">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "my_label", 50, 100, "Hello World", "Arial.ttf", 20)
+label:SetPosition(300, 400)
+
+local globalX, globalY = label:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="setcolor"><a class="header" href="#setcolor">SetColor</a></h3>
+<p>Set the color of the current <code>Label</code>. Using RGB.</p>
+<h4 id="prototype-108"><a class="header" href="#prototype-108">Prototype</a></h4>
+<pre><code class="language-lua">label:SetColor(r, g, b)
+</code></pre>
+<h4 id="arguments-108"><a class="header" href="#arguments-108">Arguments</a></h4>
+<ul>
+<li><code>number</code>: Red component of the color (from 0 to 1).</li>
+<li><code>number</code>: Green component of the color (from 0 to 1).</li>
+<li><code>number</code>: Blue component of the color (from 0 to 1).</li>
+</ul>
+<h4 id="example-107"><a class="header" href="#example-107">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetColor(1, 0, 0)  -- Set the color to red
+</code></pre>
+</li>
+<li>
+<h3 id="getcolor"><a class="header" href="#getcolor">GetColor</a></h3>
+<p>Retrieve the color of the current <code>Label</code>. Using RGB.</p>
+<h4 id="prototype-109"><a class="header" href="#prototype-109">Prototype</a></h4>
+<pre><code class="language-lua">label:GetColor() -&gt; r, g, b
+</code></pre>
+<h4 id="arguments-109"><a class="header" href="#arguments-109">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-108"><a class="header" href="#example-108">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetColor(1, 0, 0)  -- Set the color to red
+
+local r, g, b = label:GetColor()  -- Get the red, green, and blue components
+print("Red: " .. r .. ", Green: " .. g .. ", Blue: " .. b)
+</code></pre>
+</li>
+<li>
+<h3 id="setalpha"><a class="header" href="#setalpha">SetAlpha</a></h3>
+<p>Set the alpha (transparency) of the current <code>Label</code>.</p>
+<h4 id="prototype-110"><a class="header" href="#prototype-110">Prototype</a></h4>
+<pre><code class="language-lua">label:SetAlpha(alpha: number) -&gt; nil
+</code></pre>
+<h4 id="arguments-110"><a class="header" href="#arguments-110">Arguments</a></h4>
+<ul>
+<li><code>alpha</code> (<code>number</code>): The alpha value (transparency) to set, ranging from 0 (completely transparent) to 1 (completely opaque).</li>
+</ul>
+<h4 id="example-109"><a class="header" href="#example-109">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetAlpha(0.5)  -- Set the transparency to 50%
+</code></pre>
+</li>
+<li>
+<h3 id="getalpha"><a class="header" href="#getalpha">GetAlpha</a></h3>
+<p>Retrieve the alpha (transparency) value of the current <code>Label</code>.</p>
+<h4 id="prototype-111"><a class="header" href="#prototype-111">Prototype</a></h4>
+<pre><code class="language-lua">label:GetAlpha() -&gt; number
+</code></pre>
+<h4 id="arguments-111"><a class="header" href="#arguments-111">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-110"><a class="header" href="#example-110">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetAlpha(0.7)  -- Set the transparency to 70%
+local alpha = label:GetAlpha()
+print(alpha)  -- Should print 0.7
+</code></pre>
+</li>
+<li>
+<h3 id="settext"><a class="header" href="#settext">SetText</a></h3>
+<p>Set the text of the Label.</p>
+<h4 id="prototype-112"><a class="header" href="#prototype-112">Prototype</a></h4>
+<pre><code class="language-lua">label:SetText(text)
+</code></pre>
+<h4 id="arguments-112"><a class="header" href="#arguments-112">Arguments</a></h4>
+<p><code>string</code> : The text to set for the Label.</p>
+<h4 id="example-111"><a class="header" href="#example-111">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetText("New Text")  -- Changes the label's text
+
+print("Label text : ", label:GetText()) -- should print "New text"
+</code></pre>
+</li>
+<li>
+<h3 id="gettext"><a class="header" href="#gettext">GetText</a></h3>
+<p>Get the text of the Label.</p>
+<h4 id="prototype-113"><a class="header" href="#prototype-113">Prototype</a></h4>
+<pre><code class="language-lua">label:GetText() -&gt; string
+</code></pre>
+<h4 id="arguments-113"><a class="header" href="#arguments-113">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-112"><a class="header" href="#example-112">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+print(label:GetText())  -- Should print "Hello World"
+</code></pre>
+</li>
+<li>
+<h3 id="setfont"><a class="header" href="#setfont">SetFont</a></h3>
+<p>Set the path to the font source.</p>
+<h4 id="prototype-114"><a class="header" href="#prototype-114">Prototype</a></h4>
+<pre><code class="language-lua">label:SetFont(fontSource)
+</code></pre>
+<h4 id="arguments-114"><a class="header" href="#arguments-114">Arguments</a></h4>
+<p><code>string</code>: The path to the font source to use for the Label.</p>
+<h4 id="example-113"><a class="header" href="#example-113">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+
+label:SetFont("newFont.ttf")
+print(label:GetFont())  -- should print "newFont.ttf"
+</code></pre>
+</li>
+<li>
+<h3 id="getfont"><a class="header" href="#getfont">GetFont</a></h3>
+<p>Get the font file name.</p>
+<h4 id="prototype-115"><a class="header" href="#prototype-115">Prototype</a></h4>
+<pre><code class="language-lua">label:GetFont() -&gt; string
+</code></pre>
+<h4 id="arguments-115"><a class="header" href="#arguments-115">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-114"><a class="header" href="#example-114">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+print(label:GetFont())  -- should print "font.ttf"
+</code></pre>
+</li>
+<li>
+<h3 id="setfontsize"><a class="header" href="#setfontsize">SetFontSize</a></h3>
+<p>Set the font size of the Label.</p>
+<h4 id="prototype-116"><a class="header" href="#prototype-116">Prototype</a></h4>
+<pre><code class="language-lua">label:SetFontSize(fontSize)
+</code></pre>
+<h4 id="arguments-116"><a class="header" href="#arguments-116">Arguments</a></h4>
+<p><code>number</code>: font size to set.</p>
+<h4 id="example-115"><a class="header" href="#example-115">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetFontSize(32)  -- Change the font size of 'label'
+</code></pre>
+</li>
+<li>
+<h3 id="getfontsize"><a class="header" href="#getfontsize">GetFontSize</a></h3>
+<p>Get the font  size of the Label.</p>
+<h4 id="prototype-117"><a class="header" href="#prototype-117">Prototype</a></h4>
+<pre><code class="language-lua">label:GetFontSize() -&gt; number | nil
+</code></pre>
+<h4 id="arguments-117"><a class="header" href="#arguments-117">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-116"><a class="header" href="#example-116">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+
+print(label:GetFontSize())  -- should print "24"
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-7"><a class="header" href="#destroy-7">Destroy</a></h3>
+<p>Permanently deletes the Label and its associated resources.</p>
+<h4 id="prototype-118"><a class="header" href="#prototype-118">Prototype</a></h4>
+<pre><code class="language-lua">label:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-118"><a class="header" href="#arguments-118">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-117"><a class="header" href="#example-117">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "label", posX : number, posY : number, "text", "fontSource", fontSize : number)
+
+label:Destroy()
+-- Trying access collisionshape2d after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-8"><a class="header" href="#registered-node-type--construction-method-8">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="parallax-library"><a class="header" href="#parallax-library">Parallax Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-8"><a class="header" href="#getname-8">GetName</a></h3>
+<p>Retrieve the name of the Parallax.</p>
+<h4 id="prototype-119"><a class="header" href="#prototype-119">Prototype</a></h4>
+<pre><code class="language-lua">parallax:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-119"><a class="header" href="#arguments-119">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-118"><a class="header" href="#example-118">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "prlx2d", "source", scrollingVelocity : number, NodeReference)
+
+local name = parallax:GetName()
+print("Parallax name: " .. name) -- should be "prlx2d"
+</code></pre>
+</li>
+<li>
+<h3 id="setname-8"><a class="header" href="#setname-8">SetName</a></h3>
+<p>Set or change the name of the Parallax.</p>
+<h4 id="prototype-120"><a class="header" href="#prototype-120">Prototype</a></h4>
+<pre><code class="language-lua">parallax:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-120"><a class="header" href="#arguments-120">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-119"><a class="header" href="#example-119">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "parallax", "parallax.png", 1.5, backgroundNode)
+print("Parallax name : ", parallax:GetName()) -- should be "parallax"
+
+parallax:SetName("new_parallax_name")
+print("New Parallax name : ", parallax:GetName()) -- should be "new_parallax_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren-8"><a class="header" href="#getchildren-8">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Parallax.</p>
+<h4 id="prototype-121"><a class="header" href="#prototype-121">Prototype</a></h4>
+<pre><code class="language-lua">parallax:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-121"><a class="header" href="#arguments-121">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-120"><a class="header" href="#example-120">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "MainParallax", "background.png", 0.2, root)
+local backgroundLayer = parallax:CreateChild("Parallax", "background.png", 0.8, root)
+local foregroundLayer = parallax:CreateChild("Parallax", "background.png", 1.5, root)
+
+local children = parallax:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "BackgroundLayer" &amp; "ForegroundLayer"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-8"><a class="header" href="#getchild-8">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>Parallax</code>.</p>
+<h4 id="prototype-122"><a class="header" href="#prototype-122">Prototype</a></h4>
+<pre><code class="language-lua">parallax:GetChild(childName: string) -&gt; Parallax | nil
+</code></pre>
+<h4 id="arguments-122"><a class="header" href="#arguments-122">Arguments</a></h4>
+<ul>
+<li><code>childName</code> (string): The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-121"><a class="header" href="#example-121">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "parent_parallax", "parallax.png", 2.0, backgroundNode)
+local child_1 = parallax:CreateChild("Parallax", "child_1", "child_parallax.png", 1.0, backgroundNode)
+
+local child = parallax:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-8"><a class="header" href="#createchild-8">CreateChild</a></h3>
+<p>Create and add a <code>Parallax</code> node to the current node.</p>
+<h4 id="prototype-123"><a class="header" href="#prototype-123">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, source: string, scrollingVelocity: number, nodeReference: Node) -&gt; Parallax | nil
+</code></pre>
+<h4 id="arguments-123"><a class="header" href="#arguments-123">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"Parallax"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>string</code> : The source of the parallax background.</li>
+<li><code>number</code> : The scrolling velocity of the parallax layer.</li>
+<li><code>Node</code> : A reference to a node that this parallax layer follows.</li>
+</ul>
+<h4 id="example-122"><a class="header" href="#example-122">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local parallax = root:CreateChild("Parallax", "BackgroundParallax", "background.png", 1.5, root)
+
+print("Created parallax node with name: ", parallax:GetName()) -- should be "BackgroundParallax"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-8"><a class="header" href="#addchild-8">AddChild</a></h3>
+<p>Add a child node to the current <code>Parallax</code>.</p>
+<h4 id="prototype-124"><a class="header" href="#prototype-124">Prototype</a></h4>
+<pre><code class="language-lua">parallax:AddChild(childNode: Parallax)
+</code></pre>
+<h4 id="arguments-124"><a class="header" href="#arguments-124">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (Parallax): The child node to add to this node.</li>
+</ul>
+<h4 id="example-123"><a class="header" href="#example-123">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("Parallax", "parent_parallax", "parallax.png", 2.0, backgroundNode)
+local child = root:CreateChild("Parallax", "child_parallax", "child_parallax.png", 1.0, backgroundNode)
+
+parent:AddChild(child)
+print(parent:GetChild("child_parallax"):GetName()) -- should print "child_parallax"
+</code></pre>
+</li>
+<li>
+<h3 id="setreferencenode"><a class="header" href="#setreferencenode">SetReferenceNode</a></h3>
+<p>Set the reference node that the parallax effect will follow.</p>
+<h4 id="prototype-125"><a class="header" href="#prototype-125">Prototype</a></h4>
+<pre><code class="language-lua">parallax:SetReferenceNode(referenceNode: Node2D)
+</code></pre>
+<h4 id="arguments-125"><a class="header" href="#arguments-125">Arguments</a></h4>
+<ul>
+<li><code>referenceNode</code> (<code>Node2D</code>): The node to be used as a reference for the parallax effect.</li>
+</ul>
+<h4 id="example-124"><a class="header" href="#example-124">Example</a></h4>
+<pre><code class="language-lua">local parallax = scene:GetRoot():CreateChild("Parallax", "parallax_node", "parallax_source", 0.5, someNode2D)
+local referenceNode = scene:GetRoot():CreateChild("Node2D", "reference_node")
+
+-- Set the reference node for the parallax effect
+parallax:SetReferenceNode(referenceNode)
+</code></pre>
+</li>
+<li>
+<h3 id="addparallaxposition"><a class="header" href="#addparallaxposition">AddParallaxPosition</a></h3>
+<p>Add a position to the list of parallax positions to offset the parallax scrolling.</p>
+<h4 id="prototype-126"><a class="header" href="#prototype-126">Prototype</a></h4>
+<pre><code class="language-lua">parallax:AddParallaxPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-126"><a class="header" href="#arguments-126">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The horizontal (x) offset of the parallax position.</li>
+<li><code>number</code>: The vertical (y) offset of the parallax position.</li>
+</ul>
+<h4 id="example-125"><a class="header" href="#example-125">Example</a></h4>
+<pre><code class="language-lua">local parallax = scene:GetRoot():CreateChild("Parallax", "parallax_node", "parallax_source", 0.5, someNode2D)
+
+-- Add parallax positions for scrolling
+parallax:AddParallaxPosition(100, 200)
+parallax:AddParallaxPosition(-50, 75)
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-8"><a class="header" href="#destroy-8">Destroy</a></h3>
+<p>Permanently deletes the Parallax and its associated resources.</p>
+<h4 id="prototype-127"><a class="header" href="#prototype-127">Prototype</a></h4>
+<pre><code class="language-lua">parallax:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-127"><a class="header" href="#arguments-127">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-126"><a class="header" href="#example-126">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "prlx2d", "source", scrollingVelocity : number, NodeReference)
+
+parallax:Destroy()
+-- Trying access parallax after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-9"><a class="header" href="#registered-node-type--construction-method-9">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="box-library"><a class="header" href="#box-library">Box Library</a></h2>
+<ul>
+<li>
+<h3 id="getname-9"><a class="header" href="#getname-9">GetName</a></h3>
+<p>Retrieve the name of the Box.</p>
+<h4 id="prototype-128"><a class="header" href="#prototype-128">Prototype</a></h4>
+<pre><code class="language-lua">box:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments-128"><a class="header" href="#arguments-128">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-127"><a class="header" href="#example-127">Example</a></h4>
+<pre><code class="language-lua">local box = root:CreateChild("Box", "box", posX : number, posY : number, width : number, height : number)
+
+local name = box:GetName()
+print("Box name: " .. name) -- should be box
+</code></pre>
+</li>
+<li>
+<h3 id="setname-9"><a class="header" href="#setname-9">SetName</a></h3>
+<p>Set or change the name of the Box.</p>
+<h4 id="prototype-129"><a class="header" href="#prototype-129">Prototype</a></h4>
+<pre><code class="language-lua">box:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-129"><a class="header" href="#arguments-129">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-128"><a class="header" href="#example-128">Example</a></h4>
+<pre><code class="language-lua">local box = root:CreateChild("Box", "box", 50, 50, 200, 150)
+
+box:SetName("new_box_name")
+print("New Box name : ", box:GetName()) -- should be "new_box_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren-9"><a class="header" href="#getchildren-9">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Box.</p>
+<h4 id="prototype-130"><a class="header" href="#prototype-130">Prototype</a></h4>
+<pre><code class="language-lua">box:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-130"><a class="header" href="#arguments-130">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-129"><a class="header" href="#example-129">Example</a></h4>
+<pre><code class="language-lua">local box = root:CreateChild("Box", "MainBox", 10, 10, 200, 100)
+local innerBox1 = box:CreateChild("Box", "ChildBox1", 20, 20, 50, 50)
+local innerBox2 = box:CreateChild("Box", "ChildBox2", 20, 20, 50, 100)
+
+local children = box:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "ChildBox"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild-9"><a class="header" href="#getchild-9">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>Box</code>.</p>
+<h4 id="prototype-131"><a class="header" href="#prototype-131">Prototype</a></h4>
+<pre><code class="language-lua">box:GetChild(childName: string) -&gt; Box | nil
+</code></pre>
+<h4 id="arguments-131"><a class="header" href="#arguments-131">Arguments</a></h4>
+<ul>
+<li><code>string</code>: The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-130"><a class="header" href="#example-130">Example</a></h4>
+<pre><code class="language-lua">local box = root:CreateChild("Box", "parent_box", 50, 50, 200, 100)
+local child_1 = box:CreateChild("Box", "child_1", 70, 70, 50, 50)
+
+local child = box:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild-9"><a class="header" href="#createchild-9">CreateChild</a></h3>
+<p>Create and add a <code>Box</code> node to the current node.</p>
+<h4 id="prototype-132"><a class="header" href="#prototype-132">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, posX: number, posY: number, width: number, height: number) -&gt; Box | nil
+</code></pre>
+<h4 id="arguments-132"><a class="header" href="#arguments-132">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"Box"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>number</code> : The X position of the box.</li>
+<li><code>number</code> : The Y position of the box.</li>
+<li><code>number</code> : The width of the box.</li>
+<li><code>number</code> : The height of the box.</li>
+</ul>
+<h4 id="example-131"><a class="header" href="#example-131">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local box = root:CreateChild("Box", "UIBox", 200, 100, 300, 150)
+
+print("Created box node with name: ", box:GetName()) -- should be "UIBox"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild-9"><a class="header" href="#addchild-9">AddChild</a></h3>
+<p>Add a child node to the current <code>Box</code>.</p>
+<h4 id="prototype-133"><a class="header" href="#prototype-133">Prototype</a></h4>
+<pre><code class="language-lua">box:AddChild(childNode: Box)
+</code></pre>
+<h4 id="arguments-133"><a class="header" href="#arguments-133">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (Box): The child node to add to this node.</li>
+</ul>
+<h4 id="example-132"><a class="header" href="#example-132">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("Box", "parent_box", 50, 50, 200, 100)
+local child = root:CreateChild("Box", "child_box", 70, 70, 50, 50)
+
+parent:AddChild(child)
+print(parent:GetChild("child_box"):GetName()) -- should print "child_box"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition-7"><a class="header" href="#getposition-7">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>Box</code>.</p>
+<h4 id="prototype-134"><a class="header" href="#prototype-134">Prototype</a></h4>
+<pre><code class="language-lua">box:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-134"><a class="header" href="#arguments-134">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-133"><a class="header" href="#example-133">Example</a></h4>
+<pre><code class="language-lua">local box = root:CreateChild("Box", "box", 15, 25, 200, 100)
+
+local x, y = box:GetPosition()
+print("Position:", x, y) -- should print "15, 25"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition-7"><a class="header" href="#setposition-7">SetPosition</a></h3>
+<p>Sets the position of the <code>Box</code> in the 2D space.</p>
+<h4 id="prototype-135"><a class="header" href="#prototype-135">Prototype</a></h4>
+<pre><code class="language-lua">box:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-135"><a class="header" href="#arguments-135">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the box.</li>
+<li><code>number</code>: The new Y-coordinate of the box.</li>
+</ul>
+<h4 id="example-134"><a class="header" href="#example-134">Example</a></h4>
+<pre><code class="language-lua">local box = root:CreateChild("Box", "example_box", 0, 0, 100, 50)
+box:SetPosition(150, 75)
+print("Box position: ", box:GetPosition()) -- should print "150, 75"
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition-7"><a class="header" href="#getglobalposition-7">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current <code>Box</code>.</p>
+<h4 id="prototype-136"><a class="header" href="#prototype-136">Prototype</a></h4>
+<pre><code class="language-lua">box:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-136"><a class="header" href="#arguments-136">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-135"><a class="header" href="#example-135">Example</a></h4>
+<pre><code class="language-lua">local box = scene:GetRoot():CreateChild("Box", "my_box", 100, 150, 200, 300)
+box:SetPosition(500, 600)
+
+local globalX, globalY = box:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="setcolor-1"><a class="header" href="#setcolor-1">SetColor</a></h3>
+<p>Set the color of the current <code>Box</code>. Using RGB</p>
+<h4 id="prototype-137"><a class="header" href="#prototype-137">Prototype</a></h4>
+<pre><code class="language-lua">box:SetColor(r, g, b)
+</code></pre>
+<h4 id="arguments-137"><a class="header" href="#arguments-137">Arguments</a></h4>
+<ul>
+<li><code>number</code>: Red component of the color (from 0 to 1).</li>
+<li><code>number</code>: Green component of the color (from 0 to 1).</li>
+<li><code>number</code>: Blue component of the color (from 0 to 1).</li>
+</ul>
+<h4 id="example-136"><a class="header" href="#example-136">Example</a></h4>
+<pre><code class="language-lua">local box = scene:GetRoot():CreateChild("Box", "myBox", 50, 50, 100, 100)
+box:SetColor(0, 0, 1)  -- Set the color to blue
+</code></pre>
+</li>
+<li>
+<h3 id="getcolor-1"><a class="header" href="#getcolor-1">GetColor</a></h3>
+<p>Retrieve the color of the current <code>Box</code>. Using RGB.</p>
+<h4 id="prototype-138"><a class="header" href="#prototype-138">Prototype</a></h4>
+<pre><code class="language-lua">box:GetColor() -&gt; r, g, b
+</code></pre>
+<h4 id="arguments-138"><a class="header" href="#arguments-138">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-137"><a class="header" href="#example-137">Example</a></h4>
+<pre><code class="language-lua">local box = scene:GetRoot():CreateChild("Box", "myBox", 50, 50, 100, 100)
+box:SetColor(0, 0, 1)  -- Set the color to blue
+
+local r, g, b = box:GetColor()  -- Get the red, green, and blue components
+print("Red: " .. r .. ", Green: " .. g .. ", Blue: " .. b)
+</code></pre>
+</li>
+<li>
+<h3 id="setalpha-1"><a class="header" href="#setalpha-1">SetAlpha</a></h3>
+<p>Set the alpha (transparency) of the current <code>Box</code>.</p>
+<h4 id="prototype-139"><a class="header" href="#prototype-139">Prototype</a></h4>
+<pre><code class="language-lua">box:SetAlpha(alpha: number) -&gt; nil
+</code></pre>
+<h4 id="arguments-139"><a class="header" href="#arguments-139">Arguments</a></h4>
+<ul>
+<li><code>alpha</code> (<code>number</code>): The alpha value (transparency) to set, ranging from 0 (completely transparent) to 1 (completely opaque).</li>
+</ul>
+<h4 id="example-138"><a class="header" href="#example-138">Example</a></h4>
+<pre><code class="language-lua">local box = scene:GetRoot():CreateChild("Box", "myBox", 50, 50, 100, 100)
+box:SetAlpha(0.3)  -- Set the transparency to 30%
+</code></pre>
+</li>
+<li>
+<h3 id="getalpha-1"><a class="header" href="#getalpha-1">GetAlpha</a></h3>
+<p>Retrieve the alpha (transparency) value of the current <code>Box</code>.</p>
+<h4 id="prototype-140"><a class="header" href="#prototype-140">Prototype</a></h4>
+<pre><code class="language-lua">box:GetAlpha() -&gt; number
+</code></pre>
+<h4 id="arguments-140"><a class="header" href="#arguments-140">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-139"><a class="header" href="#example-139">Example</a></h4>
+<pre><code class="language-lua">local box = scene:GetRoot():CreateChild("Box", "myBox", 50, 50, 100, 100)
+box:SetAlpha(0.8)  -- Set the transparency to 80%
+local alpha = box:GetAlpha()  -- Retrieve the transparency value
+print(alpha)  -- Should print 0.8
+</code></pre>
+</li>
+<li>
+<h3 id="setsize-2"><a class="header" href="#setsize-2">SetSize</a></h3>
+<p>Set the box size.</p>
+<h4 id="prototype-141"><a class="header" href="#prototype-141">Prototype</a></h4>
+<pre><code class="language-lua">box:SetSize(width, height)
+</code></pre>
+<h4 id="arguments-141"><a class="header" href="#arguments-141">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The width to set for the <code>Box</code>.</li>
+<li><code>number</code>: The height to set for the <code>Box</code>.</li>
+</ul>
+<h4 id="example-140"><a class="header" href="#example-140">Example</a></h4>
+<pre><code class="language-lua">local box = scene:GetRoot():CreateChild("Box", "myBox", 10, 10, 100, 200)
+box:SetSize(150, 300)  -- Changes the size of the box to 150x300
+
+print("Width: " .. width .. ", Height: " .. height)  -- Should print "Width: 150, Height: 300"
+</code></pre>
+</li>
+<li>
+<h3 id="getsize-1"><a class="header" href="#getsize-1">GetSize</a></h3>
+<p>Get the box size.</p>
+<h4 id="prototype-142"><a class="header" href="#prototype-142">Prototype</a></h4>
+<pre><code class="language-lua">box:GetSize() -&gt; width, height
+</code></pre>
+<h4 id="arguments-142"><a class="header" href="#arguments-142">Arguments</a></h4>
+<ul>
+<li><code>None</code></li>
+</ul>
+<h4 id="example-141"><a class="header" href="#example-141">Example</a></h4>
+<pre><code class="language-lua">local box = scene:GetRoot():CreateChild("Box", "myBox", 10, 10, 100, 200)
+local width, height = box:GetSize()
+print("Width: " .. width .. ", Height: " .. height)  -- Should print "Width: 100, Height: 200"
+</code></pre>
+</li>
+<li>
+<h3 id="destroy-9"><a class="header" href="#destroy-9">Destroy</a></h3>
+<p>Permanently deletes the Box and its associated resources.</p>
+<h4 id="prototype-143"><a class="header" href="#prototype-143">Prototype</a></h4>
+<pre><code class="language-lua">box:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-143"><a class="header" href="#arguments-143">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-142"><a class="header" href="#example-142">Example</a></h4>
+<pre><code class="language-lua">local box = root:CreateChild("Box", "box", posX : number, posY : number, width : number, height : number)
+
+box:Destroy()
+-- Trying access box after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method-10"><a class="header" href="#registered-node-type--construction-method-10">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="r-type"><a class="header" href="#r-type">R-Type</a></h1>
 <h2 id="our-implementation"><a class="header" href="#our-implementation">Our implementation</a></h2>
 <p>Our R-Type is a online multiplayer side-scrolling shoot 'em up game. The player controls a spaceship that can move horizontally and vertically. The player must dodge or destroy enemy ships and projectiles to survive. The goal is to defeat the boss.</p>
 <h3 id="controls"><a class="header" href="#controls">Controls</a></h3>
@@ -482,8 +3259,21 @@ end)
 <li><code>s</code> to move down</li>
 <li><code>q</code> to move left</li>
 <li><code>d</code> to move right</li>
-<li><code>space</code> to shoot</li>
-<li><code>alt</code> to auto-shoot</li>
+<li><code>j</code> to shoot</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="pong"><a class="header" href="#pong">Pong</a></h1>
+<h2 id="our-implementation-1"><a class="header" href="#our-implementation-1">Our implementation</a></h2>
+<p>Our Pong is a two-player game where each player controls a paddle. The goal is to hit the ball with the paddle and make the opponent miss it.</p>
+<h3 id="controls-1"><a class="header" href="#controls-1">Controls</a></h3>
+<h4 id="player-1"><a class="header" href="#player-1">Player 1</a></h4>
+<ul>
+<li><code>z</code> to move up</li>
+<li><code>s</code> to move down</li>
+</ul>
+<h4 id="player-2"><a class="header" href="#player-2">Player 2</a></h4>
+<ul>
+<li><code>i</code> to move up</li>
+<li><code>k</code> to move down</li>
 </ul>
 
                     </main>

@@ -1,0 +1,543 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Label - R-TYPE</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">R-TYPE</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h2 id="label-library"><a class="header" href="#label-library">Label Library</a></h2>
+<ul>
+<li>
+<h3 id="getname"><a class="header" href="#getname">GetName</a></h3>
+<p>Retrieve the name of the Label.</p>
+<h4 id="prototype"><a class="header" href="#prototype">Prototype</a></h4>
+<pre><code class="language-lua">label:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example"><a class="header" href="#example">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "label", posX : number, posY : number, "text", "fontSource", fontSize : number)
+
+local name = label:GetName()
+print("Label name: " .. name) -- should be "label"
+</code></pre>
+</li>
+<li>
+<h3 id="setname"><a class="header" href="#setname">SetName</a></h3>
+<p>Set or change the name of the Label.</p>
+<h4 id="prototype-1"><a class="header" href="#prototype-1">Prototype</a></h4>
+<pre><code class="language-lua">label:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-1"><a class="header" href="#arguments-1">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-1"><a class="header" href="#example-1">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "label", 10, 10, "Hello World", "font.ttf", 24)
+
+label:SetName("new_label_name")
+print("New Label name : ", label:GetName()) -- should be "new_label_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren"><a class="header" href="#getchildren">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Label.</p>
+<h4 id="prototype-2"><a class="header" href="#prototype-2">Prototype</a></h4>
+<pre><code class="language-lua">label:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-2"><a class="header" href="#arguments-2">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-2"><a class="header" href="#example-2">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "MainLabel", 0, 0, "Hello World", "font.ttf", 18)
+local label1 = label:CreateChild("Label", "Label1", 10, 0, "Hello World !", "font.ttf", 18)
+local label2 = label:CreateChild("Label", "Label2", 20, 0, "Hello World ?", "font.ttf", 18)
+
+local children = label:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "ChildButton"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild"><a class="header" href="#getchild">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>Label</code>.</p>
+<h4 id="prototype-3"><a class="header" href="#prototype-3">Prototype</a></h4>
+<pre><code class="language-lua">label:GetChild(childName: string) -&gt; Label | nil
+</code></pre>
+<h4 id="arguments-3"><a class="header" href="#arguments-3">Arguments</a></h4>
+<ul>
+<li><code>childName</code> (string): The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "parent_label", 10, 10, "Parent Text", "font.ttf", 24)
+local child_1 = label:CreateChild("Label", "child_1", 20, 20, "Child Text", "font.ttf", 18)
+
+local child = label:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild"><a class="header" href="#createchild">CreateChild</a></h3>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, posX: number, posY: number, text: string, fontSource: string, fontSize: number) -&gt; Label | nil
+</code></pre>
+<h4 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"Label"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>number</code> : The X position of the label.</li>
+<li><code>number</code> : The Y position of the label.</li>
+<li><code>string</code> : The text to display.</li>
+<li><code>string</code> : The font source (file path).</li>
+<li><code>number</code> : The font size.</li>
+</ul>
+<h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local label = root:CreateChild("Label", "TitleLabel", 100, 50, "Welcome!", "font.ttf", 24)
+
+print("Created label node with name: ", label:GetName()) -- should be "TitleLabel"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild"><a class="header" href="#addchild">AddChild</a></h3>
+<p>Add a child node to the current <code>Label</code>.</p>
+<h4 id="prototype-4"><a class="header" href="#prototype-4">Prototype</a></h4>
+<pre><code class="language-lua">label:AddChild(childNode: Label)
+</code></pre>
+<h4 id="arguments-5"><a class="header" href="#arguments-5">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (Label): The child node to add to this node.</li>
+</ul>
+<h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("Label", "parent_label", 10, 10, "Parent Text", "font.ttf", 24)
+local child = root:CreateChild("Label", "child_label", 20, 20, "Child Text", "font.ttf", 18)
+
+parent:AddChild(child)
+print(parent:GetChild("child_label"):GetName()) -- should print "child_label"
+</code></pre>
+</li>
+<li>
+<h3 id="getposition"><a class="header" href="#getposition">GetPosition</a></h3>
+<p>Retrieve the position of the current <code>Label</code>.</p>
+<h4 id="prototype-5"><a class="header" href="#prototype-5">Prototype</a></h4>
+<pre><code class="language-lua">label:GetPosition() -&gt; number, number
+</code></pre>
+<h4 id="arguments-6"><a class="header" href="#arguments-6">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "label", 10, 20, "Hello World", "font.ttf", 24)
+
+local x, y = label:GetPosition()
+print("Position:", x, y) -- should print "Position: 10 20"
+</code></pre>
+</li>
+<li>
+<h3 id="setposition"><a class="header" href="#setposition">SetPosition</a></h3>
+<p>Sets the position of the <code>Label</code> in the 2D space.</p>
+<h4 id="prototype-6"><a class="header" href="#prototype-6">Prototype</a></h4>
+<pre><code class="language-lua">label:SetPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-7"><a class="header" href="#arguments-7">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The new X-coordinate of the label.</li>
+<li><code>number</code>: The new Y-coordinate of the label.</li>
+</ul>
+<h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "example_label", 10, 10, "Hello, World!", "font.ttf", 24)
+label:SetPosition(500, 400)
+print("Label position: ", label:GetPosition()) -- should print (500, 400)
+</code></pre>
+</li>
+<li>
+<h3 id="getglobalposition"><a class="header" href="#getglobalposition">GetGlobalPosition</a></h3>
+<p>Retrieves the global position of the current Label.</p>
+<h4 id="prototype-7"><a class="header" href="#prototype-7">Prototype</a></h4>
+<pre><code class="language-lua">label:GetGlobalPosition() -&gt; (number, number)
+</code></pre>
+<h4 id="arguments-8"><a class="header" href="#arguments-8">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "my_label", 50, 100, "Hello World", "Arial.ttf", 20)
+label:SetPosition(300, 400)
+
+local globalX, globalY = label:GetGlobalPosition()
+print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
+</code></pre>
+</li>
+<li>
+<h3 id="setcolor"><a class="header" href="#setcolor">SetColor</a></h3>
+<p>Set the color of the current <code>Label</code>. Using RGB.</p>
+<h4 id="prototype-8"><a class="header" href="#prototype-8">Prototype</a></h4>
+<pre><code class="language-lua">label:SetColor(r, g, b)
+</code></pre>
+<h4 id="arguments-9"><a class="header" href="#arguments-9">Arguments</a></h4>
+<ul>
+<li><code>number</code>: Red component of the color (from 0 to 1).</li>
+<li><code>number</code>: Green component of the color (from 0 to 1).</li>
+<li><code>number</code>: Blue component of the color (from 0 to 1).</li>
+</ul>
+<h4 id="example-9"><a class="header" href="#example-9">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetColor(1, 0, 0)  -- Set the color to red
+</code></pre>
+</li>
+<li>
+<h3 id="getcolor"><a class="header" href="#getcolor">GetColor</a></h3>
+<p>Retrieve the color of the current <code>Label</code>. Using RGB.</p>
+<h4 id="prototype-9"><a class="header" href="#prototype-9">Prototype</a></h4>
+<pre><code class="language-lua">label:GetColor() -&gt; r, g, b
+</code></pre>
+<h4 id="arguments-10"><a class="header" href="#arguments-10">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-10"><a class="header" href="#example-10">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetColor(1, 0, 0)  -- Set the color to red
+
+local r, g, b = label:GetColor()  -- Get the red, green, and blue components
+print("Red: " .. r .. ", Green: " .. g .. ", Blue: " .. b)
+</code></pre>
+</li>
+<li>
+<h3 id="setalpha"><a class="header" href="#setalpha">SetAlpha</a></h3>
+<p>Set the alpha (transparency) of the current <code>Label</code>.</p>
+<h4 id="prototype-10"><a class="header" href="#prototype-10">Prototype</a></h4>
+<pre><code class="language-lua">label:SetAlpha(alpha: number) -&gt; nil
+</code></pre>
+<h4 id="arguments-11"><a class="header" href="#arguments-11">Arguments</a></h4>
+<ul>
+<li><code>alpha</code> (<code>number</code>): The alpha value (transparency) to set, ranging from 0 (completely transparent) to 1 (completely opaque).</li>
+</ul>
+<h4 id="example-11"><a class="header" href="#example-11">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetAlpha(0.5)  -- Set the transparency to 50%
+</code></pre>
+</li>
+<li>
+<h3 id="getalpha"><a class="header" href="#getalpha">GetAlpha</a></h3>
+<p>Retrieve the alpha (transparency) value of the current <code>Label</code>.</p>
+<h4 id="prototype-11"><a class="header" href="#prototype-11">Prototype</a></h4>
+<pre><code class="language-lua">label:GetAlpha() -&gt; number
+</code></pre>
+<h4 id="arguments-12"><a class="header" href="#arguments-12">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-12"><a class="header" href="#example-12">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetAlpha(0.7)  -- Set the transparency to 70%
+local alpha = label:GetAlpha()
+print(alpha)  -- Should print 0.7
+</code></pre>
+</li>
+<li>
+<h3 id="settext"><a class="header" href="#settext">SetText</a></h3>
+<p>Set the text of the Label.</p>
+<h4 id="prototype-12"><a class="header" href="#prototype-12">Prototype</a></h4>
+<pre><code class="language-lua">label:SetText(text)
+</code></pre>
+<h4 id="arguments-13"><a class="header" href="#arguments-13">Arguments</a></h4>
+<p><code>string</code> : The text to set for the Label.</p>
+<h4 id="example-13"><a class="header" href="#example-13">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetText("New Text")  -- Changes the label's text
+
+print("Label text : ", label:GetText()) -- should print "New text"
+</code></pre>
+</li>
+<li>
+<h3 id="gettext"><a class="header" href="#gettext">GetText</a></h3>
+<p>Get the text of the Label.</p>
+<h4 id="prototype-13"><a class="header" href="#prototype-13">Prototype</a></h4>
+<pre><code class="language-lua">label:GetText() -&gt; string
+</code></pre>
+<h4 id="arguments-14"><a class="header" href="#arguments-14">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-14"><a class="header" href="#example-14">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+print(label:GetText())  -- Should print "Hello World"
+</code></pre>
+</li>
+<li>
+<h3 id="setfont"><a class="header" href="#setfont">SetFont</a></h3>
+<p>Set the path to the font source.</p>
+<h4 id="prototype-14"><a class="header" href="#prototype-14">Prototype</a></h4>
+<pre><code class="language-lua">label:SetFont(fontSource)
+</code></pre>
+<h4 id="arguments-15"><a class="header" href="#arguments-15">Arguments</a></h4>
+<p><code>string</code>: The path to the font source to use for the Label.</p>
+<h4 id="example-15"><a class="header" href="#example-15">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+
+label:SetFont("newFont.ttf")
+print(label:GetFont())  -- should print "newFont.ttf"
+</code></pre>
+</li>
+<li>
+<h3 id="getfont"><a class="header" href="#getfont">GetFont</a></h3>
+<p>Get the font file name.</p>
+<h4 id="prototype-15"><a class="header" href="#prototype-15">Prototype</a></h4>
+<pre><code class="language-lua">label:GetFont() -&gt; string
+</code></pre>
+<h4 id="arguments-16"><a class="header" href="#arguments-16">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-16"><a class="header" href="#example-16">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+print(label:GetFont())  -- should print "font.ttf"
+</code></pre>
+</li>
+<li>
+<h3 id="setfontsize"><a class="header" href="#setfontsize">SetFontSize</a></h3>
+<p>Set the font size of the Label.</p>
+<h4 id="prototype-16"><a class="header" href="#prototype-16">Prototype</a></h4>
+<pre><code class="language-lua">label:SetFontSize(fontSize)
+</code></pre>
+<h4 id="arguments-17"><a class="header" href="#arguments-17">Arguments</a></h4>
+<p><code>number</code>: font size to set.</p>
+<h4 id="example-17"><a class="header" href="#example-17">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+label:SetFontSize(32)  -- Change the font size of 'label'
+</code></pre>
+</li>
+<li>
+<h3 id="getfontsize"><a class="header" href="#getfontsize">GetFontSize</a></h3>
+<p>Get the font  size of the Label.</p>
+<h4 id="prototype-17"><a class="header" href="#prototype-17">Prototype</a></h4>
+<pre><code class="language-lua">label:GetFontSize() -&gt; number | nil
+</code></pre>
+<h4 id="arguments-18"><a class="header" href="#arguments-18">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-18"><a class="header" href="#example-18">Example</a></h4>
+<pre><code class="language-lua">local label = scene:GetRoot():CreateChild("Label", "myLabel", 10, 10, "Hello World", "font.ttf", 24)
+
+print(label:GetFontSize())  -- should print "24"
+</code></pre>
+</li>
+<li>
+<h3 id="destroy"><a class="header" href="#destroy">Destroy</a></h3>
+<p>Permanently deletes the Label and its associated resources.</p>
+<h4 id="prototype-18"><a class="header" href="#prototype-18">Prototype</a></h4>
+<pre><code class="language-lua">label:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-19"><a class="header" href="#arguments-19">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-19"><a class="header" href="#example-19">Example</a></h4>
+<pre><code class="language-lua">local label = root:CreateChild("Label", "label", posX : number, posY : number, "text", "fontSource", fontSize : number)
+
+label:Destroy()
+-- Trying access collisionshape2d after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method"><a class="header" href="#registered-node-type--construction-method">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../game/CollisionShape2DLibrary.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../game/ParallaxLibrary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../game/CollisionShape2DLibrary.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../game/ParallaxLibrary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

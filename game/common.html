@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Networking - R-TYPE</title>
+        <title>Common - R-TYPE</title>
 
 
         <!-- Custom HTML head -->
@@ -152,18 +152,48 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="networking"><a class="header" href="#networking">Networking</a></h1>
-<p><a href="../../rfc.html">RFC</a></p>
-
+                        <h1 id="common"><a class="header" href="#common">Common</a></h1>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>This section contains the common luau methods for the server and client.</p>
+<h4 id="system-graph"><a class="header" href="#system-graph">System Graph</a></h4>
+<p><img src="../assets/SystemGraph.png" alt="SystemGraph" /></p>
+<h2 id="nodes"><a class="header" href="#nodes">Nodes</a></h2>
+<ul>
+<li><a href="./NodeLibrary.html">Node</a></li>
+<li><a href="./Node2DLibrary.html">Node2D</a></li>
+<li><a href="./Sprite2DLibrary.html">Sprite2D</a></li>
+<li><a href="./Area2DLibrary.html">Area2D</a></li>
+<li><a href="./RigidBody2DLibrary.html">RigidBody2D</a></li>
+<li><a href="./StaticBody2DLibrary.html">StaticBody2D</a></li>
+<li><a href="./CollisionShape2DLibrary.html">CollisionShape2D</a></li>
+<li><a href="./LabelLibrary.html">Label</a></li>
+<li><a href="./ParallaxLibrary.html">Parallax</a></li>
+<li><a href="./BoxLibrary.html">Box</a></li>
+</ul>
+<h2 id="registered-node-type--construction-method"><a class="header" href="#registered-node-type--construction-method">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../engine/client.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../game/ClientMethod.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../engine/nodeSystem.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../game/NodeLibrary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -173,11 +203,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../engine/client.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../game/ClientMethod.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../engine/nodeSystem.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../game/NodeLibrary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

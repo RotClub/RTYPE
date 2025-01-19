@@ -1,0 +1,387 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Parallax - R-TYPE</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">R-TYPE</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h2 id="parallax-library"><a class="header" href="#parallax-library">Parallax Library</a></h2>
+<ul>
+<li>
+<h3 id="getname"><a class="header" href="#getname">GetName</a></h3>
+<p>Retrieve the name of the Parallax.</p>
+<h4 id="prototype"><a class="header" href="#prototype">Prototype</a></h4>
+<pre><code class="language-lua">parallax:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example"><a class="header" href="#example">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "prlx2d", "source", scrollingVelocity : number, NodeReference)
+
+local name = parallax:GetName()
+print("Parallax name: " .. name) -- should be "prlx2d"
+</code></pre>
+</li>
+<li>
+<h3 id="setname"><a class="header" href="#setname">SetName</a></h3>
+<p>Set or change the name of the Parallax.</p>
+<h4 id="prototype-1"><a class="header" href="#prototype-1">Prototype</a></h4>
+<pre><code class="language-lua">parallax:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-1"><a class="header" href="#arguments-1">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-1"><a class="header" href="#example-1">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "parallax", "parallax.png", 1.5, backgroundNode)
+print("Parallax name : ", parallax:GetName()) -- should be "parallax"
+
+parallax:SetName("new_parallax_name")
+print("New Parallax name : ", parallax:GetName()) -- should be "new_parallax_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren"><a class="header" href="#getchildren">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Parallax.</p>
+<h4 id="prototype-2"><a class="header" href="#prototype-2">Prototype</a></h4>
+<pre><code class="language-lua">parallax:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-2"><a class="header" href="#arguments-2">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-2"><a class="header" href="#example-2">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "MainParallax", "background.png", 0.2, root)
+local backgroundLayer = parallax:CreateChild("Parallax", "background.png", 0.8, root)
+local foregroundLayer = parallax:CreateChild("Parallax", "background.png", 1.5, root)
+
+local children = parallax:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "BackgroundLayer" &amp; "ForegroundLayer"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild"><a class="header" href="#getchild">GetChild</a></h3>
+<p>Retrieve a child node with the specified name from the current <code>Parallax</code>.</p>
+<h4 id="prototype-3"><a class="header" href="#prototype-3">Prototype</a></h4>
+<pre><code class="language-lua">parallax:GetChild(childName: string) -&gt; Parallax | nil
+</code></pre>
+<h4 id="arguments-3"><a class="header" href="#arguments-3">Arguments</a></h4>
+<ul>
+<li><code>childName</code> (string): The name of the child node to retrieve.</li>
+</ul>
+<h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "parent_parallax", "parallax.png", 2.0, backgroundNode)
+local child_1 = parallax:CreateChild("Parallax", "child_1", "child_parallax.png", 1.0, backgroundNode)
+
+local child = parallax:GetChild("child_1")
+if child then
+    print("Found child: " .. child:GetName()) -- should be "child_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild"><a class="header" href="#createchild">CreateChild</a></h3>
+<p>Create and add a <code>Parallax</code> node to the current node.</p>
+<h4 id="prototype-4"><a class="header" href="#prototype-4">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, source: string, scrollingVelocity: number, nodeReference: Node) -&gt; Parallax | nil
+</code></pre>
+<h4 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h4>
+<ul>
+<li><code>string</code> : The type of the child node (<code>"Parallax"</code>).</li>
+<li><code>string</code> : The name of the child node.</li>
+<li><code>string</code> : The source of the parallax background.</li>
+<li><code>number</code> : The scrolling velocity of the parallax layer.</li>
+<li><code>Node</code> : A reference to a node that this parallax layer follows.</li>
+</ul>
+<h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local parallax = root:CreateChild("Parallax", "BackgroundParallax", "background.png", 1.5, root)
+
+print("Created parallax node with name: ", parallax:GetName()) -- should be "BackgroundParallax"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild"><a class="header" href="#addchild">AddChild</a></h3>
+<p>Add a child node to the current <code>Parallax</code>.</p>
+<h4 id="prototype-5"><a class="header" href="#prototype-5">Prototype</a></h4>
+<pre><code class="language-lua">parallax:AddChild(childNode: Parallax)
+</code></pre>
+<h4 id="arguments-5"><a class="header" href="#arguments-5">Arguments</a></h4>
+<ul>
+<li><code>childNode</code> (Parallax): The child node to add to this node.</li>
+</ul>
+<h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
+<pre><code class="language-lua">local parent = root:CreateChild("Parallax", "parent_parallax", "parallax.png", 2.0, backgroundNode)
+local child = root:CreateChild("Parallax", "child_parallax", "child_parallax.png", 1.0, backgroundNode)
+
+parent:AddChild(child)
+print(parent:GetChild("child_parallax"):GetName()) -- should print "child_parallax"
+</code></pre>
+</li>
+<li>
+<h3 id="setreferencenode"><a class="header" href="#setreferencenode">SetReferenceNode</a></h3>
+<p>Set the reference node that the parallax effect will follow.</p>
+<h4 id="prototype-6"><a class="header" href="#prototype-6">Prototype</a></h4>
+<pre><code class="language-lua">parallax:SetReferenceNode(referenceNode: Node2D)
+</code></pre>
+<h4 id="arguments-6"><a class="header" href="#arguments-6">Arguments</a></h4>
+<ul>
+<li><code>referenceNode</code> (<code>Node2D</code>): The node to be used as a reference for the parallax effect.</li>
+</ul>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<pre><code class="language-lua">local parallax = scene:GetRoot():CreateChild("Parallax", "parallax_node", "parallax_source", 0.5, someNode2D)
+local referenceNode = scene:GetRoot():CreateChild("Node2D", "reference_node")
+
+-- Set the reference node for the parallax effect
+parallax:SetReferenceNode(referenceNode)
+</code></pre>
+</li>
+<li>
+<h3 id="addparallaxposition"><a class="header" href="#addparallaxposition">AddParallaxPosition</a></h3>
+<p>Add a position to the list of parallax positions to offset the parallax scrolling.</p>
+<h4 id="prototype-7"><a class="header" href="#prototype-7">Prototype</a></h4>
+<pre><code class="language-lua">parallax:AddParallaxPosition(x: number, y: number)
+</code></pre>
+<h4 id="arguments-7"><a class="header" href="#arguments-7">Arguments</a></h4>
+<ul>
+<li><code>number</code>: The horizontal (x) offset of the parallax position.</li>
+<li><code>number</code>: The vertical (y) offset of the parallax position.</li>
+</ul>
+<h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
+<pre><code class="language-lua">local parallax = scene:GetRoot():CreateChild("Parallax", "parallax_node", "parallax_source", 0.5, someNode2D)
+
+-- Add parallax positions for scrolling
+parallax:AddParallaxPosition(100, 200)
+parallax:AddParallaxPosition(-50, 75)
+</code></pre>
+</li>
+<li>
+<h3 id="destroy"><a class="header" href="#destroy">Destroy</a></h3>
+<p>Permanently deletes the Parallax and its associated resources.</p>
+<h4 id="prototype-8"><a class="header" href="#prototype-8">Prototype</a></h4>
+<pre><code class="language-lua">parallax:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-8"><a class="header" href="#arguments-8">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
+<pre><code class="language-lua">local parallax = root:CreateChild("Parallax", "prlx2d", "source", scrollingVelocity : number, NodeReference)
+
+parallax:Destroy()
+-- Trying access parallax after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method"><a class="header" href="#registered-node-type--construction-method">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../game/LabelLibrary.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../game/BoxLibrary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../game/LabelLibrary.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../game/BoxLibrary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

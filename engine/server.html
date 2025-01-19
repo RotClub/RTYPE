@@ -156,12 +156,14 @@
 <p>The server is responsible of managing the game state and the communication between the clients and the game.
 When the server is started, it will start the game engine and the connection manager.
 It run on the port "25777" by default but it can be changed with the <code>--port</code> option.
-The server can use two types of connection: TCP and UDP.</p>
+The server can use two types of connection: TCP and UDP.
+The --game option is used to specify the game to run.
+Actually, the server can run the R-Type game and the Pong game.</p>
 <p>The command to run the server is:</p>
 <pre><code class="language-bash">./r-type_server
 </code></pre>
 <p>or with the port option:</p>
-<pre><code class="language-bash">./r-type_server --port 12345
+<pre><code class="language-bash">./r-type_server --port [port] --game [game_name]
 </code></pre>
 
                     </main>

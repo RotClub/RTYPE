@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Networking - R-TYPE</title>
+        <title>Node - R-TYPE</title>
 
 
         <!-- Custom HTML head -->
@@ -152,18 +152,154 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="networking"><a class="header" href="#networking">Networking</a></h1>
-<p><a href="../../rfc.html">RFC</a></p>
+                        <h2 id="node-library"><a class="header" href="#node-library">Node Library</a></h2>
+<ul>
+<li>
+<h3 id="getname"><a class="header" href="#getname">GetName</a></h3>
+<p>Get the name of the Node.</p>
+<h4 id="prototype"><a class="header" href="#prototype">Prototype</a></h4>
+<pre><code class="language-lua">node:GetName() -&gt; string | nil
+</code></pre>
+<h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example"><a class="header" href="#example">Example</a></h4>
+<pre><code class="language-lua">local node_1 = root:CreateChild("Node", "node_1")
+local node_name = node_1:GetName()
 
+print("Node name : " .. node_name) -- should be "node_1"
+</code></pre>
+</li>
+<li>
+<h3 id="setname"><a class="header" href="#setname">SetName</a></h3>
+<p>Set or change the name of the Node.</p>
+<h4 id="prototype-1"><a class="header" href="#prototype-1">Prototype</a></h4>
+<pre><code class="language-lua">node:SetName(name: string) -&gt; nil
+</code></pre>
+<h4 id="arguments-1"><a class="header" href="#arguments-1">Arguments</a></h4>
+<p><code>string</code> : the name to set. Cannot be "root"</p>
+<h4 id="example-1"><a class="header" href="#example-1">Example</a></h4>
+<pre><code class="language-lua">local node = root:CreateChild("Node", "node")
+print("New Node name : ", node:GetName()) -- should be "node"
+
+node:SetName("new_node_name")
+print("New Node name : ", node:GetName()) -- should be "new_node_name"
+</code></pre>
+</li>
+<li>
+<h3 id="getchildren"><a class="header" href="#getchildren">GetChildren</a></h3>
+<p>Retrieve all child nodes of the Node.</p>
+<h4 id="prototype-2"><a class="header" href="#prototype-2">Prototype</a></h4>
+<pre><code class="language-lua">node:GetChildren() -&gt; {Node} | nil
+</code></pre>
+<h4 id="arguments-2"><a class="header" href="#arguments-2">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-2"><a class="header" href="#example-2">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local node_1 = root:CreateChild("Node", "node_1")
+local node_2 = root:CreateChild("Node", "node_2")
+
+local children = root:GetChildren()
+
+for i, child in ipairs(children) do
+    print("Child " .. i .. ": " .. child:GetName()) -- should be "node_1" &amp; "node_2"
+end
+</code></pre>
+</li>
+<li>
+<h3 id="getchild"><a class="header" href="#getchild">GetChild</a></h3>
+<p>Retrieve a child node by its name.</p>
+<h4 id="prototype-3"><a class="header" href="#prototype-3">Prototype</a></h4>
+<pre><code class="language-lua">node:GetChild(name: string) -&gt; Node | nil
+</code></pre>
+<h4 id="arguments-3"><a class="header" href="#arguments-3">Arguments</a></h4>
+<p><code>string</code> : The name of the child node to retrieve.</p>
+<h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local node_1 = root:CreateChild("Node", "node_1")
+local node_2 = root:CreateChild("Node", "node_2")
+
+local child = root:GetChild("node_1")
+
+if child then
+    print("Found child with name: " .. child:GetName()) -- should be "node_1"
+else
+    print("Child not found")
+end
+</code></pre>
+</li>
+<li>
+<h3 id="createchild"><a class="header" href="#createchild">CreateChild</a></h3>
+<p>Create and add a child node to the current node. For the child references check the schema <code>system graph</code> in introduction and the valid registered node types.<a href="#registered-node-type--construction-method">registered_node</a></p>
+<h4 id="prototype-4"><a class="header" href="#prototype-4">Prototype</a></h4>
+<pre><code class="language-lua">node:CreateChild(type: string, name: string, + others) -&gt; Node | nil
+</code></pre>
+<h4 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h4>
+<p><code>string</code> : The type of the child node to create. It must correspond to a valid registered node type.</p>
+<p><code>name</code> : The name of the child node to create.</p>
+<p><code>+ others</code> : All the additional parameters depending of the node type you want to create.</p>
+<h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local child = root:CreateChild("Node")
+
+print("Created child node with type: " .. child:GetType()) -- should be "Node"
+</code></pre>
+</li>
+<li>
+<h3 id="addchild"><a class="header" href="#addchild">AddChild</a></h3>
+<h4 id="prototype-5"><a class="header" href="#prototype-5">Prototype</a></h4>
+<pre><code class="language-lua">node:AddChild(child: Node) -&gt; nil
+</code></pre>
+<h4 id="arguments-5"><a class="header" href="#arguments-5">Arguments</a></h4>
+<p><code>Node</code> : The node to add as a child of the current node.</p>
+<h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local child = root:CreateChild("Node", "child_node")
+root:AddChild(child)
+
+print("Child added : " .. child:GetName()) -- should be "child_node"
+</code></pre>
+</li>
+<li>
+<h3 id="destroy"><a class="header" href="#destroy">Destroy</a></h3>
+<p>Permanently deletes the current node and its associated resources.</p>
+<h4 id="prototype-6"><a class="header" href="#prototype-6">Prototype</a></h4>
+<pre><code class="language-lua">node:Destroy() -&gt; nil
+</code></pre>
+<h4 id="arguments-6"><a class="header" href="#arguments-6">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
+<pre><code class="language-lua">local root = scene:GetRoot()
+local node_1 = root:CreateChild("Node", "node_1")
+
+node_1:Destroy()
+-- Trying to access node_1 after destruction will result in an error
+</code></pre>
+</li>
+</ul>
+<h2 id="registered-node-type--construction-method"><a class="header" href="#registered-node-type--construction-method">Registered Node Type &amp; Construction Method</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Node Type</th><th>Construction Method</th></tr></thead><tbody>
+<tr><td>Node</td><td>CreateChild("Node", "name")</td></tr>
+<tr><td>Sprite2D</td><td>CreateChild("Sprite2D", "name", "source")</td></tr>
+<tr><td>Parallax</td><td>CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)</td></tr>
+<tr><td>Label</td><td>CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)</td></tr>
+<tr><td>Box</td><td>CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Area2D</td><td>CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+<tr><td>Node2D</td><td>CreateChild("Node2D", "name")</td></tr>
+<tr><td>CollisionShape2D - Rectangle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)</td></tr>
+<tr><td>CollisionShape2D - Circle2D</td><td>CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)</td></tr>
+<tr><td>RigidBody2D</td><td>CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)</td></tr>
+<tr><td>StaticBody2D</td><td>CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)</td></tr>
+</tbody></table>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../engine/client.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../game/common.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../engine/nodeSystem.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../game/Node2DLibrary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -173,11 +309,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../engine/client.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../game/common.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../engine/nodeSystem.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../game/Node2DLibrary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

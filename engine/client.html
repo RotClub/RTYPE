@@ -155,14 +155,15 @@
                         <h1 id="client"><a class="header" href="#client">Client</a></h1>
 <p>The client runs the game and is responsible for rendering the game state and sending the input to the server.</p>
 <p>The client is written in C++ and uses the Raylib library to render the game.</p>
-<p>The client can be run with the following command:</p>
-<pre><code class="language-bash">./r-type_client
-</code></pre>
 <p>The client can be run with the following options:</p>
 <ul>
 <li><code>--ip</code> to specify the server IP address</li>
 <li><code>--port</code> to specify the server port</li>
+<li><code>--colorblindness</code> to enable colorblindness mode</li>
 </ul>
+<p>It can be run with the following command:</p>
+<pre><code class="language-bash">./r-type_client --ip [ip_address] --port [port] --colorblindness [none|protanopia|deuteranopia|tritanopia]
+</code></pre>
 
                     </main>
 
