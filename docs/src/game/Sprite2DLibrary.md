@@ -229,3 +229,19 @@
     sprite2d:Destroy()
     -- trying access sprite2d after destruction will result in an error
     ```
+
+## Registered Node Type & Construction Method
+
+|   Node Type   | Construction Method  |
+| ------------- | ------------- |
+|  Node         | CreateChild("Node", "name")|
+|  Sprite2D     | CreateChild("Sprite2D", "name", "source")|
+|  Parallax     | CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)|
+|  Label        | CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)|
+|  Box          | CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)|
+|  Area2D       | CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)|
+|  Node2D       | CreateChild("Node2D", "name")|
+|  CollisionShape2D - Rectangle2D| CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)|
+|  CollisionShape2D - Circle2D| CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)|
+|  RigidBody2D  | CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)|
+|  StaticBody2D | CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)|

@@ -77,7 +77,7 @@
     ```
 
 - ### CreateChild
-    Create and add a child node to the current node. For the child references check the schema [graph](#system-graph) and the valid registered node types.[registered_node](#registered-node-type--construction-method)
+    Create and add a child node to the current node. For the child references check the schema `system graph` in introduction and the valid registered node types.[registered_node](#registered-node-type--construction-method)
     #### Prototype
     ```lua
     node:CreateChild(type: string, name: string, + others) -> Node | nil
@@ -128,3 +128,19 @@
     node_1:Destroy()
     -- Trying to access node_1 after destruction will result in an error
     ```
+
+## Registered Node Type & Construction Method
+
+|   Node Type   | Construction Method  |
+| ------------- | ------------- |
+|  Node         | CreateChild("Node", "name")|
+|  Sprite2D     | CreateChild("Sprite2D", "name", "source")|
+|  Parallax     | CreateChild("Parallax", "name", "source", scrollingVelocity : number, NodeReference)|
+|  Label        | CreateChild("Label", "name", posX : number, posY : number, "text", "fontSource", fontSize : number)|
+|  Box          | CreateChild("Box", "name", posX : number, posY : number, width : number, height : number)|
+|  Area2D       | CreateChild("Area2D", "name", posX : number, posY : number, width : number, height : number)|
+|  Node2D       | CreateChild("Node2D", "name")|
+|  CollisionShape2D - Rectangle2D| CreateChild("CollisionShape2D", "name", type : "Rectangle", posX: number, posY : number, width : number, height : number)|
+|  CollisionShape2D - Circle2D| CreateChild("CollisionShape2D", "name", type : "Circle", posX: number, posY : number, radius : number)|
+|  RigidBody2D  | CreateChild("RigidBody2D", "name", posX : number, posY : number, width : number, height : number, velocityX : number, velocityY : number)|
+|  StaticBody2D | CreateChild("StatiCBody2D", "name", posX : number, posY : number, width : number, height : number)|
