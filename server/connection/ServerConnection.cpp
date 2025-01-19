@@ -11,7 +11,7 @@
 #include <csignal>
 #ifdef WIN32
 #include <ws2tcpip.h>
-#elif
+#else
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>

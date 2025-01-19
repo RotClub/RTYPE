@@ -14,13 +14,13 @@
 
 #ifdef WIN32
     #include <ws2tcpip.h>
+    #include <io.h>
 #else
     #include <sys/select.h>
     #include <sys/socket.h>
     #include <unistd.h>
 #endif
 
-#include <io.h>
 #include <thread>
 #include <vector>
 
