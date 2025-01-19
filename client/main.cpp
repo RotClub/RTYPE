@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 {
     ArgumentManager manager(argc, argv);
     manager.addRequiredArgument("ip");
-    manager.addRequiredArgument("port");
+    manager.addDefaultArgument("port", "25777");
     manager.addDefaultArgument("colorblindness", "none");
     manager.parseArguments();
 
