@@ -1,21 +1,36 @@
+include("common/enemies.luau")
+include("server/enemies.luau")
 include("server/game.luau")
 include("server/channels.luau")
 
 spaceships = {
-    defaultSpaceship(),
-    defaultSpaceship(),
-    defaultSpaceship(),
-    defaultSpaceship()
+    defaultSpaceship(1),
+    defaultSpaceship(2),
+    defaultSpaceship(3),
+    defaultSpaceship(4)
 }
+
+function getPlayerCount()
+    local count = 0
+    for i = 1, #spaceships do
+        if spaceships[i].bound_player then
+            count += 1
+        end
+    end
+    return count
+end
 
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 100000000
     for i = 1, #spaceships do
-        if not spaceships[i]["bound_player"] then continue end
+        if not spaceships[i].bound_player or not spaceships[i].node then continue end
         updateSpaceshipVelocitiy(spaceships[i], dt)
+        handleShooting(spaceships[i], dt)
+        spaceshipBoundaries(spaceships[i])
         sendSpaceshipPosition(i)
-        -- info("Spaceship " .. i .. ", x " .. x .. ", y " .. y)
     end
+    updateProjectiles(dt)
+    updateEnemies(dt)
 end)
 
 hook.Add("PlayerJoin", "main", function(ply)
@@ -38,9 +53,16 @@ hook.Add("PlayerLeave", "main", function(ply)
     for i = 1, #spaceships do
         if spaceships[i].bound_player == ply then
             spaceships[i].bound_player = nil
-            spaceships[i].node:Destroy()
+            if spaceships[i].node then
+                spaceships[i].node:Destroy()
+                spaceships[i].node = nil
+            end
+            table.foreach(spaceships[i].actions, function(k, v)
+                spaceships[i].actions[k] = false
+            end)
             net.Start("SpaceshipDespawn")
                 net.WriteInt(i)
+                net.WriteBool(false)
             net.Broadcast()
         end
     end

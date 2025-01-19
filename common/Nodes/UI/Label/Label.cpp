@@ -9,7 +9,7 @@ Label::Label(const std::string &name, const Types::Vector2 &position, const std:
              int fontSize) : UI(name, position), _text(text), _fontSize(fontSize)
 {
     if (!font.empty()) {
-        _font = Engine::GetInstance().getGamePath() / font;
+        _font = (Engine::GetInstance().getGamePath() / font).string();
         Engine::GetInstance().getResourceManager().loadResource(_font);
     }
 }
@@ -35,7 +35,7 @@ void Label::setFontSize(int fontSize) { _fontSize = fontSize; }
 void Label::setFont(const std::string &font)
 {
     if (!font.empty()) {
-        _font = Engine::GetInstance().getGamePath() / font;
+        _font = (Engine::GetInstance().getGamePath() / font).string();
         Engine::GetInstance().getResourceManager().loadResource(_font);
     }
 }

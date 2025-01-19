@@ -53,6 +53,7 @@ class Client
         ClientConnection &getClientConnection();
         ResourceManager &getResourceManager();
 
+        raylib::Window &getWindow() { return _game.getWindow(); }
         const Types::Vector2 &getGameSize() const;
 
         void broadcastLuaPackets();

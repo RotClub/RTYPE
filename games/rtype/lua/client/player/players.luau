@@ -1,17 +1,15 @@
 
-
 function setPlayerColor(playerSprite, playerNum)
-    debug(playerSprite:GetName())
     playerSprite:SetSource(67, 3 + ((playerNum - 1) * 17), 32, 14)
 end
 
-local otherPlayers = {}
+otherPlayers = {}
 
 local function createPlayer(id: number)
     local player = root:CreateChild("Node2D", "player" .. id)
     local playerSprite = player:CreateChild("Sprite2D", "playerSprite" .. id, "assets/sprites/r-typesheet42.png")
     player:SetPosition(0, 0)
-    playerSprite:SetSize(32 * 2, 14 * 2)
+    playerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     setPlayerColor(playerSprite, id)
     otherPlayers[id] = player
 end
@@ -26,7 +24,7 @@ end
 local function removePlayer(id)
     local player = otherPlayers[id]
     if player then
-        -- player:Destroy()
+        player:Destroy()
         otherPlayers[id] = nil
     end
 end
@@ -34,7 +32,6 @@ end
 net.Receive("SpaceshipSpawn", function(len, ply)
     local id = net.ReadInt()
     if Game.localId == nil then
-        debug("Creating local player : " .. id)
         Game.localId = id
         setPlayerColor(localPlayerSprite, id)
         return
@@ -42,7 +39,6 @@ net.Receive("SpaceshipSpawn", function(len, ply)
     if Game.localId == id then
         return
     end
-    debug("Creating other player : " .. id)
     createPlayer(id)
 end)
 
@@ -51,9 +47,29 @@ net.Receive("SpaceshipPosition", function(len, ply)
     local x = net.ReadFloat()
     local y = net.ReadFloat()
     if Game.localId == id then
-        netLocalPlrX = x
-        netLocalPlrY = y
+        Game.localPly.netX = x
+        Game.localPly.netY = y
         return
     end
     updatePlayerPosition(id, x, y)
+end)
+
+net.Receive("SpaceshipDespawn", function(len, ply)
+    local id = net.ReadInt()
+    local dead = net.ReadBool()
+    if not dead then
+        if Game.localId == id and Game.localPlayer then
+            debug("Local player despawned")
+            Game.localPlayer:Destroy()
+            Game.localPlayer = nil
+            return
+        end
+        removePlayer(id)
+    end
+    if Game.localId == id then
+        explodePlayer(Game.localPlayer)
+        Game.localPlayer = nil
+        return
+    end
+    explodePlayer(otherPlayers[id])
 end)

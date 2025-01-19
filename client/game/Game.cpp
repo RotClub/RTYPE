@@ -15,17 +15,21 @@
 
 Game::Game() {}
 
-Game::~Game() {}
+Game::~Game()
+{
+    _audioDevice.Close();
+}
 
 void Game::run()
 {
-    _window = raylib::Window();
-    const std::string gameName = Engine::GetInstance().getGameInfo()->getName();
-    _window.Init(800, 600, gameName);
+    SetAudioStreamBufferSizeDefault(4096);
+    _window.Init(800, 600, "Connecting to server...");
     _window.SetPosition(GetScreenWidth() / 2, GetScreenHeight() / 2);
     _window.SetExitKey(KeyboardKey::KEY_NULL);
     if (_window.IsReady() == false)
         throw std::runtime_error("Window is not ready");
+    if (_audioDevice.IsReady() == false)
+        throw std::runtime_error("Audio device is not ready");
     Engine::GetInstance().clientStarted = true;
     Client &client = Client::GetInstance();
     client.getClientConnection().establishConnection();
@@ -41,7 +45,7 @@ void Game::run()
 
     const bool accessibilityShaderExists =
         exists(Engine::GetInstance().getGamePath() / "assets/shaders/accessibility.fs");
-    if (accessibilityShaderExists && false)
+    if (accessibilityShaderExists)
         _accessibilityLoop();
     else
         _loop();
@@ -49,7 +53,8 @@ void Game::run()
 
 const Types::Vector2 &Game::getWindowSize() const
 {
-    return Types::Vector2(_window.GetHeight(), _window.GetWidth());
+    _windowSize = Types::Vector2(_window.GetHeight(), _window.GetWidth());
+    return _windowSize;
 }
 
 void Game::_loop()
@@ -90,8 +95,13 @@ void Game::_accessibilityLoop()
         _window.BeginDrawing();
         _window.ClearBackground(raylib::Color::Black());
         BeginShaderMode(accessibilityShader);
-        DrawTextureRec(target.texture, (Rectangle){0, 0, (float)target.texture.width, (float)-target.texture.height},
+#ifdef WIN32
+        DrawTextureRec(target.texture, Rectangle{0, 0, static_cast<float>(target.texture.width), static_cast<float>(-target.texture.height)},
+               Vector2{0, 0}, WHITE);
+#else
+        DrawTextureRec(target.texture, (Rectangle){0, 0, static_cast<float>(target.texture.width), static_cast<float>(-target.texture.height)},
                        (Vector2){0, 0}, WHITE);
+#endif
         EndShaderMode();
         _window.EndDrawing();
         if (_window.ShouldClose())

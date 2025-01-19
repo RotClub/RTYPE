@@ -1,22 +1,22 @@
-netLocalPlrX = 0
-netLocalPlrY = 0
+Game.localPly = {}
+Game.localPly.netX = 0
+Game.localPly.netY = 0
 
 function spawnLocalPlayer()
     Game.localPlayer = root:CreateChild("RigidBody2D", "localPlayer", 0, 0, 0, 0, 0, 0)
     localPlayerPoint = Game.localPlayer:CreateChild("Node2D", "localPlayerPoint")
     localPlayerSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerSprite", "assets/sprites/r-typesheet42.png")
+    localPlayerArrowSprite = Game.localPlayer:CreateChild("Sprite2D", "localPlayerArrowSprite", "assets/sprites/arrow.png")
+    localPlayerShootingSound = Game.localPlayer:CreateChild("SoundPlayer", "localSpaceshipShootSoundPlayer", "assets/sounds/player_shoot.mp3")
 
     Game.localPlayer:SetPosition(0, 0)
-    localPlayerSprite:SetSize(32 * 2, 14 * 2)
-    debug(localPlayerSprite:GetGlobalPosition())
+    localPlayerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
+    localPlayerArrowSprite:SetSize(32, 32)
+    localPlayerArrowSprite:SetPosition(Game.playersSize.x / 2 - 16, -30)
+    localPlayerShootingSound:SetVolume(0.1)
+    localPlayerShootingSound:SetPitch(1.0)
     setPlayerColor(localPlayerSprite, 1)
-end
-
-function explodePlayer(player)
-    player:Destroy()
-    local explosion = player:CreateChild("Sprite2D", "explosion", "assets/sprites/r-typesheet1.png")
-    explosion:SetPosition(0, -10)
-    explosion:SetSource(1, 334, 32, 28*2)
+    setParallaxReference(localPlayerPoint)
 end
 
 function sendAction(direction, start)
@@ -38,7 +38,9 @@ Keys.UpKey = 87
 Keys.DownKey = 83
 Keys.CycleKey = 67
 Keys.ShootKey = 74
-Keys.SpecialKey1 = 72
+
+local SHOOT_RATE = 0.1
+local shootTimer = 0
 
 function localPlayerMovement(dt)
     local direction = {}
@@ -86,15 +88,12 @@ function localPlayerMovement(dt)
     end
     if IsKeyJustPressed(Keys.ShootKey) then
         sendAction(5, true)
-    end
-    if IsKeyReleased(Keys.ShootKey) then
         sendAction(5, false)
     end
-    if IsKeyJustPressed(Keys.SpecialKey1) then
-        -- net.Start("Hello")
-        -- net.SendToServer()
-        explodePlayer(Game.localPlayer)
+
+    if Game.localPlayer == nil then
+        return
     end
-    Game.localPlayer:SetPosition(netLocalPlrX, netLocalPlrY)
-    -- Game.localPlayer:SetVelocity(direction.x * 100, direction.y * 100)
+    Game.localPlayer:SetVelocity(direction.x * SPACESHIP_SPEED, direction.y * SPACESHIP_SPEED)
+    correctPosition(Game.localPlayer, Game.localPly.netX, Game.localPly.netY)
 end

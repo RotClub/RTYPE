@@ -1,18 +1,20 @@
-function defaultSpaceship()
+function defaultSpaceship(id: number)
     return {
-        ["bound_player"] = nil,
-        ["node"] = nil,
-        ["actions"] = {
-            ["MOVE_LEFT"] = false,
-            ["MOVE_RIGHT"] = false,
-            ["MOVE_UP"] = false,
-            ["MOVE_DOWN"] = false,
-            ["SHOOT"] = false
-        }
+        id = id,
+        bound_player = nil,
+        node = nil,
+        actions = {
+            MOVE_LEFT = false,
+            MOVE_RIGHT = false,
+            MOVE_UP = false,
+            MOVE_DOWN = false,
+            SHOOT = false
+        },
+        buffered_shot = false,
+        shoot_cd = 0.0,
+        respawn_cd = 0.0
     }
 end
-
-local SPACESHIP_SPEED = 50
 
 function getSpaceshipByPlayer(ply: string)
     for i = 1, #spaceships do
@@ -24,7 +26,19 @@ end
 
 function spawnSpaceship(id: number, ply: string)
     spaceships[id].bound_player = ply
-    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, 0, 0, 0, 0)
+    spaceships[id].node = root:CreateChild("RigidBody2D", "Spaceship" .. id, 50, 100, Game.playersSize.x, Game.playersSize.y, 0, 0)
+end
+
+function despawnSpaceship(id: number)
+    if spaceships[id].node ~= nil then
+        spaceships[id].node:Destroy()
+    end
+    spaceships[id].node = nil
+    spaceships[id].shoot_cd = 0.0
+    spaceships[id].respawn_cd = RESPAWN_TIME
+    table.foreach(spaceships[id].actions, function(k, v)
+        spaceships[id].actions[k] = false
+    end)
 end
 
 function syncNewPlayer(ply: string)
@@ -35,11 +49,11 @@ function syncNewPlayer(ply: string)
             net.WriteInt(i)
         net.SendToClient(ply)
     end
+    createEnemiesForNewPlayer(ply)
 end
 
 function sendSpaceshipPosition(i: number)
     local xp, yp = spaceships[i].node:GetGlobalPosition()
-    -- info("sending spaceship position: " .. xp .. ", " .. yp)
     net.Start("SpaceshipPosition")
         net.WriteInt(i)
         net.WriteFloat(xp)
@@ -49,23 +63,52 @@ end
 
 function updateSpaceshipVelocitiy(spaceship, delta)
     local vx, yx = spaceship.node:GetVelocity()
-    if spaceship.actions["MOVE_LEFT"] then
+    if spaceship.actions.MOVE_LEFT then
         spaceship.node:SetVelocity(SPACESHIP_SPEED * -1.0, yx)
     end
-    if spaceship.actions["MOVE_RIGHT"] then
+    if spaceship.actions.MOVE_RIGHT then
         spaceship.node:SetVelocity(SPACESHIP_SPEED, yx)
     end
-    if not spaceship.actions["MOVE_LEFT"] and not spaceship.actions["MOVE_RIGHT"] then
+    if not spaceship.actions.MOVE_LEFT and not spaceship.actions.MOVE_RIGHT then
         spaceship.node:SetVelocity(0.0, yx)
     end
     vx, yx = spaceship.node:GetVelocity()
-    if spaceship.actions["MOVE_UP"] then
+    if spaceship.actions.MOVE_UP then
         spaceship.node:SetVelocity(vx, SPACESHIP_SPEED * -1.0)
     end
-    if spaceship.actions["MOVE_DOWN"] then
+    if spaceship.actions.MOVE_DOWN then
         spaceship.node:SetVelocity(vx, SPACESHIP_SPEED)
     end
-    if not spaceship.actions["MOVE_UP"] and not spaceship.actions["MOVE_DOWN"] then
+    if not spaceship.actions.MOVE_UP and not spaceship.actions.MOVE_DOWN then
         spaceship.node:SetVelocity(vx, 0.0)
+    end
+end
+
+function handleShooting(spaceship, delta: number)
+    spaceship.shoot_cd += delta
+    if spaceship.shoot_cd < 0.1 then
+        return
+    end
+    if spaceship.buffered_shot then
+        local px, py = spaceship.node:GetGlobalPosition()
+        createProjectile(px, py, 10, spaceship.node, spaceship.id)
+        spaceship.buffered_shot = false
+        spaceship.shoot_cd = 0.0
+    end
+end
+
+function spaceshipBoundaries(spaceship)
+    local xp, yp = spaceship.node:GetGlobalPosition()
+    if xp <= 0.0 then
+        spaceship.node:SetPosition(0.2, yp)
+    end
+    if xp + Game.playersSize.x >= 800.0 then
+        spaceship.node:SetPosition(799.8 - Game.playersSize.x, yp)
+    end
+    if yp <= 0.0 then
+        spaceship.node:SetPosition(xp, 0.2)
+    end
+    if yp + Game.playersSize.y >= 600.0 then
+    spaceship.node:SetPosition(xp, 599.8 - Game.playersSize.y)
     end
 end

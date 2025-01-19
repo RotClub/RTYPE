@@ -1,3 +1,4 @@
+
 /*
 ** EPITECH PROJECT, 2024
 ** RTYPE
@@ -11,14 +12,14 @@
 #include "Networking/PacketBuilder.hpp"
 #include "spdlog/spdlog.h"
 
-Server::Server(int port) : _port(port), _isRunning(false), _serverConnection(port) {}
+Server::Server(const std::string &game, int port) : _port(port), _isRunning(false), _serverConnection(port), _game(game) {}
 
 Server::~Server() { stop(); }
 
 void Server::start()
 {
     try {
-        Engine &engine = Engine::StartInstance(Types::VMState::SERVER, "rtype");
+        Engine &engine = Engine::StartInstance(Types::VMState::SERVER, _game);
         spdlog::info("Server starting...");
         engine.displayGameInfo();
         engine.loadLibraries();
@@ -101,6 +102,9 @@ void Server::broadcastLuaPackets()
             }
         }
         Engine::GetInstance().getBroadcastQueue().pop();
+        Packet *packet = newPacketPair.second;
+        PacketBuilder(packet).reset();
+        delete packet;
     }
 }
 
@@ -155,7 +159,7 @@ void Server::handleConnectPacket(Client *client, Packet *inPacket)
                     for (const auto &pair : Engine::GetInstance().getPacketsRegistry()) {
                         client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::NEW_MESSAGE).writeString(pair.first).writeBool(pair.second).build());
                     }
-                    client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED").writeString(idToString(client->getID())).build());
+                    client->addTcpPacketOutput(PacketBuilder().setCmd(PacketCmd::CONNECT).writeString("AUTHENTICATED").writeString(idToString(client->getID())).writeString(_game).build());
                     client->setStep(Client::ConnectionStep::AUTH_CODE_VERIFIED);
                 }
                 else {
@@ -204,7 +208,6 @@ void Server::broadcastNewPackets()
 void Server::stop()
 {
     spdlog::info("Stopping server...");
-    // _serverConnection.getClientsMutex().unlock();
     _serverConnection.stop();
     _isRunning = false;
 }

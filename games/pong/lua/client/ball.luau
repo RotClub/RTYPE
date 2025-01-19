@@ -1,45 +1,99 @@
 include("client/utils.luau")
 
+local function generateBallVelocity()
+    -- Generate a random angle between 30 and 150 degrees (or the equivalent in radians)
+    local angle = math.rad(math.random(30, 150))
+
+    -- Calculate velocity components based on the angle
+    local x_vel = math.cos(angle) * BALL_VELOCITY_COEFFICIENT
+    local y_vel = math.sin(angle) * BALL_VELOCITY_COEFFICIENT
+
+    -- Randomly invert the direction
+    if math.random(0, 1) == 0 then
+        x_vel = -x_vel
+    end
+    if math.random(0, 1) == 0 then
+        y_vel = -y_vel
+    end
+
+    return x_vel, y_vel
+end
+
 -- Desc: Ball generation function
 -- Arguments: None
 -- Returns: Node2D
 function generateBall()
     local ball = root:CreateChild("Node2D", "ball")
-    local x_vel = math.random() * (math.random(-1, 1) < 0 and -1 or 1) * BALL_VELOCITY_COEFFICIENT
-    local y_vel = math.random() * (math.random(-1, 1) < 0 and -1 or 1) * BALL_VELOCITY_COEFFICIENT
-    local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, 14, 14, x_vel, y_vel)
+    ball:SetPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+    local x_vel, y_vel = generateBallVelocity()
+    local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, ENTITY_WIDTH, ENTITY_WIDTH, x_vel, y_vel)
     local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/player.png")
 
-    ball:SetPosition(GetWindowWidth() / 2, GetWindowHeight() / 2)
-    --ball:SetPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
-    ball_sprite:SetSize(14, 14)
+
+    ball_sprite:SetSize(ENTITY_WIDTH, ENTITY_WIDTH)
     return ball
 end
 
-function ballBounce(ball)
+-- Desc: Ball wall bounce function
+-- Arguments: Node2D
+-- Returns: None
+function ballWallBounce(ball)
     local rgbd = ball:GetChild("ball_body")
     local x_vel, y_vel = rgbd:GetVelocity()
-    local x_pos, y_pos = rgbd:GetGlobalPosition()
+    local _, y_pos = rgbd:GetGlobalPosition()
 
-    local max_y = GetWindowHeight --engine:GetRenderHeight()
+    local max_y = WINDOW_HEIGHT
     local min_y = 0
 
-    -- Debugging: Print current position and velocity
-    info("Ball Position: x = " .. x_pos .. ", y = " .. y_pos)
-    info("Ball Velocity: x_vel = " .. x_vel .. ", y_vel = " .. y_vel)
-
-    -- Bounce the ball off the top and bottom walls
     if y_pos < min_y then
-        info("\n\n\n\nBall hit the top wall!\n\n\n\n")
         y_vel = math.abs(y_vel) -- Reflect upwards
     elseif y_pos > max_y then
-        info("\n\n\n\nBall hit the bottom wall!\n\n\n\n")
         y_vel = -math.abs(y_vel) -- Reflect downwards
     end
 
     -- Update the ball's velocity
     rgbd:SetVelocity(x_vel, y_vel)
+end
 
-    -- Debugging: Print updated velocity
-    info("Updated Velocity: x_vel = " .. x_vel .. ", y_vel = " .. y_vel)
+-- Compute the ball refraction on player hitbox
+-- Arguments: ball (node), player (node)
+-- Returns: None
+function ballPlayerBounce(ball, player)
+    local ball_rgbd = ball:GetChild("ball_body")
+    local player_hitbox = player:GetChild("player_hitbox")
+
+    if ball_rgbd:Collide(player_hitbox) then
+        local x_vel, y_vel = ball_rgbd:GetVelocity()
+        local _, y_pos = ball_rgbd:GetGlobalPosition()
+        local _, player_y = player:GetPosition()
+        local _, player_height = player_hitbox:GetSize()
+
+        local player_center = player_y + player_height / 2
+        local ball_center = y_pos + ENTITY_WIDTH / 2
+
+        local y_diff = ball_center - player_center
+        local y_refract = y_diff / (player_height / 2)
+
+        ball_rgbd:SetVelocity(-x_vel * 2, y_vel + y_refract * 2) -- Reflect the ball
+    end
+end
+
+function ballPlayerGoal(ball, score)
+    local ball_rgbd = ball:GetChild("ball_body")
+    local x_pos, _ = ball_rgbd:GetGlobalPosition()
+    local max_x = WINDOW_WIDTH
+    local min_x = 0
+
+    if x_pos <= min_x then
+        ball:SetPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+        ball_rgbd:SetPosition(0, 0)
+        ball_rgbd:SetVelocity(generateBallVelocity())
+        score[2] = score[2] + 1
+    elseif x_pos >= max_x then
+        ball_rgbd:SetPosition(0, 0)
+        ball_rgbd:SetVelocity(generateBallVelocity())
+        score[1] = score[1] + 1
+    end
+
+    return score
 end

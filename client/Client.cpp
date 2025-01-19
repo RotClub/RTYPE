@@ -33,7 +33,8 @@ Client &Client::GetInstance()
 }
 
 Client::Client(std::string ip, int port) :
-    _ip(ip), _port(port), _clientConnection(ip, port), _step(ConnectionStep::AUTH_CODE_RECEIVED)
+    _ip(ip), _port(port), _clientConnection(ip, port),
+    _step(ConnectionStep::AUTH_CODE_RECEIVED), _connectionEstablished(false)
 {
 }
 
@@ -44,7 +45,6 @@ void Client::setupLua()
     Engine &engine = Engine::GetInstance();
     engine.loadLibraries();
     setupClientSideLua();
-    engine.lockLuaState();
 }
 
 void Client::setupClientSideLua()
@@ -71,6 +71,7 @@ void Client::loadLuaGame()
 {
     Engine &engine = Engine::GetInstance();
     engine.displayGameInfo();
+    engine.lockLuaState();
     if (engine.LoadLuaFile("index.luau"))
         engine.execute();
     engine.callHook("InitClient", nullptr);
@@ -146,7 +147,10 @@ void Client::handleConnectPacket(Packet *packet)
                 std::string message = readBuilder.readString();
                 if (message == "AUTHENTICATED") {
                     std::string id = readBuilder.readString();
+                    std::string selectedGame = readBuilder.readString();
+                    Client::GetInstance().getWindow().SetTitle(selectedGame);
                     getClientConnection().setID(id);
+                    Engine::GetInstance().loadGame(selectedGame);
                     getClientConnection().sendToServerTCP(PacketBuilder().setCmd(PacketCmd::CONNECT).build());
                     getClientConnection().sendToServerUDP(PacketBuilder().setCmd(PacketCmd::NONE).build());
                     _step = Client::ConnectionStep::COMPLETE;

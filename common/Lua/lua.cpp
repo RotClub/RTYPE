@@ -16,6 +16,7 @@
 #include <Nodes/Node2D/Node2D.hpp>
 #include <Nodes/Node2D/Sprite2D/Sprite2D.hpp>
 #include <Nodes/Shape2D/Rectangle2D/Rectangle2D.hpp>
+#include <Nodes/Sound/SoundPlayer.hpp>
 
 LUA_API int luau_Include(lua_State *L)
 {
@@ -236,6 +237,23 @@ LUA_API int luau_NetReadString(lua_State *L)
     lua_pushstring(L, str.c_str());
     return lua_gettop(L);
 }
+
+LUA_API int luau_NetWriteBool(lua_State *L)
+{
+    const bool b = lua_toboolean(L, 1);
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    builder.writeBool(b);
+    return lua_gettop(L);
+}
+
+LUA_API int luau_NetReadBool(lua_State *L)
+{
+    PacketBuilder &builder = Engine::GetInstance().getPacketBuilders().top();
+    const bool b = builder.readBool();
+    lua_pushboolean(L, b);
+    return lua_gettop(L);
+}
+
 /* READ/WRITE OPERATIONS */
 
 /* NET LIBRARY */
@@ -259,7 +277,7 @@ static Node *luau_FindNodeFactory(lua_State *L, int pos)
     Node *node = nullptr;
     const char *metatables[] = {"NodeMetaTable", "Node2DMetaTable", "CollisionShape2DMetaTable", "Sprite2DMetaTable",
                                  "Area2DMetaTable", "ParallaxMetaTable", "RigidBody2DMetaTable", "StaticBody2DMetaTable",
-                                 "LabelMetaTable", "BoxMetaTable"};
+                                 "LabelMetaTable", "BoxMetaTable", "SoundPlayerMetaTable"};
     for (const char *metatable : metatables) {
         try {
             node = *static_cast<Node **>(luaL_checkudata(L, pos, metatable));
@@ -350,6 +368,10 @@ static Node *luau_NodeFactory(lua_State *L, const std::string &type)
         double size_y = luaL_checknumber(L, 7);
         child = new Box(name, Types::Vector2(x, y), Types::Vector2(size_x, size_y));
     }
+    else if (type == "SoundPlayer") {
+        const char *sound = luaL_checkstring(L, 4);
+        child = new SoundPlayer(name, sound);
+    }
     else {
         luaL_error(L, "Invalid type '%s' provided to AddChild in Node.", type.c_str());
     }
@@ -432,6 +454,13 @@ LUA_API int lua_gcBox(lua_State *L)
     return 0;
 }
 
+LUA_API int lua_gcSoundPlayer(lua_State *L)
+{
+    SoundPlayer *soundPlayer = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    delete soundPlayer;
+    return 0;
+}
+
 /** __gc functions **/
 
 /** Destroy functions **/
@@ -473,6 +502,8 @@ LUA_API int luau_LabelDestroy(lua_State *L) { return luau_TemplateNodeDestroy<La
 
 LUA_API int luau_BoxDestroy(lua_State *L) { return luau_TemplateNodeDestroy<Box>(L, "BoxMetaTable"); }
 
+LUA_API int luau_SoundPlayerDestroy(lua_State *L) { return luau_TemplateNodeDestroy<SoundPlayer>(L, "SoundPlayerMetaTable"); }
+
 /** Destroy functions **/
 
 /** GetName functions **/
@@ -513,6 +544,8 @@ LUA_API int luau_StaticBody2DGetName(lua_State *L)
 LUA_API int luau_LabelGetName(lua_State *L) { return luau_TemplateNodeGetName<Label>(L, "LabelMetaTable"); }
 
 LUA_API int luau_BoxGetName(lua_State *L) { return luau_TemplateNodeGetName<Box>(L, "BoxMetaTable"); }
+
+LUA_API int luau_SoundPlayerGetName(lua_State *L) { return luau_TemplateNodeGetName<SoundPlayer>(L, "SoundPlayerMetaTable"); }
 
 /** GetName functions **/
 
@@ -558,6 +591,11 @@ LUA_API int luau_StaticBody2DSetName(lua_State *L)
 LUA_API int luau_LabelSetName(lua_State *L) { return luau_TemplateNodeSetName<Label>(L, "LabelMetaTable"); }
 
 LUA_API int luau_BoxSetName(lua_State *L) { return luau_TemplateNodeSetName<Box>(L, "BoxMetaTable"); }
+
+LUA_API int luau_SoundPlayerSetName(lua_State *L)
+{
+    return luau_TemplateNodeSetName<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
 
 /** SetName functions **/
 
@@ -613,6 +651,11 @@ LUA_API int luau_LabelGetChildren(lua_State *L) { return luau_TemplateNodeGetChi
 
 LUA_API int luau_BoxGetChildren(lua_State *L) { return luau_TemplateNodeGetChildren<Box>(L, "BoxMetaTable"); }
 
+LUA_API int luau_SoundPlayerGetChildren(lua_State *L)
+{
+    return luau_TemplateNodeGetChildren<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
+
 /** GetChildren functions **/
 
 /** GetChild functions **/
@@ -666,6 +709,11 @@ LUA_API int luau_StaticBody2DGetChild(lua_State *L)
 LUA_API int luau_LabelGetChild(lua_State *L) { return luau_TemplateGetChild<Label>(L, "LabelMetaTable"); }
 
 LUA_API int luau_BoxGetChild(lua_State *L) { return luau_TemplateGetChild<Box>(L, "BoxMetaTable"); }
+
+LUA_API int luau_SoundPlayerGetChild(lua_State *L)
+{
+    return luau_TemplateGetChild<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
 
 /** GetChild functions **/
 
@@ -730,6 +778,11 @@ LUA_API int luau_LabelCreateChild(lua_State *L) { return luau_TemplateCreateChil
 
 LUA_API int luau_BoxCreateChild(lua_State *L) { return luau_TemplateCreateChild<Box>(L, "BoxMetaTable"); }
 
+LUA_API int luau_SoundPlayerCreateChild(lua_State *L)
+{
+    return luau_TemplateCreateChild<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
+
 /** CreateChild functions **/
 
 /** AddChild functions **/
@@ -776,6 +829,11 @@ LUA_API int luau_StaticBody2DAddChild(lua_State *L)
 LUA_API int luau_LabelAddChild(lua_State *L) { return luau_TemplateAddChild<Label>(L, "LabelMetaTable"); }
 
 LUA_API int luau_BoxAddChild(lua_State *L) { return luau_TemplateAddChild<Box>(L, "BoxMetaTable"); }
+
+LUA_API int luau_SoundPlayerAddChild(lua_State *L)
+{
+    return luau_TemplateAddChild<SoundPlayer>(L, "SoundPlayerMetaTable");
+}
 
 /** AddChild functions **/
 
@@ -1297,6 +1355,90 @@ LUA_API int luau_LabelGetGlobalPosition(lua_State *L)
 
 LUA_API int luau_BoxGetGlobalPosition(lua_State *L) { return luau_TemplateGetGlobalPosition<Box>(L, "BoxMetaTable"); }
 
+/** GetGlobalPosition functions **/
+
+
+/** SoundPlayer functions **/
+
+LUA_API int luau_SoundPlayerPlay(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->play();
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerPause(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->pause();
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerStop(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->stop();
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerSetVolume(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->setVolume(luaL_checknumber(L, 2));
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerSetPitch(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->setPitch(luaL_checknumber(L, 2));
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerSetPan(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->setPan(luaL_checknumber(L, 2));
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerSetSound(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->setSound(luaL_checkstring(L, 2));
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerGetSound(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    lua_pushstring(L, node->getSound().c_str());
+    return 1;
+}
+
+LUA_API int luau_SoundPlayerResume(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    node->resume();
+    return 0;
+}
+
+LUA_API int luau_SoundPlayerIsPlaying(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    lua_pushboolean(L, node->isPlaying());
+    return 1;
+}
+
+LUA_API int luau_SoundPlayerIsStopped(lua_State *L)
+{
+    SoundPlayer *node = *static_cast<SoundPlayer **>(luaL_checkudata(L, 1, "SoundPlayerMetaTable"));
+    lua_pushboolean(L, node->isStopped());
+    return 1;
+}
+
+/** SoundPlayer functions **/
+
 /* NODE LIBRARY */
 
 /* LUA API LIBRARY */
@@ -1462,7 +1604,7 @@ void luau_ExposeFunctions(lua_State *L)
     luau_ExposeGlobalFunction(L, luau_Debug, "debug");
 
     /* NODE LIBRARY */
-    constexpr luaL_Reg nodeLibrary[] = {{"GetName", luau_NodeGetName},
+    constexpr luaL_Reg nodeRegistry[] = {{"GetName", luau_NodeGetName},
                                         {"SetName", luau_NodeSetName},
                                         {"GetChildren", luau_NodeGetChildren},
                                         {"GetChild", luau_NodeGetChild},
@@ -1471,8 +1613,8 @@ void luau_ExposeFunctions(lua_State *L)
                                         {"Destroy", luau_NodeDestroy},
                                         {"__gc", lua_gcNode},
                                         {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, nodeLibrary, "NodeMetaTable");
-    constexpr luaL_Reg node2DLibrary[] = {{"GetName", luau_Node2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, nodeRegistry, "NodeMetaTable");
+    constexpr luaL_Reg node2DRegistry[] = {{"GetName", luau_Node2DGetName},
                                           {"SetName", luau_Node2DSetName},
                                           {"GetChildren", luau_Node2DGetChildren},
                                           {"GetChild", luau_Node2DGetChild},
@@ -1484,8 +1626,8 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"Destroy", luau_Node2DDestroy},
                                           {"__gc", lua_gcNode2D},
                                           {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, node2DLibrary, "Node2DMetaTable");
-    constexpr luaL_Reg sprite2DLibrary[] = {{"GetName", luau_Sprite2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, node2DRegistry, "Node2DMetaTable");
+    constexpr luaL_Reg sprite2DRegistry[] = {{"GetName", luau_Sprite2DGetName},
                                             {"SetName", luau_Sprite2DSetName},
                                             {"GetChildren", luau_Sprite2DGetChildren},
                                             {"GetChild", luau_Sprite2DGetChild},
@@ -1494,18 +1636,14 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"SetPosition", luau_Sprite2DSetPosition},
                                             {"GetGlobalPosition", luau_Sprite2DGetGlobalPosition},
                                             {"CreateChild", luau_Sprite2DCreateChild},
-                                            {"GetPosition", luau_Sprite2DGetPosition},
-                                            {"SetPosition", luau_Sprite2DSetPosition},
-                                            {"SetSize", luau_Sprite2DSetSize},
-                                            {"GetGlobalPosition", luau_Sprite2DGetGlobalPosition},
                                             {"SetSize", luau_Sprite2DSetSize},
                                             {"SetTexture", luau_Sprite2DSetTexture},
                                             {"SetSource", luau_Sprite2DSetSource},
                                             {"Destroy", luau_Sprite2DDestroy},
                                             {"__gc", lua_gcSprite2D},
                                             {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, sprite2DLibrary, "Sprite2DMetaTable");
-    constexpr luaL_Reg collisionshape2DLibrary[] = {{"GetName", luau_CollisionShape2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, sprite2DRegistry, "Sprite2DMetaTable");
+    constexpr luaL_Reg collisionshape2DRegistry[] = {{"GetName", luau_CollisionShape2DGetName},
                                                     {"SetName", luau_CollisionShape2DSetName},
                                                     {"GetChildren", luau_CollisionShape2DGetChildren},
                                                     {"GetChild", luau_CollisionShape2DGetChild},
@@ -1514,7 +1652,6 @@ void luau_ExposeFunctions(lua_State *L)
                                                     {"SetPosition", luau_CollisionShape2DSetPosition},
                                                     {"GetGlobalPosition", luau_CollisionShape2DGetGlobalPosition},
                                                     {"CreateChild", luau_CollisionShape2DCreateChild},
-
                                                     {"GetBoundingBox", luau_CollisionShape2DGetBoundingBox},
                                                     {"ToggleCollision", luau_CollisionShape2DToggleCollision},
                                                     {"IsCollisionEnabled", luau_CollisionShape2DIsCollisionEnabled},
@@ -1522,8 +1659,8 @@ void luau_ExposeFunctions(lua_State *L)
                                                     {"Destroy", luau_CollisionShape2DDestroy},
                                                     {"__gc", lua_gcCollisionShape2D},
                                                     {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, collisionshape2DLibrary, "CollisionShape2DMetaTable");
-    constexpr luaL_Reg area2DLibrary[] = {{"GetName", luau_Area2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, collisionshape2DRegistry, "CollisionShape2DMetaTable");
+    constexpr luaL_Reg area2DRegistry[] = {{"GetName", luau_Area2DGetName},
                                           {"SetName", luau_Area2DSetName},
                                           {"GetChildren", luau_Area2DGetChildren},
                                           {"GetChild", luau_Area2DGetChild},
@@ -1532,7 +1669,6 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"SetPosition", luau_Area2DSetPosition},
                                           {"GetGlobalPosition", luau_Area2DGetGlobalPosition},
                                           {"CreateChild", luau_Area2DCreateChild},
-
                                           {"ToggleCollision", luau_Area2DToggleCollision},
                                           {"IsCollisionEnabled", luau_Area2DIsCollisionEnabled},
                                           {"Collide", luau_Area2DCollide},
@@ -1540,8 +1676,8 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"SetSize", luau_Area2DSetSize},{"Destroy", luau_Area2DDestroy},
                                           {"__gc", lua_gcArea2D},
                                           {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, area2DLibrary, "Area2DMetaTable");
-    constexpr luaL_Reg parallaxLibrary[] = {{"GetName", luau_ParallaxGetName},
+    luau_ExposeFunctionsAsMetatable(L, area2DRegistry, "Area2DMetaTable");
+    constexpr luaL_Reg parallaxRegistry[] = {{"GetName", luau_ParallaxGetName},
                                             {"SetName", luau_ParallaxSetName},
                                             {"GetChildren", luau_ParallaxGetChildren},
                                             {"GetChild", luau_ParallaxGetChild},
@@ -1551,15 +1687,14 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"AddParallaxPosition", luau_ParallaxAddParallaxPosition},{"Destroy", luau_ParallaxDestroy},
                                             {"__gc", lua_gcParallax},
                                             {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, parallaxLibrary, "ParallaxMetaTable");
-    constexpr luaL_Reg rgbd2DLibrary[] = {{"GetName", luau_RigidBody2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, parallaxRegistry, "ParallaxMetaTable");
+    constexpr luaL_Reg rgbd2DRegistry[] = {{"GetName", luau_RigidBody2DGetName},
                                           {"SetName", luau_RigidBody2DSetName},
                                           {"GetChildren", luau_RigidBody2DGetChildren},
                                           {"GetChild", luau_RigidBody2DGetChild},
                                           {"AddChild", luau_RigidBody2DAddChild},
                                           {"GetPosition", luau_RigidBody2DGetPosition},
                                           {"SetPosition", luau_RigidBody2DSetPosition},
-                                          {"GetGlobalPosition", luau_RigidBody2DGetGlobalPosition},
                                           {"GetGlobalPosition", luau_RigidBody2DGetGlobalPosition},
                                           {"GetVelocity", luau_RigidBody2DGetVelocity},
                                           {"SetVelocity", luau_RigidBody2DSetVelocity},
@@ -1572,8 +1707,8 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"Destroy", luau_RigidBody2DDestroy},
                                           {"__gc", lua_gcRigidBody2D},
                                           {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, rgbd2DLibrary, "RigidBody2DMetaTable");
-    constexpr luaL_Reg stbd2DLibrary[] = {{"GetName", luau_StaticBody2DGetName},
+    luau_ExposeFunctionsAsMetatable(L, rgbd2DRegistry, "RigidBody2DMetaTable");
+    constexpr luaL_Reg stbd2DRegistry[] = {{"GetName", luau_StaticBody2DGetName},
                                           {"SetName", luau_StaticBody2DSetName},
                                           {"GetChildren", luau_StaticBody2DGetChildren},
                                           {"GetChild", luau_StaticBody2DGetChild},
@@ -1588,8 +1723,8 @@ void luau_ExposeFunctions(lua_State *L)
                                           {"Destroy", luau_StaticBody2DDestroy},
                                           {"__gc", lua_gcStaticBody2D},
                                           {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, stbd2DLibrary, "StaticBody2DMetaTable");
-    constexpr luaL_Reg labelLibrary[] = {{"GetName", luau_LabelGetName},
+    luau_ExposeFunctionsAsMetatable(L, stbd2DRegistry, "StaticBody2DMetaTable");
+    constexpr luaL_Reg labelRegistry[] = {{"GetName", luau_LabelGetName},
                                          {"SetName", luau_LabelSetName},
                                          {"GetChildren", luau_LabelGetChildren},
                                          {"GetChild", luau_LabelGetChild},
@@ -1600,8 +1735,6 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"CreateChild", luau_LabelCreateChild},
                                          {"SetColor", luau_LabelSetColor},
                                          {"SetAlpha", luau_LabelSetAlpha},
-                                         {"GetColor", luau_BoxGetColor},
-                                         {"GetAlpha", luau_BoxGetAlpha},
                                          {"SetFont", luau_LabelSetFont},
                                          {"GetFont", luau_LabelGetFont},
                                          {"SetText", luau_LabelSetText},
@@ -1611,8 +1744,8 @@ void luau_ExposeFunctions(lua_State *L)
                                          {"Destroy", luau_LabelDestroy},
                                          {"__gc", lua_gcLabel},
                                          {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, labelLibrary, "LabelMetaTable");
-    constexpr luaL_Reg boxLibrary[] = {{"GetName", luau_BoxGetName},
+    luau_ExposeFunctionsAsMetatable(L, labelRegistry, "LabelMetaTable");
+    constexpr luaL_Reg boxRegistry[] = {{"GetName", luau_BoxGetName},
                                        {"SetName", luau_BoxSetName},
                                        {"GetChildren", luau_BoxGetChildren},
                                        {"GetChild", luau_BoxGetChild},
@@ -1622,15 +1755,36 @@ void luau_ExposeFunctions(lua_State *L)
                                        {"GetGlobalPosition", luau_BoxGetGlobalPosition},
                                        {"CreateChild", luau_BoxCreateChild},
                                        {"SetColor", luau_BoxSetColor},
-                                       {"SetAlpha", luau_BoxSetAlpha},
                                        {"GetColor", luau_BoxGetColor},
+                                       {"SetAlpha", luau_BoxSetAlpha},
                                        {"GetAlpha", luau_BoxGetAlpha},
                                        {"SetSize", luau_BoxSetSize},
                                        {"GetSize", luau_BoxGetSize},
                                        {"Destroy", luau_BoxDestroy},
                                        {"__gc", lua_gcBox},
                                        {nullptr, nullptr}};
-    luau_ExposeFunctionsAsMetatable(L, boxLibrary, "BoxMetaTable");
+    luau_ExposeFunctionsAsMetatable(L, boxRegistry, "BoxMetaTable");
+    constexpr luaL_Reg soundPlayerLibrary[] = {{"GetName", luau_SoundPlayerGetName},
+                                        {"SetName", luau_SoundPlayerSetName},
+                                        {"GetChildren", luau_SoundPlayerGetChildren},
+                                        {"GetChild", luau_SoundPlayerGetChild},
+                                        {"AddChild", luau_SoundPlayerAddChild},
+                                        {"CreateChild", luau_SoundPlayerCreateChild},
+                                        {"Destroy", luau_SoundPlayerDestroy},
+                                        {"Play", luau_SoundPlayerPlay},
+                                        {"Stop", luau_SoundPlayerStop},
+                                        {"Pause", luau_SoundPlayerPause},
+                                        {"Resume", luau_SoundPlayerResume},
+                                        {"SetVolume", luau_SoundPlayerSetVolume},
+                                        {"SetPitch", luau_SoundPlayerSetPitch},
+                                        {"SetPan", luau_SoundPlayerSetPan},
+                                        {"SetSound", luau_SoundPlayerSetSound},
+                                        {"GetSound", luau_SoundPlayerGetSound},
+                                        {"IsPlaying", luau_SoundPlayerIsPlaying},
+                                        {"IsStopped", luau_SoundPlayerIsStopped},
+                                        {"__gc", lua_gcSoundPlayer},
+                                        {nullptr, nullptr}};
+    luau_ExposeFunctionsAsMetatable(L, soundPlayerLibrary, "SoundPlayerMetaTable");
     /* NODE LIBRARY */
 
     /* ENGINE LIBRARY */

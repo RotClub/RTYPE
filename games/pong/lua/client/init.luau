@@ -1,44 +1,25 @@
 include("client/utils.luau")
 include("client/ball.luau")
 include("client/wall.luau")
+include("client/player.luau")
+include("client/score.luau")
 
-local player = root:CreateChild("Node2D", "player")
-player:SetPosition(5, GetWindowHeight() / 2 - 50)
-local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/player.png")
-player_sprite:SetSize(14, 100)
-local player_hitbox = player:CreateChild("Area2D", "hitbox", 0, 0, 14, 100)
-
-local player2 = engine:CreateNode("Node2D", "player2")
-player2:SetPosition(5, GetWindowHeight() / 2 - 50 + 150)
-local player_sprite2 = player2:CreateChild("Sprite2D", "player_sprite2", "assets/player.png")
-player_sprite2:SetSize(14, 100)
-local player_hitbox2 = player2:CreateChild("Area2D", "hitbox2", 0, 0, 14, 100)
-
-root:AddChild(player2)
-
-generateBall()
+local player = generatePlayer(5, WINDOW_HEIGHT / 2 - 50, 1)
+local player2 = generatePlayer(WINDOW_WIDTH - 5 - ENTITY_WIDTH, WINDOW_HEIGHT / 2 - 50, 2)
+local ball = generateBall()
 generateMiddle(14, 10)
-
-function localPlayerMovement(dt)
-    local x, y = player:GetPosition()
-    local speed = 240
-
-    if player_hitbox:Collide(player_hitbox2) then
-        info("Collided")
-    else
-        info("Not Collided")
-    end
-
-    if IsKeyPressed(65) then
-        y -= speed * dt
-    end
-    if IsKeyPressed(68) then
-        y += speed * dt
-    end
-    player:SetPosition(x, y)
-end
+local score = generateScore()
+local score_text = drawScore(score, 1)
+local score_text_player2 = drawScore(score, 2)
 
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
-    localPlayerMovement(dt)
+    playerMovement(player, dt, keymap.key_s, keymap.key_w) -- D, A
+    playerMovement(player2, dt, keymap.key_k, keymap.key_i) -- I, K
+    ballWallBounce(ball)
+    ballPlayerBounce(ball, player)
+    ballPlayerBounce(ball, player2)
+    score = ballPlayerGoal(ball, score)
+    updateScore(score, score_text, score_text_player2)
+    checkWinner(score, score_text, score_text_player2)
 end)

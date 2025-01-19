@@ -9,6 +9,9 @@
 #define TYPES_HPP_
 
 #include <algorithm>
+#ifdef WIN32
+#include <WindowsCross.hpp>
+#endif
 
 namespace Types
 {
@@ -133,9 +136,13 @@ namespace Types
                 float other_top = other.origin.y;
                 float other_bottom = other.origin.y + other.size.y;
 
+#ifdef WIN32
+                float x_overlap = max(0.f, min(right, other_right) - max(left, other_left));
+                float y_overlap = max(0.f, min(bottom, other_bottom) - max(top, other_top));
+#else
                 float x_overlap = std::max(0.f, std::min(right, other_right) - std::max(left, other_left));
                 float y_overlap = std::max(0.f, std::min(bottom, other_bottom) - std::max(top, other_top));
-
+#endif
                 return x_overlap > 0 && y_overlap > 0;
             }
 
