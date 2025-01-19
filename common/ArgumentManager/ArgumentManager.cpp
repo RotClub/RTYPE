@@ -53,6 +53,7 @@ void ArgumentManager::DisplayClientUsage()
     spdlog::info("Usage of ./rtype_client:");
     spdlog::info("  --ip [ip] : server IP address");
     spdlog::info("  --port [port] : server port");
+    spdlog::info("  --colorblindness [none|protanopia|deuteranopia|tritanopia] : colorblindness mode (default: none)");
 }
 
 const std::string &ArgumentManager::getArgument(const std::string &argumentName) const
