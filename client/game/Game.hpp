@@ -36,6 +36,7 @@ class Game
 
         raylib::Window _window;
         mutable Types::Vector2 _windowSize;
+        raylib::AudioDevice _audioDevice;
         bool _shouldClose = false;
 };
 

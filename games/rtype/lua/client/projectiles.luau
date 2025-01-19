@@ -64,6 +64,7 @@ net.Receive("SpaceshipShoot", function(len, ply)
     if Game.localId == id then
         createProjectileWithVelocity(x, y, velX, velY, 0, Game.localPlayer, projectileId)
         createFireFlash(Game.localPlayer)
+        localPlayerShootingSound:Play()
     else
         createProjectileWithVelocity(x, y, velX, velY, 0, otherPlayers[id], projectileId)
         createFireFlash(otherPlayers[id])

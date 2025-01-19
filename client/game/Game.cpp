@@ -15,16 +15,21 @@
 
 Game::Game() {}
 
-Game::~Game() {}
+Game::~Game()
+{
+    _audioDevice.Close();
+}
 
 void Game::run()
 {
-    _window = raylib::Window();
+    SetAudioStreamBufferSizeDefault(4096);
     _window.Init(800, 600, "Connecting to server...");
     _window.SetPosition(GetScreenWidth() / 2, GetScreenHeight() / 2);
     _window.SetExitKey(KeyboardKey::KEY_NULL);
     if (_window.IsReady() == false)
         throw std::runtime_error("Window is not ready");
+    if (_audioDevice.IsReady() == false)
+        throw std::runtime_error("Audio device is not ready");
     Engine::GetInstance().clientStarted = true;
     Client &client = Client::GetInstance();
     client.getClientConnection().establishConnection();
