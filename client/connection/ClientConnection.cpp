@@ -68,18 +68,16 @@ void ClientConnection::disconnectFromServer()
     }
 
 #ifdef WIN32
-    _close(_tcpFd);
-    _close(_udpFd);
+    closesocket(_tcpFd);
+    closesocket(_udpFd);
+    _tcpFd = SOCKET_ERROR;
+    _udpFd = SOCKET_ERROR;
+    WSACleanup();
 #else
     close(_tcpFd);
     close(_udpFd);
-#endif
-
     _tcpFd = -1;
     _udpFd = -1;
-
-#ifdef WIN32
-    WSACleanup();
 #endif
 }
 
@@ -207,7 +205,7 @@ void ClientConnection::_sendLoop()
             PacketBuilder::PackedPacket packed = {0};
             PacketBuilder::pack(&packed, packet);
 #ifdef WIN32
-            _write(_tcpFd, packed, sizeof(PacketBuilder::PackedPacket));
+            send(_tcpFd, packed, sizeof(PacketBuilder::PackedPacket), 0);
 #else
             write(_tcpFd, packed, sizeof(PacketBuilder::PackedPacket));
 #endif

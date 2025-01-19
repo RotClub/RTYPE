@@ -299,7 +299,11 @@ int ServerConnection::_getMaxFd()
     for (const auto &client : _clientConnections) {
         if (client->shouldDisconnect())
             continue;
+#ifdef WIN32
+        max = max(max, client->getTcpFd());
+#else
         max = std::max(max, client->getTcpFd());
+#endif
     }
     return max;
 }
@@ -317,7 +321,7 @@ int ServerConnection::_selectFd()
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
     FD_SET(_udpFd, &_readfds);
-    int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
+    int maxFd = max(max(_getMaxFd(), _tcpFd), _udpFd);
     retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, &timeout);
     return retval;
 }

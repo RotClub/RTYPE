@@ -93,7 +93,7 @@ add_compile_options(${PROJECT_NAME}_engine PRIVATE -Wall -Wextra -Wformat=2
 )
 
 if (WIN32)
-    target_compile_definitions(${PROJECT_NAME}_engine PUBLIC -DWIN32 -D_WINDOWS -DWIN32_LEAN_AND_MEAN -DNOMINMAX)
+    target_compile_definitions(${PROJECT_NAME}_engine PUBLIC -DWIN32 -D_WINDOWS -DWIN32_LEAN_AND_MEAN)
     target_link_libraries(${PROJECT_NAME}_engine PUBLIC ws2_32)
     target_compile_definitions(${PROJECT_NAME}_client PUBLIC -DWIN32 -D_WINDOWS)
     target_link_libraries(${PROJECT_NAME}_engine PUBLIC winmm gdi32 opengl32)
