@@ -91,23 +91,54 @@
   ```
 
 ### Receive
-  #### Prototype
+  Register a callback function to handle a received packet with a specified name.
+  
+  #### Prototype  
   ```lua
+  net.Receive("packetName", callback)
   ```
-  #### Arguments
+  
+  #### Arguments  
+  - `packetName` (string): The name of the packet to listen for.  
+  - `callback` (function): The function to be called when the packet is received. This function will receive two parameters:
+    - `len` (number): The length of the received data.  
+    - `ply` (Player): The player who sent the packet.  
+  
   #### Example
   ```lua
+  -- Registering a callback to handle a "PlayerData" packet
+  net.Receive("PlayerData", function(len, ply)
+      print("Received data from player: " .. ply:GetName())
+      -- Handle packet data
+  end)
+  ```
+  ```lua
+  -- Registering a callback to handle an Enemy destroyed
+  net.Receive("EnemyDestroyed", function(len, ply)
+    local enemyId = net.ReadInt()
+    local dead = net.ReadBool()
+    destroyEnemy(enemyId)
+  end)
   ```
 
 ### Call
-  #### Prototype
+  Trigger the callback registered for a specific packet name, passing the packet length and player information.
+  
+  #### Prototype  
   ```lua
+  net.Call("packetName", length, player)
   ```
-  #### Arguments
-  #### Example
+  
+  #### Arguments  
+  - `packetName` (string): The name of the packet to trigger the callback for.  
+  - `length` (number): The length of the packet data.  
+  - `ply` (Player): The player who is calling the packet.  
+  
+  #### Example  
   ```lua
+  -- Triggering the "PlayerData" packet callback
+  net.Call("PlayerData", 128, player)  -- '128' could be the length, 'player' is the player calling the packet
   ```
-
 
 ## Read & Write operations
 __All operations here must have a read and write pair__
