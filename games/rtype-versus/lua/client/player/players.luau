@@ -3,7 +3,7 @@ function setPlayerColor(playerSprite, playerNum)
     playerSprite:SetSource(0, (playerNum - 1) * 16, 32, 16)
 end
 
-otherPlayers = {}
+otherPlayer = nil
 
 local function createPlayer(id: number)
     local player = root:CreateChild("Node2D", "player" .. id)
@@ -11,27 +11,21 @@ local function createPlayer(id: number)
     player:SetPosition(0, 0)
     playerSprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     setPlayerColor(playerSprite, id)
-    otherPlayers[id] = player
+    otherPlayer = player
 end
 
 local function updatePlayerPosition(id: number, x: number, y: number)
-    local player = otherPlayers[id]
+    local player = otherPlayer
     if player then
         player:SetPosition(x, y)
     end
 end
 
-function despawnSpaceship(id)
-    debug("Despawning spaceship " .. id)
-    if Game.localId == id then
-        debug("Destroying local player")
-        destroyLocalPlayer()
-        return
-    end
+local function removePlayer(id)
     local player = otherPlayers[id]
     if player then
         player:Destroy()
-        otherPlayers[id] = nil
+        otherPlayer = nil
     end
 end
 
@@ -71,5 +65,5 @@ net.Receive("SpaceshipDespawn", function(len, ply)
         Game.localPlayer = nil
         return
     end
-    explodePlayer(id)
+    explodePlayer(otherPlayers[id])
 end)

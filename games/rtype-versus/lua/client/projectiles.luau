@@ -6,10 +6,13 @@ local FLASH_LIFETIME = 0.07
 local flashId = 0
 
 function createProjectileWithVelocity(x, y, plrVecX, plrVecY, damage, owner, id)
-    -- if owner:GetName() == "localPlayer" then
-    --     plrVecX += (PLAYER_PROJECTILE_SPEED * (3 - 2 * Game.localId))
-    -- end
-    local projectile = root:CreateChild("RigidBody2D", "projectile" .. id, x, y, 16, 4, plrVecX, plrVecY)
+    local source = nil
+    if owner:GetName() == "localPlayer" then
+        source = Game.localId
+    else
+        source = Game.localId == 1 and 2 or 1
+    end
+    local projectile = root:CreateChild("RigidBody2D", source .. "-projectile-" .. id, x, y, 16, 4, plrVecX, plrVecY)
     local projectileSprite = projectile:CreateChild("Sprite2D", "projectileSprite" .. id, "assets/sprites/r-typesheet1.png")
     if owner:GetName() == "localPlayer" then
         if Game.localId == 1 then
@@ -97,8 +100,8 @@ net.Receive("SpaceshipShoot", function(len, ply)
         createProjectileWithVelocity(x, y, velX, velY, 0, Game.localPlayer, projectileId)
         createFireFlash(Game.localPlayer, id)
     else
-        createProjectileWithVelocity(x, y, velX, velY, 0, otherPlayers[id], projectileId)
-        createFireFlash(otherPlayers[id], id)
+        createProjectileWithVelocity(x, y, velX, velY, 0, otherPlayer, projectileId)
+        createFireFlash(otherPlayer, id)
     end
 end)
 
