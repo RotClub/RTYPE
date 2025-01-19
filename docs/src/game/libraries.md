@@ -476,40 +476,67 @@
     ```
 
 - ### ToggleCollision
+    Enable or disable collision for the current `Area2D` object.
     #### Prototype
-        ```lua
+    ```lua
+    area2d:ToggleCollision() -> void
     ```
-
     #### Arguments
+    `None`
     #### Example
     ```lua
+    local area2d = root:CreateChild("Area2D", "my_area", 20, 20, 200, 100)
+    area2d:ToggleCollision()
+    print("Collision enabled for Area2D")
+    area2d:ToggleCollision()
+    print("Collision disabled for Area2D")
     ```
+
 - ### IsCollisionEnabled
+    Check whether collision is enabled for the `Area2D` node.
     #### Prototype
-        ```lua
+    ```lua
+    area2d:IsCollisionEnabled() -> boolean
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local area = root:CreateChild("Area2D", "area", 10, 10, 100, 100)
+    local isEnabled = area:IsCollisionEnabled()
+
+    if isEnabled then
+        print("Collision is enabled for this area.")
+    else
+        print("Collision is disabled for this area.") -- should print this
+    end
     ```
+
 - ### Collide
+    Check for a collision between the current `Area2D` and another node.
     #### Prototype
-        ```lua
+    ```lua
+    area2d:Collide(otherNode: Area2D) -> boolean
     ```
-
     #### Arguments
+    - `otherNode` (Area2D): The node to check for a collision with.
+
     #### Example
     ```lua
-    ```
-    #### Prototype
-        ```lua
+    local area1 = root:CreateChild("Area2D", "area1", 0, 0, 200, 100)
+    local area2 = root:CreateChild("Area2D", "area2", 50, 50, 50, 50)
+
+    area1:ToggleCollision()
+    area2:ToggleCollision()
+
+    if area1:Collide(area2) then
+        print("Collision detected between area1 and area2")
+    else
+        print("No collision detected")
+    end
     ```
 
-    #### Arguments
-    #### Example
-    ```lua
-    ```
 - ### GetSize
     #### Prototype
         ```lua
@@ -706,34 +733,57 @@
     local globalX, globalY = sprite2d:GetGlobalPosition()
     print("Global Position: (" .. globalX .. ", " .. globalY .. ")")
     ```
-- ### SetTexture
-    #### Prototype
-        ```lua
-    ```
 
+- ### SetTexture
+    Sets the texture of the `Sprite2D`.
+    #### Prototype
+    ```lua
+    sprite:SetTexture(texturePath: string) -> nil
+    ```
     #### Arguments
+    - `string`: The file path to the texture to apply to the `Sprite2D`.
+
     #### Example
     ```lua
+    local sprite = scene:GetRoot():CreateChild("Sprite2D", "my_sprite", "default_texture.png")
+    sprite:SetTexture("new_texture.png")
     ```
 
 - ### SetSize
+    Sets the size of the `Sprite2D`.
     #### Prototype
-        ```lua
+    ```lua
+    sprite:SetSize(width: number, height: number) -> nil
     ```
-
     #### Arguments
+    - `number`: The new width of the sprite.
+    - `number`: The new height of the sprite.
+
     #### Example
     ```lua
+    local sprite = scene:GetRoot():CreateChild("Sprite2D", "my_sprite", "texture.png")
+    sprite:SetSize(100, 150)
+    print("Sprite size updated to width = 100, height = 150")
     ```
 
 - ### SetSource
+    Sets the texture source rectangle of the `Sprite2D`. This allows defining a sub-region of the texture to use for rendering. Change the texture and not the sprite coordonates in the scene.
     #### Prototype
-        ```lua
+    ```lua
+    sprite:SetSource(x: number, y: number, width: number, height: number) -> nil
     ```
-
     #### Arguments
+    - `number`: The X-coordinate of the top-left corner of the source rectangle.
+    - `number`: The Y-coordinate of the top-left corner of the source rectangle.
+    - `number`: The width of the source rectangle.
+    - `number`: The height of the source rectangle.
+
     #### Example
     ```lua
+    local sprite = scene:GetRoot():CreateChild("Sprite2D", "my_sprite", "texture.png")
+    sprite:SetSource(10, 20, 50, 60)
+
+    print("")
     ```
 - ### Destroy
     Permanently deletes the Sprite2D and its associated resources.
@@ -913,32 +963,68 @@
     ```lua
     ```
 - ### ToggleCollision
+    Enable or disable collision for the current `CollisionShape2D` object.
     #### Prototype
-        ```lua
+    ```lua
+    collisionshape2d:ToggleCollision() -> void
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local collisionshape = root:CreateChild("CollisionShape2D", "my_shape", "Rectangle", 10, 10, 100, 50)
+    collisionshape:ToggleCollision()
+    print("Collision enabled for CollisionShape2D")
+    collisionshape:ToggleCollision()
+    print("Collision disabled for CollisionShape2D")
     ```
+
 - ### IsCollisionEnabled
+    Check whether collision is enabled for the `CollisionShape2D` node.
     #### Prototype
-        ```lua
+    ```lua
+    collisionshape2d:IsCollisionEnabled() -> boolean
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local shape = root:CreateChild("CollisionShape2D", "shape", "Rectangle", 0, 0, 100, 100)
+    local isEnabled = shape:IsCollisionEnabled()
+
+    if isEnabled then
+        print("Collision is enabled for this shape.")
+    else
+        print("Collision is disabled for this shape.") -- should print this
+    end
     ```
+
 - ### Collide
+    Check for a collision between the current `CollisionShape2D` and another node.
     #### Prototype
-        ```lua
+    ```lua
+    collisionshape2d:Collide(otherNode: CollisionShape2D) -> boolean
     ```
-
     #### Arguments
+    - `otherNode` (CollisionShape2D): The node to check for a collision with.
+
     #### Example
     ```lua
+    local shape1 = root:CreateChild("CollisionShape2D", "shape1", "Rectangle", 0, 0, 100, 100)
+    local shape2 = root:CreateChild("CollisionShape2D", "shape2", "Circle", 50, 50, 20)
+
+    shape1:ToggleCollision()
+    shape2:ToggleCollision()
+
+    if shape1:Collide(shape2) then
+        print("Collision detected between shape1 and shape2")
+    else
+        print("No collision detected")
+    end
     ```
+
 - ### Destroy
     Permanently deletes the CollisionShape2D and its associated resources.
     #### Prototype
@@ -1120,32 +1206,69 @@
     ```
 
 - ### ToggleCollision
+    Enable or disable collision for the current `StaticBody2D` object.
     #### Prototype
-        ```lua
+    ```lua
+    staticbody2d:ToggleCollision() -> void
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local staticbody2d = root:CreateChild("StaticBody2D", "my_staticbody", 50, 50, 300, 150)
+    
+    staticbody2d:ToggleCollision()
+    print("Collision enabled for StaticBody2D")
+    
+    staticbody2d:ToggleCollision()
+    print("Collision disabled for StaticBody2D")
     ```
 - ### IsCollisionEnabled
+    Check whether collision is enabled for the `StaticBody2D` node.
     #### Prototype
-        ```lua
+    ```lua
+    staticbody2d:IsCollisionEnabled() -> boolean
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local staticBody = root:CreateChild("StaticBody2D", "static_body", 30, 30, 200, 100)
+    local isEnabled = staticBody:IsCollisionEnabled()
+
+    if isEnabled then
+        print("Collision is enabled for this static body.")
+    else
+        print("Collision is disabled for this static body.") -- should print this
+    end
     ```
+
 - ### Collide
+    Check for a collision between the current `StaticBody2D` and another node.
     #### Prototype
-        ```lua
+    ```lua
+    staticbody2d:Collide(otherNode: StaticBody2D) -> boolean
     ```
-
     #### Arguments
+    - `otherNode` (StaticBody2D): The node to check for a collision with.
+
     #### Example
     ```lua
+    local static1 = root:CreateChild("StaticBody2D", "static1", 0, 0, 100, 100)
+    local static2 = root:CreateChild("StaticBody2D", "static2", 50, 50, 50, 50)
+
+    static1:ToggleCollision()
+    static2:ToggleCollision()
+
+    if static1:Collide(static2) then
+        print("Collision detected between static1 and static2")
+    else
+        print("No collision detected")
+    end
     ```
+
 - ### Destroy
     Permanently deletes the StaticBody2D and its associated resources.
     #### Prototype
@@ -1345,31 +1468,68 @@
     ```lua
     ```
 - ### ToggleCollision
+    Enable or disable collision for the current `RigidBody2D` object.
     #### Prototype
-        ```lua
+    ```lua
+    rigidbody2d:ToggleCollision() -> void
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local rigidbody2d = root:CreateChild("RigidBody2D", "my_rigidbody", 30, 30, 150, 75, 5, 5)
+
+    rigidbody2d:ToggleCollision()
+    print("Collision enabled for RigidBody2D")
+
+    rigidbody2d:ToggleCollision()
+    print("Collision disabled for RigidBody2D")
     ```
+
 - ### IsCollisionEnabled
+    Check whether collision is enabled for the `RigidBody2D` node.
     #### Prototype
-        ```lua
+    ```lua
+    rigidbody2d:IsCollisionEnabled() -> boolean
     ```
-
     #### Arguments
+    `None`
+
     #### Example
     ```lua
+    local body = root:CreateChild("RigidBody2D", "rigid_body", 20, 20, 50, 50, 10, 10)
+    local isEnabled = body:IsCollisionEnabled()
+
+    if isEnabled then
+        print("Collision is enabled for this rigid body.")
+    else
+        print("Collision is disabled for this rigid body.") -- should print this
+    end
     ```
+
 - ### Collide
+    Check for a collision between the current `RigidBody2D` and another node.
     #### Prototype
-        ```lua
+    ```lua
+    rigidbody2d:Collide(otherNode: RigidBody2D) -> boolean
     ```
-
     #### Arguments
+    - `otherNode` (RigidBody2D): The node to check for a collision with.
+
     #### Example
     ```lua
+    local body1 = root:CreateChild("RigidBody2D", "body1", 10, 10, 100, 100, 5, 5)
+    local body2 = root:CreateChild("RigidBody2D", "body2", 50, 50, 50, 50, -3, -3)
+
+    body1:ToggleCollision()
+    body2:ToggleCollision()
+
+    if body1:Collide(body2) then
+        print("Collision detected between body1 and body2")
+    else
+        print("No collision detected")
+    end
     ```
 - ### Destroy
     Permanently deletes the RigidBody2D and its associated resources.
@@ -1800,6 +1960,7 @@
     parallax:Destroy()
     -- Trying access parallax after destruction will result in an error
     ```
+
 ## Box Library
 - ### GetName
     Retrieve the name of the Box.
@@ -1816,6 +1977,7 @@
     local name = box:GetName()
     print("Box name: " .. name) -- should be box
     ```
+
 - ### SetName
     Set or change the name of the Box.
     #### Prototype
@@ -1831,6 +1993,7 @@
     box:SetName("new_box_name")
     print("New Box name : ", box:GetName()) -- should be "new_box_name"
     ```
+
 - ### GetChildren
     Retrieve all child nodes of the Box.
     #### Prototype
@@ -1851,6 +2014,7 @@
         print("Child " .. i .. ": " .. child:GetName()) -- should be "ChildBox"
     end
     ```
+
 - ### GetChild
     Retrieve a child node with the specified name from the current `Box`.
     #### Prototype
@@ -1872,6 +2036,7 @@
         print("Child not found")
     end
     ```
+
 - ### CreateChild
     Create and add a `Box` node to the current node.
 
@@ -1895,6 +2060,7 @@
 
     print("Created box node with name: ", box:GetName()) -- should be "UIBox"
     ```
+
 - ### AddChild
     Add a child node to the current `Box`.
     #### Prototype
