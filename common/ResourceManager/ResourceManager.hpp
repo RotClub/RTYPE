@@ -13,8 +13,7 @@
 #include <string>
 #include <tuple>
 #include <variant>
-
-#include "../submodules/raylib-cpp/include/raylib-cpp.hpp"
+#include <raylib-cpp.hpp>
 
 using Resource =
     std::variant<std::shared_ptr<raylib::Texture>, std::shared_ptr<raylib::Font>, std::shared_ptr<raylib::Sound>,

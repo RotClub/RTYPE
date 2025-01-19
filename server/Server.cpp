@@ -1,3 +1,4 @@
+
 /*
 ** EPITECH PROJECT, 2024
 ** RTYPE
@@ -101,6 +102,9 @@ void Server::broadcastLuaPackets()
             }
         }
         Engine::GetInstance().getBroadcastQueue().pop();
+        Packet *packet = newPacketPair.second;
+        PacketBuilder(packet).reset();
+        delete packet;
     }
 }
 

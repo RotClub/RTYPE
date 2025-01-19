@@ -8,7 +8,13 @@
 #include <Networking/Packet.hpp>
 #include <Networking/SafeQueue.hpp>
 #include <cstring>
-#include <netinet/in.h>
+
+#ifdef WIN32
+    #include <WindowsCross.hpp>
+#else
+    #include <netinet/in.h>
+#endif
+
 #include <string>
 #include <tuple>
 #include <cstdint>
@@ -17,7 +23,11 @@
 class Client
 {
     public:
-        Client(int srvTcpFd);
+#ifdef WIN32
+        explicit Client(SOCKET srvTcpFd);
+#else
+        explicit Client(int srvTcpFd);
+#endif
         ~Client();
 
         enum class ConnectionStep
@@ -28,7 +38,11 @@ class Client
             COMPLETE
         };
 
+#ifdef WIN32
+        [[nodiscard]] SOCKET getTcpFd() const { return _tcpFd; }
+#else
         [[nodiscard]] int getTcpFd() const { return _tcpFd; }
+#endif
         [[nodiscard]] sockaddr_in *getAddress() { return &_address; }
         [[nodiscard]] sockaddr_in *getUdpAddress() { return &_udpAddress; }
         [[nodiscard]] ConnectionStep getStep() const { return _step; }
@@ -52,7 +66,7 @@ class Client
         bool hasUdpPacketInput();
 
         // TODO REMOVE
-        int getUdpQueueSize() { return std::get<OUT>(_udpQueues).size(); }
+        int getUdpQueueSize() { return std::get<PACKET_OUT>(_udpQueues).size(); }
 
         void addToTcpBuffer(const std::vector<uint8_t> &buffer) { _tcpBuffer.insert(_tcpBuffer.end(), buffer.begin(), buffer.end()); }
         std::vector<uint8_t> &getTcpBuffer() { return _tcpBuffer; }
@@ -64,7 +78,11 @@ class Client
 
     private:
         const std::string uuid;
+#ifdef WIN32
+        SOCKET _tcpFd;
+#else
         int _tcpFd;
+#endif
         sockaddr_in _address;
         sockaddr_in _udpAddress;
         ConnectionStep _step;

@@ -8,10 +8,10 @@
 #ifndef GAME_HPP_
 #define GAME_HPP_
 
-#include "../../common/Engine.hpp"
-#include "Networking/Packet.hpp"
-
 #include <raylib-cpp.hpp>
+
+#include <Engine.hpp>
+#include "Networking/Packet.hpp"
 
 class Game
 {
@@ -35,6 +35,7 @@ class Game
         void _renderPreGameText(std::string text);
 
         raylib::Window _window;
+        mutable Types::Vector2 _windowSize;
         bool _shouldClose = false;
 };
 

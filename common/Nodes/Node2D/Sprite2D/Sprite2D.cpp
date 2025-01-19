@@ -18,7 +18,7 @@ Sprite2D::~Sprite2D() {}
 
 Sprite2D &Sprite2D::SetTexture(const std::string &texture)
 {
-    this->_texture = Engine::GetInstance().getGamePath() / texture;
+    this->_texture = (Engine::GetInstance().getGamePath() / texture).string();
     if (Engine::GetInstance().getState() == Types::VMState::CLIENT)
         Engine::GetInstance().getResourceManager().loadResource(_texture);
     return *this;

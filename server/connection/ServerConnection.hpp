@@ -10,12 +10,18 @@
 
 #include <client/Client.hpp>
 #include <map>
-#include <netinet/in.h>
+
+#ifdef WIN32
+    #include <WindowsCross.hpp>
+#else
+    #include <netinet/in.h>
+    #include <sys/select.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+#endif
+
 #include <set>
-#include <sys/select.h>
-#include <sys/socket.h>
 #include <thread>
-#include <unistd.h>
 #include "Networking/Defines.hpp"
 #include "Networking/Packet.hpp"
 #include "Networking/PacketBuilder.hpp"
@@ -58,8 +64,13 @@ class ServerConnection
         std::thread _networkThread;
         fd_set _readfds;
         fd_set _writefds;
+#ifdef WIN32
+        SOCKET _tcpFd = SOCKET_ERROR;
+        SOCKET _udpFd = SOCKET_ERROR;
+#else
         int _tcpFd = -1;
         int _udpFd = -1;
+#endif
         std::mutex _clientsMutex;
         std::vector<Client *> _clientConnections;
         SafeQueue<std::string> _disconnectedClients;

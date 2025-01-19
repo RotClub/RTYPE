@@ -12,17 +12,23 @@
 #include "Packet.hpp"
 #include "SafeQueue.hpp"
 
-#include <arpa/inet.h>
+#ifdef WIN32
+    #include <WindowsCross.hpp>
+#else
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <sys/select.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+#endif
+
 #include <atomic>
 #include <cstring>
 #include <iostream>
-#include <netinet/in.h>
+
 #include <string>
-#include <sys/select.h>
-#include <sys/socket.h>
 #include <thread>
 #include <tuple>
-#include <unistd.h>
 
 class GlobalConnection
 {
@@ -43,8 +49,13 @@ class GlobalConnection
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _tcpQueues;
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _udpQueues;
         std::thread _thread;
-        int _tcpFd = -1;
-        int _udpFd = -1;
+#ifdef WIN32
+    SOCKET _tcpFd = -1;
+    SOCKET _udpFd = -1;
+#else
+    int _tcpFd = -1;
+    int _udpFd = -1;
+#endif
         fd_set _readfds;
         fd_set _writefds;
         sockaddr_in _addr;
