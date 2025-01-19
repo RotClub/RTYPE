@@ -20,7 +20,7 @@
 - [Filesystem](./game/filesystem.md)
 - [LUAU](./game/luau.md)
   - [Libraries](./game/libs.md)
-  - [Server]()
+  - [Server](./game/ServerMethod.md)
   - [Client](./game/ClientMethod.md)
   - [Common](./game/common.md)
     - [Node](./game/NodeLibrary.md)
