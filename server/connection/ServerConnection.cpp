@@ -154,11 +154,12 @@ void ServerConnection::_accept()
 #ifndef far
 #define far
 #endif
-    if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers()) {
-        Client *cl = new Client(_tcpFd);
-        delete cl;
-    }
     if (FD_ISSET(_tcpFd, &_readfds)) {
+        if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers()) {
+            Client *cl = new Client(_tcpFd);
+            delete cl;
+            return;
+        }
         std::lock_guard guard(_clientsMutex);
         _clientConnections.emplace_back(new Client(_tcpFd));
     }

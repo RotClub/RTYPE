@@ -17,8 +17,8 @@ function explodePlayer(id)
         if Game.localId == id then
             plyNode = Game.localPly.node
         else
-            if otherPlayers[id] == nil then return end
-            plyNode = otherPlayers[id].node
+            if otherPlayer == nil then return end
+            plyNode = otherPlayer.node
         end
     end
     despawnSpaceship(id)

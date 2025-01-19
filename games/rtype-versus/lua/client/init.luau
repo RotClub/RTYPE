@@ -33,14 +33,14 @@ hook.Add("Tick", "main", function(delta)
     for i = 1, #parallaxLayers do
         parallaxLayers[i]:AddParallaxPosition(((5 * i) * (i / 2)) * dt, 0)
     end
-    if #otherPlayers >= 1 then
+    if Game.localPlayer and otherPlayer then
         local lx, ly = 0, 0
         if Game.localPlayer then
             lx, ly = Game.localPlayer:GetPosition()
         end
-        local ox, oy = otherPlayers[1]:GetPosition()
-        if otherPlayers[1] then
-            ox, oy = otherPlayers[1]:GetPosition()
+        local ox, oy = otherPlayer:GetPosition()
+        if otherPlayer then
+            ox, oy = otherPlayer:GetPosition()
         end
         Game.defaultReferencePoint:SetPosition((lx + ox) / 2, (ly + oy) / 2)
     end
