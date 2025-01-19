@@ -538,23 +538,42 @@
     ```
 
 - ### GetSize
+    Retrieve the current size (width and height) of the `Area2D` node.
     #### Prototype
-        ```lua
+    ```lua
+    area2d:GetSize() -> width: number, height: number
     ```
-
     #### Arguments
+    `None`
+    
     #### Example
     ```lua
+    local area2d = scene:GetRoot():CreateChild("Area2D", "area_node", 10, 10, 200, 100)
+    
+    local width, height = area2d:GetSize()
+    print("Width: " .. width .. ", Height: " .. height)  -- should print "Width: 200, Height: 100"
     ```
+
 - ### SetSize
+    Set a new size (width and height) for the `Area2D` node.
     #### Prototype
-        ```lua
+    ```lua
+    area2d:SetSize(width: number, height: number)
     ```
-
     #### Arguments
+    - `width` (number): The new width for the node.
+    - `height` (number): The new height for the node.
+
     #### Example
     ```lua
+    local area2d = scene:GetRoot():CreateChild("Area2D", "area_node", 10, 10, 200, 100)
+    
+    area2d:SetSize(300, 150)
+    
+    local width, height = area2d:GetSize()
+    print("New Width: " .. width .. ", New Height: " .. height)  -- should print "New Width: 300, New Height: 150"
     ```
+
 - ### Destroy
     Permanently deletes the Area2D and its associated resources.
     #### Prototype
@@ -570,7 +589,6 @@
     area2d:Destroy()
     -- trying access to area2d after destruction will result in an error
     ```
-
 
 ## Sprite2D Library
 - ### GetName
@@ -588,6 +606,7 @@
     local name = sprite2d:GetName()
     print("Sprite2D name: " .. name)-- should be "sprite2d"
     ```
+
 - ### SetName
     Set or change the name of the Sprite2D.
     #### Prototype
@@ -603,6 +622,7 @@
     sprite2d:SetName("new_sprite_name")
     print("New Sprite2D name : ", sprite2d:GetName()) -- should be "new_sprite_name"
     ```
+
 - ### GetChildren
     Retrieve all child nodes of the Sprite2D.
     #### Prototype
@@ -623,6 +643,7 @@
         print("Child " .. i .. ": " .. child:GetName()) -- should be "MainSprite1" & "MainSprite2"
     end
     ```
+
 - ### GetChild
     Retrieve a child node with the specified name from the current `Sprite2D`.
     #### Prototype
@@ -954,14 +975,27 @@
     ```
 
 - ### GetBoundingBox
+    Retrieve the bounding box of the current `CollisionShape2D` Rectangle & Circle.
     #### Prototype
-        ```lua
+    ```lua
+    collisionShape:GetBoundingBox() -> number, number, number, number
     ```
-
     #### Arguments
+    - `None`
+    
     #### Example
     ```lua
+    local rectangleShape = root:CreateChild("CollisionShape2D", "rectangle", "Rectangle", 0, 0, 100, 50)
+    
+    local x, y, width, height = rectangleShape:GetBoundingBox()
     ```
+    ```lua
+    local circleShape = root:CreateChild("CollisionShape2D", "circle", "Circle", 50, 50, 25)
+
+    local x, y, width, height = circleShape:GetBoundingBox()
+    ```
+
+
 - ### ToggleCollision
     Enable or disable collision for the current `CollisionShape2D` object.
     #### Prototype
@@ -1928,23 +1962,42 @@
     print(parent:GetChild("child_parallax"):GetName()) -- should print "child_parallax"
     ```
 - ### SetReferenceNode
+    Set the reference node that the parallax effect will follow.
     #### Prototype
-        ```lua
+    ```lua
+    parallax:SetReferenceNode(referenceNode: Node2D)
     ```
-
     #### Arguments
+    - `referenceNode` (`Node2D`): The node to be used as a reference for the parallax effect.
+
     #### Example
     ```lua
+    local parallax = scene:GetRoot():CreateChild("Parallax", "parallax_node", "parallax_source", 0.5, someNode2D)
+    local referenceNode = scene:GetRoot():CreateChild("Node2D", "reference_node")
+    
+    -- Set the reference node for the parallax effect
+    parallax:SetReferenceNode(referenceNode)
     ```
+
 - ### AddParallaxPosition
+    Add a position to the list of parallax positions to offset the parallax scrolling.
     #### Prototype
-        ```lua
+    ```lua
+    parallax:AddParallaxPosition(x: number, y: number)
     ```
-
     #### Arguments
+    - `number`: The horizontal (x) offset of the parallax position.
+    - `number`: The vertical (y) offset of the parallax position.
+
     #### Example
     ```lua
+    local parallax = scene:GetRoot():CreateChild("Parallax", "parallax_node", "parallax_source", 0.5, someNode2D)
+    
+    -- Add parallax positions for scrolling
+    parallax:AddParallaxPosition(100, 200)
+    parallax:AddParallaxPosition(-50, 75)
     ```
+
 - ### Destroy
     Permanently deletes the Parallax and its associated resources.
     #### Prototype
