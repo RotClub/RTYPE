@@ -1484,23 +1484,41 @@
     ```
 
 - ### GetVelocity
+    Retrieve the current velocity (X and Y components) of the `RigidBody2D` node.
     #### Prototype
-        ```lua
+    ```lua
+    rigidbody2d:GetVelocity() -> velocityX: number, velocityY: number
     ```
-
     #### Arguments
+    `None`
+    
     #### Example
     ```lua
+    local rigidbody = scene:GetRoot():CreateChild("RigidBody2D", "rigidbody_node", 10, 10, 50, 50, 100, 200)
+    local velocityX, velocityY = rigidbody:GetVelocity()
+    print("Velocity X: " .. velocityX .. ", Velocity Y: " .. velocityY)  -- should print "Velocity X: 100, Velocity Y: 200"
     ```
+
 - ### SetVelocity
+    Set the velocity (X and Y components) of the `RigidBody2D` node.
     #### Prototype
-        ```lua
+    ```lua
+    rigidbody2d:SetVelocity(velocityX: number, velocityY: number)
     ```
-
     #### Arguments
+    - `number`: The velocity on the X-axis.
+    - `number`: The velocity on the Y-axis.
+
     #### Example
     ```lua
+    local rigidbody = scene:GetRoot():CreateChild("RigidBody2D", "rigidbody_node", 10, 10, 50, 50, 0, 0)
+    
+    rigidbody:SetVelocity(100, 200)
+    
+    local velocityX, velocityY = rigidbody:GetVelocity()
+    print("Velocity X: " .. velocityX .. ", Velocity Y: " .. velocityY)  -- should print "Velocity X: 100, Velocity Y: 200"
     ```
+
 - ### ToggleCollision
     Enable or disable collision for the current `RigidBody2D` object.
     #### Prototype
