@@ -23,7 +23,11 @@
 class Client
 {
     public:
-        Client(int srvTcpFd);
+#ifdef WIN32
+        explicit Client(SOCKET srvTcpFd);
+#else
+        explicit Client(int srvTcpFd);
+#endif
         ~Client();
 
         enum class ConnectionStep
@@ -34,7 +38,11 @@ class Client
             COMPLETE
         };
 
+#ifdef WIN32
+        [[nodiscard]] SOCKET getTcpFd() const { return _tcpFd; }
+#else
         [[nodiscard]] int getTcpFd() const { return _tcpFd; }
+#endif
         [[nodiscard]] sockaddr_in *getAddress() { return &_address; }
         [[nodiscard]] sockaddr_in *getUdpAddress() { return &_udpAddress; }
         [[nodiscard]] ConnectionStep getStep() const { return _step; }
@@ -70,7 +78,11 @@ class Client
 
     private:
         const std::string uuid;
+#ifdef WIN32
+        SOCKET _tcpFd;
+#else
         int _tcpFd;
+#endif
         sockaddr_in _address;
         sockaddr_in _udpAddress;
         ConnectionStep _step;

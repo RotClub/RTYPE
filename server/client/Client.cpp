@@ -33,7 +33,11 @@ static std::string generateUUID()
     return str;
 }
 
+#ifdef WIN32
+Client::Client(const SOCKET srvTcpFd) : uuid(generateUUID()), _shouldDisconnect(false)
+#else
 Client::Client(const int srvTcpFd) : uuid(generateUUID()), _shouldDisconnect(false)
+#endif
 {
     _step = ConnectionStep::UNVERIFIED;
     std::memset(&_address, 0, sizeof(_address));
@@ -49,7 +53,11 @@ Client::Client(const int srvTcpFd) : uuid(generateUUID()), _shouldDisconnect(fal
 
 Client::~Client()
 {
+#ifdef WIN32
+    closesocket(_tcpFd);
+#else
     close(_tcpFd);
+#endif
     spdlog::info("Client {} disconnected", uuid);
 }
 

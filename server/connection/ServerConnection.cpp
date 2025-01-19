@@ -128,7 +128,7 @@ void ServerConnection::_sendLoop()
                 PacketBuilder::pack(&packed, packet);
 
 #ifdef WIN32
-                _write(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket));
+                send(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket), 0);
 #else
                 write(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket));
 #endif
@@ -154,8 +154,10 @@ void ServerConnection::_accept()
 #ifndef far
 #define far
 #endif
-    if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers())
-        return;
+    if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers()) {
+        Client *cl = new Client(_tcpFd);
+        delete cl;
+    }
     if (FD_ISSET(_tcpFd, &_readfds)) {
         std::lock_guard guard(_clientsMutex);
         _clientConnections.emplace_back(new Client(_tcpFd));
@@ -167,7 +169,7 @@ void ServerConnection::_tryReceiveTCP(Client *client)
     std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
     int n = 0;
 #ifdef WIN32
-    if ((n = recv(_tcpFd, reinterpret_cast<char *>(buffer.data()), PACKED_PACKET_SIZE, 0)) <= 0) {
+    if ((n = recv(client->getTcpFd(), reinterpret_cast<char *>(buffer.data()), PACKED_PACKET_SIZE, 0)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
 #else
@@ -242,8 +244,9 @@ void ServerConnection::_processUdpBuffer(const std::pair<std::string, int> &addr
 
 void ServerConnection::_createSocket()
 {
-    _udpFd = socket(AF_INET, SOCK_DGRAM, 0);
-    _tcpFd = socket(AF_INET, SOCK_STREAM, 0);
+
+    _tcpFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    _udpFd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (_udpFd == -1 || _tcpFd == -1) {
 #ifdef WIN32
@@ -273,7 +276,9 @@ void ServerConnection::_createSocket()
         throw std::runtime_error("Error binding tcp socket");
     }
 
-    listen(_tcpFd, SOMAXCONN);
+    if (listen(_tcpFd, SOMAXCONN) < 0) {
+        throw std::runtime_error("Error listening on socket");
+    }
 
     if (bind(_udpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) < 0) {
         throw std::runtime_error("Error binding udp socket");
