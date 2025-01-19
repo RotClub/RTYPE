@@ -6,9 +6,24 @@ local FLASH_LIFETIME = 0.07
 local flashId = 0
 
 function createProjectileWithVelocity(x, y, plrVecX, plrVecY, damage, owner, id)
+    -- if owner:GetName() == "localPlayer" then
+    --     plrVecX += (PLAYER_PROJECTILE_SPEED * (3 - 2 * Game.localId))
+    -- end
     local projectile = root:CreateChild("RigidBody2D", "projectile" .. id, x, y, 16, 4, plrVecX, plrVecY)
     local projectileSprite = projectile:CreateChild("Sprite2D", "projectileSprite" .. id, "assets/sprites/r-typesheet1.png")
-    projectileSprite:SetSource(249, 90, 16, 4)
+    if owner:GetName() == "localPlayer" then
+        if Game.localId == 1 then
+            projectileSprite:SetSource(249, 90, 16, 4)
+        elseif Game.localId == 2 then
+            projectileSprite:SetSource(249 + 16, 90, 16, 4)
+        end
+    else
+        if Game.localId == 1 then
+            projectileSprite:SetSource(249 + 16, 90, 16, 4)
+        elseif Game.localId == 2 then
+            projectileSprite:SetSource(249, 90, 16, 4)
+        end
+    end
     projectileSprite:SetSize(16 * 2, 4 * 2)
     table.insert(Game.projectiles, {
         node = projectile,
@@ -21,8 +36,13 @@ function createProjectileWithVelocity(x, y, plrVecX, plrVecY, damage, owner, id)
     return Game.projectiles[#Game.projectiles]
 end
 
-function createFireFlash(player)
-    local x = Game.playersSize.x
+function createFireFlash(player, id)
+    local x
+    if id == 1 then
+        x = Game.playersSize.x
+    else
+        x = -18
+    end
     local w, h = 14 * 1.7, 12 * 1.7
     local fireFlash = player:CreateChild("Sprite2D", "fireFlash" .. flashId, "assets/sprites/r-typesheet1.png")
     fireFlash:SetSize(w, h)
@@ -63,10 +83,10 @@ net.Receive("SpaceshipShoot", function(len, ply)
     local velY = net.ReadFloat()
     if Game.localId == id then
         createProjectileWithVelocity(x, y, velX, velY, 0, Game.localPlayer, projectileId)
-        createFireFlash(Game.localPlayer)
+        createFireFlash(Game.localPlayer, id)
     else
         createProjectileWithVelocity(x, y, velX, velY, 0, otherPlayers[id], projectileId)
-        createFireFlash(otherPlayers[id])
+        createFireFlash(otherPlayers[id], id)
     end
 end)
 
