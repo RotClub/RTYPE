@@ -28,9 +28,9 @@
   ```lua
   net.Start("packetName")
   ```
-  
+
   #### Arguments  
-  - `string`: The name of the packet to start.  
+  `string`: The name of the packet to start.  
   
   #### Example  
   ```lua
@@ -47,7 +47,7 @@
   ```
   
   #### Arguments  
-  - `string`: The UUID of the client to send the packet to.  
+  `string`: The UUID of the client to send the packet to.  
   
   #### Example  
   ```lua
@@ -57,6 +57,40 @@
 
 
 ### SendToServer
+  Send the built packet from the client to the server.
+  
+  #### Prototype  
+  ```lua
+  net.SendToServer()
+  ```
+  
+  #### Arguments  
+  `None`
+
+  #### Example  
+  ```lua
+  -- Sending the packet from the client to the server
+  net.SendToServer()
+  ```
+
+### Broadcast  
+  Broadcast the built packet to all connected clients. This can only be called on the server.
+  
+  #### Prototype  
+  ```lua
+  net.Broadcast()
+  ```
+  
+  #### Arguments  
+  `None`
+  
+  #### Example  
+  ```lua
+  -- Broadcasting the packet to all clients
+  net.Broadcast()
+  ```
+
+### Receive
   #### Prototype
   ```lua
   ```
@@ -65,7 +99,7 @@
   ```lua
   ```
 
-### Broadcast
+### Call
   #### Prototype
   ```lua
   ```
