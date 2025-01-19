@@ -51,7 +51,7 @@ int GlobalConnection::_selectFd()
     retval = select(std::max(_tcpFd, _udpFd) + 1, &_readfds, &_writefds, nullptr, &timeout);
 #endif
 
-    if (retval == SOCKET_ERROR) {
+    if (retval < 0) {
         throw std::runtime_error("Error selecting socket: " + std::to_string(
             #ifdef WIN32
                 WSAGetLastError()

@@ -51,7 +51,9 @@ void ClientConnection::connectToServer()
     _addr.sin_addr.s_addr = inet_addr(_ip.c_str());
 #endif
     if (connect(_tcpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) == -1) {
-        spdlog::error(std::to_string(WSAGetLastError()));
+#ifdef WIN32
+        spdlog::error("Error connecting: {}", std::to_string(WSAGetLastError()));
+#endif
         throw std::runtime_error("Error connecting to server via TCP");
     }
     _connected = true;

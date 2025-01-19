@@ -326,7 +326,11 @@ int ServerConnection::_selectFd()
     _setClientFds(&_writefds);
     FD_SET(_tcpFd, &_readfds);
     FD_SET(_udpFd, &_readfds);
+#ifdef WIN32
     int maxFd = max(max(_getMaxFd(), _tcpFd), _udpFd);
+#else
+    int maxFd = std::max(std::max(_getMaxFd(), _tcpFd), _udpFd);
+#endif
     retval = select(maxFd + 1, &_readfds, &_writefds, nullptr, &timeout);
     return retval;
 }
