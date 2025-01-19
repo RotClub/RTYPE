@@ -1,5 +1,9 @@
 ## Client Luau Methods
 
+Documentation for Luau client methods, providing functions for key events, FPS counter, color blindness modes, and window size.
+
+The keys code is the one included in the ASCII specification. 
+
 ### IsKeyPressed
   Check if a key is currently being pressed down.
 
@@ -9,7 +13,7 @@
   ```
   
   #### Arguments
-  - `number`: The key code to check if it is pressed.
+  `number`: The key code to check if it is pressed.
   
   #### Example
   ```lua
@@ -59,7 +63,7 @@
   
   #### Prototype
   ```lua
-  EnableFpsCounter()
+  EnableFpsCounter() -> nil
   ```
   
   #### Arguments
@@ -75,7 +79,7 @@
   
   #### Prototype
   ```lua
-  DisableFpsCounter()
+  DisableFpsCounter() -> nil
   ```
   
   #### Arguments
@@ -91,7 +95,7 @@
   
   #### Prototype
   ```lua
-  DisableColorBlindnessShader()
+  DisableColorBlindnessShader() -> nil
   ```
   
   #### Arguments
@@ -107,7 +111,7 @@
   
   #### Prototype
   ```lua
-  CycleColorBlindnessShader()
+  CycleColorBlindnessShader() -> nil
   ```
   
   #### Arguments
