@@ -18,7 +18,15 @@
 #endif
 #include <cstddef>
 
-ServerConnection::ServerConnection(int port) : _port(port) {}
+ServerConnection::ServerConnection(int port) : _port(port)
+{
+#ifdef WIN32
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        throw std::runtime_error("Failed to initialize Winsock.\n");
+    }
+#endif
+}
 
 ServerConnection::~ServerConnection() { stop(); }
 
@@ -43,10 +51,20 @@ void ServerConnection::stop()
         _disconnectedClients.enqueue(client->getUuid());
         delete client;
     }
+
+#ifdef WIN32
+    _close(_tcpFd);
+    _close(_udpFd);
+#else
     close(_tcpFd);
     close(_udpFd);
+#endif
+
     _tcpFd = -1;
     _udpFd = -1;
+#ifdef WIN32
+    WSACleanup();
+#endif
 }
 
 void ServerConnection::_loop()
@@ -108,7 +126,13 @@ void ServerConnection::_sendLoop()
                 Packet *packet = client->popTcpPacketOutput();
                 PacketBuilder::PackedPacket packed = {0};
                 PacketBuilder::pack(&packed, packet);
+
+#ifdef WIN32
+                _write(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket));
+#else
                 write(client->getTcpFd(), packed, sizeof(PacketBuilder::PackedPacket));
+#endif
+
                 PacketBuilder(packet).reset();
                 delete packet;
             }
@@ -230,6 +254,7 @@ void ServerConnection::_createSocket()
     setsockopt(_udpFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&optval), sizeof(optval));
 
     if (_udpFd == -1 || _tcpFd == -1) {
+
         throw std::runtime_error("Error creating socket");
     }
 

@@ -66,8 +66,8 @@ int GlobalConnection::_selectFd()
 
 void GlobalConnection::_createSocket()
 {
-    _tcpFd = socket(AF_INET, SOCK_STREAM, 0);
-    _udpFd = socket(AF_INET, SOCK_DGRAM, 0);
+    _tcpFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    _udpFd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (_tcpFd == INVALID_SOCKET || _udpFd == INVALID_SOCKET) {
         throw std::runtime_error("Error creating socket");

@@ -29,7 +29,15 @@
 #include "Networking/PacketBuilder.hpp"
 #include "spdlog/spdlog.h"
 
-ClientConnection::ClientConnection(const std::string &ip, int port) : _ip(ip), _port(port) {}
+ClientConnection::ClientConnection(const std::string &ip, int port) : _ip(ip), _port(port)
+{
+#ifdef WIN32
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        throw std::runtime_error("Failed to initialize Winsock.\n");
+    }
+#endif
+}
 
 ClientConnection::~ClientConnection() { disconnectFromServer(); }
 
@@ -69,6 +77,10 @@ void ClientConnection::disconnectFromServer()
 
     _tcpFd = -1;
     _udpFd = -1;
+
+#ifdef WIN32
+    WSACleanup();
+#endif
 }
 
 void ClientConnection::establishConnection()
