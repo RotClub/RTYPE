@@ -48,7 +48,8 @@ void Game::run()
 
 const Types::Vector2 &Game::getWindowSize() const
 {
-    return Types::Vector2(_window.GetHeight(), _window.GetWidth());
+    _windowSize = Types::Vector2(_window.GetHeight(), _window.GetWidth());
+    return _windowSize;
 }
 
 void Game::_loop()
@@ -89,8 +90,13 @@ void Game::_accessibilityLoop()
         _window.BeginDrawing();
         _window.ClearBackground(raylib::Color::Black());
         BeginShaderMode(accessibilityShader);
-        DrawTextureRec(target.texture, (Rectangle){0, 0, (float)target.texture.width, (float)-target.texture.height},
+#ifdef WIN32
+        DrawTextureRec(target.texture, Rectangle{0, 0, static_cast<float>(target.texture.width), static_cast<float>(-target.texture.height)},
+               Vector2{0, 0}, WHITE);
+#else
+        DrawTextureRec(target.texture, (Rectangle){0, 0, static_cast<float>(target.texture.width), static_cast<float>(-target.texture.height)},
                        (Vector2){0, 0}, WHITE);
+#endif
         EndShaderMode();
         _window.EndDrawing();
         if (_window.ShouldClose())

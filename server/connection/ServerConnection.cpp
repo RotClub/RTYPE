@@ -79,6 +79,9 @@ void ServerConnection::_disconnectClients()
 
 void ServerConnection::_receiveLoop()
 {
+#ifndef far
+#define far
+#endif
     for (auto &client : _clientConnections) {
         if (!client->shouldDisconnect() && FD_ISSET(client->getTcpFd(), &_readfds)) {
             try {
@@ -96,6 +99,9 @@ void ServerConnection::_receiveLoop()
 
 void ServerConnection::_sendLoop()
 {
+#ifndef far
+#define far
+#endif
     for (auto &client : _clientConnections) {
         if (!client->shouldDisconnect()) {
             if (client->hasTcpPacketOutput() && FD_ISSET(client->getTcpFd(), &_writefds)) {
@@ -121,6 +127,9 @@ void ServerConnection::_sendLoop()
 
 void ServerConnection::_accept()
 {
+#ifndef far
+#define far
+#endif
     if (_clientConnections.size() >= Engine::GetInstance().getGameInfo()->getMaxPlayers())
         return;
     if (FD_ISSET(_tcpFd, &_readfds)) {
@@ -133,9 +142,15 @@ void ServerConnection::_tryReceiveTCP(Client *client)
 {
     std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
     int n = 0;
+#ifdef WIN32
+    if ((n = _read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+#else
     if ((n = read(client->getTcpFd(), buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
+#endif
     buffer.resize(n);
     client->addToTcpBuffer(buffer);
     _processTcpBuffer(client);
@@ -231,6 +246,9 @@ void ServerConnection::_createSocket()
 
 void ServerConnection::_setClientFds(fd_set *set)
 {
+#ifndef far
+#define far
+#endif
     FD_ZERO(set);
 
     for (const auto &client : _clientConnections) {
@@ -253,6 +271,10 @@ int ServerConnection::_getMaxFd()
 int ServerConnection::_selectFd()
 {
     int retval;
+
+#ifndef far
+#define far
+#endif
 
     timeval timeout = {2, 0};
     _setClientFds(&_readfds);

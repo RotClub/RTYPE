@@ -9,10 +9,11 @@
 #include <cstring>
 #include <random>
 #include <stdexcept>
-#include <unistd.h>
 
 #ifdef WIN32
 #include <WindowsCross.hpp>
+#else
+#include <unistd.h>
 #endif
 #include "spdlog/spdlog.h"
 

@@ -35,6 +35,7 @@ class Game
         void _renderPreGameText(std::string text);
 
         raylib::Window _window;
+        mutable Types::Vector2 _windowSize;
         bool _shouldClose = false;
 };
 

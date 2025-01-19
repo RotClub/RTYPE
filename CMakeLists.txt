@@ -10,7 +10,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
-set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+if(LINUX)
+    set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+endif()
 
 # Core
 file(GLOB_RECURSE SERVER_SRC "./server/*.cpp")
@@ -18,7 +20,7 @@ file(GLOB_RECURSE COMMON_SRC "./common/*.cpp")
 file(GLOB_RECURSE CLIENT_SRC "./client/*.cpp")
 
 # Executables
-add_library(${PROJECT_NAME}_engine SHARED ${COMMON_SRC})
+add_library(${PROJECT_NAME}_engine STATIC ${COMMON_SRC})
 add_executable(${PROJECT_NAME}_server ${SERVER_SRC})
 add_executable(${PROJECT_NAME}_client ${CLIENT_SRC})
 

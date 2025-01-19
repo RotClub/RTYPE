@@ -14,6 +14,7 @@
 
 #ifdef WIN32
     #include <WindowsCross.hpp>
+    #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #else
     #include <sys/select.h>
     #include <sys/socket.h>
@@ -57,8 +58,15 @@ void ClientConnection::disconnectFromServer()
     catch (const std::exception &e) {
         std::cerr << "Thread Error: " << e.what() << std::endl;
     }
+
+#ifdef WIN32
+    _close(_tcpFd);
+    _close(_udpFd);
+#else
     close(_tcpFd);
     close(_udpFd);
+#endif
+
     _tcpFd = -1;
     _udpFd = -1;
 }
@@ -78,9 +86,17 @@ void ClientConnection::_tryReceiveTCP()
 {
     std::vector<uint8_t> buffer(PACKED_PACKET_SIZE);
     int n = 0;
+
+#ifdef WIN32
+    if ((n = _read(_tcpFd, buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
+        throw std::runtime_error("Disconnect");
+    }
+#else
     if ((n = read(_tcpFd, buffer.data(), PACKED_PACKET_SIZE)) <= 0) {
         throw std::runtime_error("Disconnect");
     }
+#endif
+
     buffer.resize(n);
     _tcpBuffer.insert(_tcpBuffer.end(), buffer.begin(), buffer.end());
 }
@@ -111,6 +127,11 @@ void ClientConnection::sendToServerUDP(Packet *packet)
 
 void ClientConnection::_receiveLoop()
 {
+
+#ifndef far
+#define far
+#endif
+
     if (FD_ISSET(_tcpFd, &_readfds)) {
         try {
             _tryReceiveTCP();
@@ -161,6 +182,11 @@ void ClientConnection::_receiveLoop()
 
 void ClientConnection::_sendLoop()
 {
+
+#ifndef far
+#define far
+#endif
+
     if (!_connected)
         return;
     if (FD_ISSET(_tcpFd, &_writefds)) {
@@ -168,7 +194,11 @@ void ClientConnection::_sendLoop()
             Packet *packet = std::get<PACKET_OUT>(_tcpQueues).dequeue();
             PacketBuilder::PackedPacket packed = {0};
             PacketBuilder::pack(&packed, packet);
+#ifdef WIN32
+            _write(_tcpFd, packed, sizeof(PacketBuilder::PackedPacket));
+#else
             write(_tcpFd, packed, sizeof(PacketBuilder::PackedPacket));
+#endif
             PacketBuilder(packet).reset();
             delete packet;
         }
