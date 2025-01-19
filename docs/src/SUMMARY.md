@@ -39,3 +39,4 @@
 # Games
 
 - [R-Type](./games/r-type.md)
+- [Pong](./games/pong.md)
