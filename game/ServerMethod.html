@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Client - R-TYPE</title>
+        <title>Server - R-TYPE</title>
 
 
         <!-- Custom HTML head -->
@@ -152,117 +152,212 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h2 id="client-luau-methods"><a class="header" href="#client-luau-methods">Client Luau Methods</a></h2>
-<p>Documentation for Luau client methods, providing functions for key events, FPS counter, color blindness modes, and window size.</p>
-<p>The keys code is the one included in the ASCII specification.</p>
-<h3 id="iskeypressed"><a class="header" href="#iskeypressed">IsKeyPressed</a></h3>
-<p>Check if a key is currently being pressed down.</p>
+                        <h2 id="server-luau-methods"><a class="header" href="#server-luau-methods">Server Luau Methods</a></h2>
+<h3 id="createpacket"><a class="header" href="#createpacket">CreatePacket</a></h3>
+<p>Create a new packet and register it with a given name.
+This method is usable by both client and server.</p>
+<p>When the server uses it, it create a Packet and add the Packet to it's register, sends it to all the connected clients and will send it to the future clients.</p>
+<p>When the client uses it, it only add the Packet to it's register.</p>
 <h4 id="prototype"><a class="header" href="#prototype">Prototype</a></h4>
-<pre><code class="language-lua">IsKeyPressed(key: number) -&gt; boolean
+<pre><code class="language-lua">net.CreatePacket("packetName", reliable)
 </code></pre>
 <h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
-<p><code>number</code>: The key code to check if it is pressed.</p>
+<p><code>string</code> : The packet's name.
+<code>bool</code> : Whether the packet is reliable or not.</p>
 <h4 id="example"><a class="header" href="#example">Example</a></h4>
-<pre><code class="language-lua">if IsKeyPressed(KEY_SPACE) then
-    print("Space key is pressed!")
-end
+<pre><code class="language-lua">-- Creating a new packet named "PlayerData" with reliability
+net.CreatePacket("PlayerData", true)
 </code></pre>
-<h3 id="iskeyjustpressed"><a class="header" href="#iskeyjustpressed">IsKeyJustPressed</a></h3>
-<p>Check if a key was just pressed.</p>
+<h3 id="start"><a class="header" href="#start">Start</a></h3>
+<p>Start building a packet with the given name. It must be registered before.</p>
 <h4 id="prototype-1"><a class="header" href="#prototype-1">Prototype</a></h4>
-<pre><code class="language-lua">IsKeyJustPressed(key: number) -&gt; boolean
+<pre><code class="language-lua">net.Start("packetName")
 </code></pre>
 <h4 id="arguments-1"><a class="header" href="#arguments-1">Arguments</a></h4>
-<p><code>number</code>: The key code to check if it was just pressed.</p>
+<p><code>string</code>: The name of the packet to start.</p>
 <h4 id="example-1"><a class="header" href="#example-1">Example</a></h4>
-<pre><code class="language-lua">if IsKeyJustPressed(KEY_ENTER) then
-    print("Enter key was just pressed!")
-end
+<pre><code class="language-lua">-- Starting the "PlayerData" packet
+net.Start("PlayerData")
 </code></pre>
-<h3 id="iskeyreleased"><a class="header" href="#iskeyreleased">IsKeyReleased</a></h3>
-<p>Check if a key was just released.</p>
+<h3 id="sendtoclient"><a class="header" href="#sendtoclient">SendToClient</a></h3>
+<p>Send the packet to a specific client identified by UUID. This can only be called on the server.</p>
 <h4 id="prototype-2"><a class="header" href="#prototype-2">Prototype</a></h4>
-<pre><code class="language-lua">IsKeyReleased(key: number) -&gt; boolean
+<pre><code class="language-lua">net.SendToClient("clientUUID")
 </code></pre>
 <h4 id="arguments-2"><a class="header" href="#arguments-2">Arguments</a></h4>
-<p><code>number</code>: The key code to check if it was released.</p>
+<p><code>string</code>: The UUID of the client to send the packet to.</p>
 <h4 id="example-2"><a class="header" href="#example-2">Example</a></h4>
-<pre><code class="language-lua">if IsKeyReleased(KEY_A) then
-    print("The 'A' key was released!")
-end
+<pre><code class="language-lua">-- Sending the packet to a client with a specific UUID
+net.SendToClient("abc123-xyz")
 </code></pre>
-<h3 id="enablefpscounter"><a class="header" href="#enablefpscounter">EnableFpsCounter</a></h3>
-<p>Enables the FPS counter, displaying the current frame rate on the screen.</p>
+<h3 id="sendtoserver"><a class="header" href="#sendtoserver">SendToServer</a></h3>
+<p>Send the built packet from the client to the server.</p>
 <h4 id="prototype-3"><a class="header" href="#prototype-3">Prototype</a></h4>
-<pre><code class="language-lua">EnableFpsCounter() -&gt; nil
+<pre><code class="language-lua">net.SendToServer()
 </code></pre>
 <h4 id="arguments-3"><a class="header" href="#arguments-3">Arguments</a></h4>
 <p><code>None</code></p>
 <h4 id="example-3"><a class="header" href="#example-3">Example</a></h4>
-<pre><code class="language-lua">EnableFpsCounter()  -- Enables the FPS counter on the screen
+<pre><code class="language-lua">-- Sending the packet from the client to the server
+net.SendToServer()
 </code></pre>
-<h3 id="disablefpscounter"><a class="header" href="#disablefpscounter">DisableFpsCounter</a></h3>
-<p>Disables the FPS counter, removing the frame rate display from the screen.</p>
+<h3 id="broadcast"><a class="header" href="#broadcast">Broadcast</a></h3>
+<p>Broadcast the built packet to all connected clients. This can only be called on the server.</p>
 <h4 id="prototype-4"><a class="header" href="#prototype-4">Prototype</a></h4>
-<pre><code class="language-lua">DisableFpsCounter() -&gt; nil
+<pre><code class="language-lua">net.Broadcast()
 </code></pre>
 <h4 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h4>
 <p><code>None</code></p>
 <h4 id="example-4"><a class="header" href="#example-4">Example</a></h4>
-<pre><code class="language-lua">DisableFpsCounter()  -- Disables the FPS counter on the screen
+<pre><code class="language-lua">-- Broadcasting the packet to all clients
+net.Broadcast()
 </code></pre>
-<h3 id="disablecolorblindnessshader"><a class="header" href="#disablecolorblindnessshader">DisableColorBlindnessShader</a></h3>
-<p>Disables any color blindness shader or mode applied to the game.</p>
+<h3 id="receive"><a class="header" href="#receive">Receive</a></h3>
+<p>Register a callback function to handle a received packet with a specified name.</p>
 <h4 id="prototype-5"><a class="header" href="#prototype-5">Prototype</a></h4>
-<pre><code class="language-lua">DisableColorBlindnessShader() -&gt; nil
+<pre><code class="language-lua">net.Receive("packetName", callback)
 </code></pre>
 <h4 id="arguments-5"><a class="header" href="#arguments-5">Arguments</a></h4>
-<p><code>None</code></p>
+<ul>
+<li><code>packetName</code> (string): The name of the packet to listen for.</li>
+<li><code>callback</code> (function): The function to be called when the packet is received. This function will receive two parameters:
+<ul>
+<li><code>len</code> (number): The length of the received data.</li>
+<li><code>ply</code> (Player): The player who sent the packet.</li>
+</ul>
+</li>
+</ul>
 <h4 id="example-5"><a class="header" href="#example-5">Example</a></h4>
-<pre><code class="language-lua">DisableColorBlindnessShader()  -- Disables any color blindness mode in the game
+<pre><code class="language-lua">-- Registering a callback to handle a "PlayerData" packet
+net.Receive("PlayerData", function(len, ply)
+    print("Received data from player: " .. ply:GetName())
+    -- Handle packet data
+end)
 </code></pre>
-<h3 id="cyclecolorblindnessshader"><a class="header" href="#cyclecolorblindnessshader">CycleColorBlindnessShader</a></h3>
-<p>Cycles through the available color blindness modes if any are enabled.</p>
+<pre><code class="language-lua">-- Registering a callback to handle an Enemy destroyed
+net.Receive("EnemyDestroyed", function(len, ply)
+  local enemyId = net.ReadInt()
+  local dead = net.ReadBool()
+  destroyEnemy(enemyId)
+end)
+</code></pre>
+<h3 id="call"><a class="header" href="#call">Call</a></h3>
+<p>Trigger the callback registered for a specific packet name, passing the packet length and player information.</p>
 <h4 id="prototype-6"><a class="header" href="#prototype-6">Prototype</a></h4>
-<pre><code class="language-lua">CycleColorBlindnessShader() -&gt; nil
+<pre><code class="language-lua">net.Call("packetName", length, player)
 </code></pre>
 <h4 id="arguments-6"><a class="header" href="#arguments-6">Arguments</a></h4>
-<p><code>None</code></p>
+<p><code>string</code>: The name of the packet to trigger the callback for.<br />
+<code>number</code>: The length of the packet data.<br />
+<code>ply</code> (Player): The player who is calling the packet.</p>
 <h4 id="example-6"><a class="header" href="#example-6">Example</a></h4>
-<pre><code class="language-lua">CycleColorBlindnessShader()  -- Cycles through different color blindness modes (if any)
+<pre><code class="language-lua">-- Triggering the "PlayerData" packet callback
+net.Call("PlayerData", 128, player)  -- '128' could be the length, 'player' is the player calling the packet
 </code></pre>
-<h3 id="windowheight"><a class="header" href="#windowheight">WindowHeight</a></h3>
-<p>Returns the height of the game window (in pixels).</p>
+<h2 id="read--write-operations"><a class="header" href="#read--write-operations">Read &amp; Write operations</a></h2>
+<p><strong>All operations here must have a read and write pair</strong>
+The network packet works like a stack, where you write data to the top of the stack and read it from the top of the stack. This means that the order in which you write and read data is important. If you write an integer, a float, and a string in that order, you must read them in the same order to get the correct values.</p>
+<h3 id="writeint"><a class="header" href="#writeint">WriteInt</a></h3>
+<p>Check if an integer value can be written to the network packet.</p>
 <h4 id="prototype-7"><a class="header" href="#prototype-7">Prototype</a></h4>
-<pre><code class="language-lua">WindowHeight() -&gt; number
+<pre><code class="language-lua">WriteInt(value: number) -&gt; void
 </code></pre>
 <h4 id="arguments-7"><a class="header" href="#arguments-7">Arguments</a></h4>
-<p><code>None</code></p>
+<p><code>number</code>: The integer value to write into the network packet.</p>
 <h4 id="example-7"><a class="header" href="#example-7">Example</a></h4>
-<pre><code class="language-lua">local height = WindowHeight()
-print("Window Height: " .. height)
+<pre><code class="language-lua">WriteInt(42)
 </code></pre>
-<h3 id="windowwidth"><a class="header" href="#windowwidth">WindowWidth</a></h3>
-<p>Returns the width of the game window (in pixels).</p>
+<hr />
+<h3 id="readint"><a class="header" href="#readint">ReadInt</a></h3>
+<p>Retrieve an integer value from the network packet.</p>
 <h4 id="prototype-8"><a class="header" href="#prototype-8">Prototype</a></h4>
-<pre><code class="language-lua">WindowWidth() -&gt; number
+<pre><code class="language-lua">ReadInt() -&gt; number
 </code></pre>
 <h4 id="arguments-8"><a class="header" href="#arguments-8">Arguments</a></h4>
 <p><code>None</code></p>
 <h4 id="example-8"><a class="header" href="#example-8">Example</a></h4>
-<pre><code class="language-lua">local width = WindowWidth()
-print("Window Width: " .. width)
+<pre><code class="language-lua">local value = ReadInt()
+print("Received integer:", value)
+</code></pre>
+<hr />
+<h3 id="writefloat"><a class="header" href="#writefloat">WriteFloat</a></h3>
+<p>Write a floating-point value to the network packet.</p>
+<h4 id="prototype-9"><a class="header" href="#prototype-9">Prototype</a></h4>
+<pre><code class="language-lua">WriteFloat(value: number) -&gt; void
+</code></pre>
+<h4 id="arguments-9"><a class="header" href="#arguments-9">Arguments</a></h4>
+<p><code>number</code>: The floating-point value to write into the network packet.</p>
+<h4 id="example-9"><a class="header" href="#example-9">Example</a></h4>
+<pre><code class="language-lua">WriteFloat(3.14)
+</code></pre>
+<hr />
+<h3 id="readfloat"><a class="header" href="#readfloat">ReadFloat</a></h3>
+<p>Retrieve a floating-point value from the network packet.</p>
+<h4 id="prototype-10"><a class="header" href="#prototype-10">Prototype</a></h4>
+<pre><code class="language-lua">ReadFloat() -&gt; number
+</code></pre>
+<h4 id="arguments-10"><a class="header" href="#arguments-10">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-10"><a class="header" href="#example-10">Example</a></h4>
+<pre><code class="language-lua">local value = ReadFloat()
+print("Received float:", value)
+</code></pre>
+<hr />
+<h3 id="writestring"><a class="header" href="#writestring">WriteString</a></h3>
+<p>Write a string value to the network packet.</p>
+<h4 id="prototype-11"><a class="header" href="#prototype-11">Prototype</a></h4>
+<pre><code class="language-lua">WriteString(value: string) -&gt; void
+</code></pre>
+<h4 id="arguments-11"><a class="header" href="#arguments-11">Arguments</a></h4>
+<p><code>string</code>: The string to write into the network packet.</p>
+<h4 id="example-11"><a class="header" href="#example-11">Example</a></h4>
+<pre><code class="language-lua">WriteString("Hello, network!")
+</code></pre>
+<hr />
+<h3 id="readstring"><a class="header" href="#readstring">ReadString</a></h3>
+<p>Retrieve a string value from the network packet.</p>
+<h4 id="prototype-12"><a class="header" href="#prototype-12">Prototype</a></h4>
+<pre><code class="language-lua">ReadString() -&gt; string
+</code></pre>
+<h4 id="arguments-12"><a class="header" href="#arguments-12">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-12"><a class="header" href="#example-12">Example</a></h4>
+<pre><code class="language-lua">local value = ReadString()
+print("Received string:", value)
+</code></pre>
+<hr />
+<h3 id="writebool"><a class="header" href="#writebool">WriteBool</a></h3>
+<p>Write a boolean value to the network packet.</p>
+<h4 id="prototype-13"><a class="header" href="#prototype-13">Prototype</a></h4>
+<pre><code class="language-lua">WriteBool(value: boolean) -&gt; void
+</code></pre>
+<h4 id="arguments-13"><a class="header" href="#arguments-13">Arguments</a></h4>
+<p><code>boolean</code>: The boolean value to write into the network packet.</p>
+<h4 id="example-13"><a class="header" href="#example-13">Example</a></h4>
+<pre><code class="language-lua">WriteBool(true)
+</code></pre>
+<hr />
+<h3 id="readbool"><a class="header" href="#readbool">ReadBool</a></h3>
+<p>Retrieve a boolean value from the network packet.</p>
+<h4 id="prototype-14"><a class="header" href="#prototype-14">Prototype</a></h4>
+<pre><code class="language-lua">ReadBool() -&gt; boolean
+</code></pre>
+<h4 id="arguments-14"><a class="header" href="#arguments-14">Arguments</a></h4>
+<p><code>None</code></p>
+<h4 id="example-14"><a class="header" href="#example-14">Example</a></h4>
+<pre><code class="language-lua">local value = ReadBool()
+print("Received boolean:", value)
 </code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../game/ServerMethod.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../game/libs.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../game/common.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../game/ClientMethod.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -272,11 +367,11 @@ print("Window Width: " .. width)
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../game/ServerMethod.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../game/libs.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../game/common.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../game/ClientMethod.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
