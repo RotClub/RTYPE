@@ -70,8 +70,8 @@ void GlobalConnection::_createSocket()
 
     if (_udpFd == -1 || _tcpFd == -1) {
 #ifdef WIN32
-        if (_udpFd != -1) _close(_udpFd);
-        if (_tcpFd != -1) _close(_tcpFd);
+        if (_udpFd != -1) closesocket(_udpFd);
+        if (_tcpFd != -1) closesocket(_tcpFd);
 #else
         if (_udpFd != -1) close(_udpFd);
         if (_tcpFd != -1) close(_tcpFd);

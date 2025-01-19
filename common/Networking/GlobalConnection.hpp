@@ -49,8 +49,13 @@ class GlobalConnection
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _tcpQueues;
         std::tuple<SafeQueue<Packet *>, SafeQueue<Packet *>> _udpQueues;
         std::thread _thread;
-        int _tcpFd = -1;
-        int _udpFd = -1;
+#ifdef WIN32
+    SOCKET _tcpFd = -1;
+    SOCKET _udpFd = -1;
+#else
+    int _tcpFd = -1;
+    int _udpFd = -1;
+#endif
         fd_set _readfds;
         fd_set _writefds;
         sockaddr_in _addr;

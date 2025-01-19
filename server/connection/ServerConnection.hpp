@@ -64,8 +64,13 @@ class ServerConnection
         std::thread _networkThread;
         fd_set _readfds;
         fd_set _writefds;
+#ifdef WIN32
+        SOCKET _tcpFd = SOCKET_ERROR;
+        SOCKET _udpFd = SOCKET_ERROR;
+#else
         int _tcpFd = -1;
         int _udpFd = -1;
+#endif
         std::mutex _clientsMutex;
         std::vector<Client *> _clientConnections;
         SafeQueue<std::string> _disconnectedClients;
