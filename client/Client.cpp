@@ -33,7 +33,8 @@ Client &Client::GetInstance()
 }
 
 Client::Client(std::string ip, int port) :
-    _ip(ip), _port(port), _clientConnection(ip, port), _step(ConnectionStep::AUTH_CODE_RECEIVED)
+    _ip(ip), _port(port), _clientConnection(ip, port),
+    _step(ConnectionStep::AUTH_CODE_RECEIVED), _connectionEstablished(false)
 {
 }
 

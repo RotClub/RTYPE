@@ -45,8 +45,13 @@ void ClientConnection::connectToServer()
 {
     _createSocket();
     _addr.sin_port = htons(_port);
+#if WIN32
+    InetPton(AF_INET, _ip.c_str(), &_addr.sin_addr);
+#else
     _addr.sin_addr.s_addr = inet_addr(_ip.c_str());
+#endif
     if (connect(_tcpFd, reinterpret_cast<sockaddr *>(&_addr), sizeof(_addr)) == -1) {
+        spdlog::error(std::to_string(WSAGetLastError()));
         throw std::runtime_error("Error connecting to server via TCP");
     }
     _connected = true;
