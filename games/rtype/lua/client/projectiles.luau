@@ -6,7 +6,7 @@ local FLASH_LIFETIME = 0.07
 local flashId = 0
 
 function createProjectileWithVelocity(x, y, plrVecX, plrVecY, damage, owner, id)
-    local projectile = root:CreateChild("RigidBody2D", "projectile" .. id, x, y, 16, 4, PLAYER_PROJECTILE_SPEED + plrVecX, plrVecY)
+    local projectile = root:CreateChild("RigidBody2D", "projectile" .. id, x, y, 16, 4, plrVecX, plrVecY)
     local projectileSprite = projectile:CreateChild("Sprite2D", "projectileSprite" .. id, "assets/sprites/r-typesheet1.png")
     projectileSprite:SetSource(249, 90, 16, 4)
     projectileSprite:SetSize(16 * 2, 4 * 2)

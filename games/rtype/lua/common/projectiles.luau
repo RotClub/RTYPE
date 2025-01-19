@@ -1,6 +1,6 @@
 Game.projectiles = {}
 
-PLAYER_PROJECTILE_SPEED = 700
+PLAYER_PROJECTILE_SPEED = 700 * 2
 PROJECTILE_LIFETIME = 5.0
 
 local projectileId = 0
