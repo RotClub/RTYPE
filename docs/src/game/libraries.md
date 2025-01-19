@@ -657,15 +657,6 @@
     print(parent:GetChild("child_sprite"):GetName()) -- should print "child_sprite"
     ```
 
-- ### SetSize
-    #### Prototype
-        ```lua
-    ```
-
-    #### Arguments
-    #### Example
-    ```lua
-    ```
 - ### GetPosition
     Retrieve the position of the current `Sprite2D`.
     #### Prototype
@@ -724,6 +715,17 @@
     #### Example
     ```lua
     ```
+
+- ### SetSize
+    #### Prototype
+        ```lua
+    ```
+
+    #### Arguments
+    #### Example
+    ```lua
+    ```
+
 - ### SetSource
     #### Prototype
         ```lua
