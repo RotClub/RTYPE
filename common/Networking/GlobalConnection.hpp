@@ -13,7 +13,7 @@
 #include "SafeQueue.hpp"
 
 #ifdef WIN32
-    #include <winsock2.h>
+    #include <WindowsCross.hpp>
 #else
     #include <arpa/inet.h>
     #include <netinet/in.h>

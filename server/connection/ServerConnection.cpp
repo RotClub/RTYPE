@@ -10,7 +10,7 @@
 #include <Engine.hpp>
 #include <csignal>
 #ifdef WIN32
-#include <ws2tcpip.h>
+#include <WindowsCross.hpp>
 #else
 #include <arpa/inet.h>
 #include <netinet/in.h>

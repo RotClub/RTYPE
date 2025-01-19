@@ -13,8 +13,7 @@
 #include <stdexcept>
 
 #ifdef WIN32
-    #include <ws2tcpip.h>
-    #include <io.h>
+    #include <WindowsCross.hpp>
 #else
     #include <sys/select.h>
     #include <sys/socket.h>

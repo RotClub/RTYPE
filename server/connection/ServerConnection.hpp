@@ -13,8 +13,6 @@
 
 #ifdef WIN32
     #include <WindowsCross.hpp>
-    #include <winsock2.h>
-    #include <io.h>
 #else
     #include <netinet/in.h>
     #include <sys/select.h>

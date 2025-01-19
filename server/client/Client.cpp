@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #ifdef WIN32
-#include <ws2tcpip.h>
+#include <WindowsCross.hpp>
 #endif
 #include "spdlog/spdlog.h"
 

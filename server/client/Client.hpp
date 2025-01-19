@@ -11,7 +11,6 @@
 
 #ifdef WIN32
     #include <WindowsCross.hpp>
-    #include <winsock2.h>
 #else
     #include <netinet/in.h>
 #endif

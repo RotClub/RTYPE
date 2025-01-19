@@ -32,7 +32,7 @@
 #define NOGDI             // All GDI defines and routines
 #define NOKERNEL          // All KERNEL defines and routines
 #define NOUSER            // All USER defines and routines
-//#define NONLS             // All NLS defines and routines
+#define NONLS             // All NLS defines and routines
 #define NOMB              // MB_* and MessageBox()
 #define NOMEMMGR          // GMEM_*, LMEM_*, GHND, LHND, associated routines
 #define NOMETAFILE        // typedef METAFILEPICT
@@ -67,6 +67,9 @@
 typedef struct tagMSG *LPMSG;
 
 #include <windows.h>
+#include <winsock2.h>
+#include <io.h>
+#include <ws2tcpip.h>
 
 // Type required by some unused function...
 typedef struct tagBITMAPINFOHEADER {
@@ -86,6 +89,9 @@ typedef struct tagBITMAPINFOHEADER {
 #include <objbase.h>
 #include <mmreg.h>
 #include <mmsystem.h>
+
+#undef near
+#undef far
 
 // Some required types defined for MSVC/TinyC compiler
 #if defined(_MSC_VER) || defined(__TINYC__)
