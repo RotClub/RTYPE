@@ -142,75 +142,150 @@
 
 ## Read & Write operations
 __All operations here must have a read and write pair__
+The network packet works like a stack, where you write data to the top of the stack and read it from the top of the stack. This means that the order in which you write and read data is important. If you write an integer, a float, and a string in that order, you must read them in the same order to get the correct values.
 
 ### WriteInt
+  Check if an integer value can be written to the network packet.
+
   #### Prototype
   ```lua
+  WriteInt(value: number) -> void
   ```
+
   #### Arguments
+  `number`: The integer value to write into the network packet.
+
   #### Example
   ```lua
+  WriteInt(42)
   ```
+
+---
 
 ### ReadInt
+  Retrieve an integer value from the network packet.
+
   #### Prototype
   ```lua
+  ReadInt() -> number
   ```
+
   #### Arguments
+  `None`
+
   #### Example
   ```lua
+  local value = ReadInt()
+  print("Received integer:", value)
   ```
+
+---
 
 ### WriteFloat
+  Write a floating-point value to the network packet.
+
   #### Prototype
   ```lua
+  WriteFloat(value: number) -> void
   ```
+
   #### Arguments
+  `number`: The floating-point value to write into the network packet.
+
   #### Example
   ```lua
+  WriteFloat(3.14)
   ```
+
+---
 
 ### ReadFloat
+  Retrieve a floating-point value from the network packet.
+
   #### Prototype
   ```lua
+  ReadFloat() -> number
   ```
+
   #### Arguments
+  `None`
+
   #### Example
   ```lua
+  local value = ReadFloat()
+  print("Received float:", value)
   ```
+
+---
 
 ### WriteString
+  Write a string value to the network packet.
+
   #### Prototype
   ```lua
+  WriteString(value: string) -> void
   ```
+
   #### Arguments
+  `string`: The string to write into the network packet.
+
   #### Example
   ```lua
+  WriteString("Hello, network!")
   ```
+
+---
 
 ### ReadString
+  Retrieve a string value from the network packet.
+
   #### Prototype
   ```lua
+  ReadString() -> string
   ```
+
   #### Arguments
+  `None`
+
   #### Example
   ```lua
+  local value = ReadString()
+  print("Received string:", value)
   ```
+
+---
 
 ### WriteBool
+  Write a boolean value to the network packet.
+
   #### Prototype
   ```lua
-  ```
-  #### Arguments
-  #### Example
-  ```lua
+  WriteBool(value: boolean) -> void
   ```
 
-### ReadBool
-  #### Prototype
-  ```lua
-  ```
   #### Arguments
+  `boolean`: The boolean value to write into the network packet.
+
   #### Example
   ```lua
+  WriteBool(true)
+  ```
+
+---
+
+### ReadBool
+  Retrieve a boolean value from the network packet.
+
+  #### Prototype
+  ```lua
+  ReadBool() -> boolean
+  ```
+
+  #### Arguments
+  `None`
+
+  #### Example
+  ```lua
+  local value = ReadBool()
+  print("Received boolean:", value)
   ```
