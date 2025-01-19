@@ -12,7 +12,7 @@
 #include <map>
 
 #ifdef WIN32
-    #include <windows.h>
+    #include <WindowsCross.hpp>
     #include <winsock2.h>
     #include <io.h>
 #else

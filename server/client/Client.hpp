@@ -10,7 +10,7 @@
 #include <cstring>
 
 #ifdef WIN32
-    #include <windows.h>
+    #include <WindowsCross.hpp>
     #include <winsock2.h>
 #else
     #include <netinet/in.h>
