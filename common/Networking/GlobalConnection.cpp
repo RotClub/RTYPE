@@ -69,18 +69,7 @@ void GlobalConnection::_createSocket()
     _udpFd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (_udpFd == -1 || _tcpFd == -1) {
-#ifdef WIN32
-        if (_udpFd != -1) closesocket(_udpFd);
-        if (_tcpFd != -1) closesocket(_tcpFd);
-#else
-        if (_udpFd != -1) close(_udpFd);
-        if (_tcpFd != -1) close(_tcpFd);
-#endif
         throw std::runtime_error("Error creating sockets");
-    }
-
-    if (_tcpFd == INVALID_SOCKET || _udpFd == INVALID_SOCKET) {
-        throw std::runtime_error("Error creating socket");
     }
 
     std::memset(&_addr, 0, sizeof(_addr));
