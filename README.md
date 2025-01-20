@@ -15,7 +15,7 @@ You can find it [here](https://github.com/RotClub/RTYPE)
 
 ## Build:
 
-This project works only on Linux and MacOS and is built with CMake.
+This project works on Linux, MacOS and Windows and is built with CMake.
 Before building the project, you need to pull the submodules with the following command:
 
 ```bash
