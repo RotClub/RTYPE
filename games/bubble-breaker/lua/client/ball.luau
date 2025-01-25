@@ -45,3 +45,23 @@ function ballWallBounce(ball)
 
     rgbd:SetVelocity(x_vel, y_vel)
 end
+
+function ballPlayerBounce(ball, player)
+    local ball_rgbd = ball:GetChild("ball_body")
+    local player_hitbox = player:GetChild("player_hitbox")
+
+    if ball_rgbd:Collide(player_hitbox) then
+        local x_vel, y_vel = ball_rgbd:GetVelocity()
+        local _, y_pos = ball_rgbd:GetGlobalPosition()
+        local _, player_y = player:GetPosition()
+        local _, player_height = player_hitbox:GetSize()
+
+        local player_center = player_y + player_height / 2
+        local ball_center = y_pos + BALL_WIDTH / 2
+
+        local y_diff = ball_center - player_center
+        local y_refract = y_diff / (player_height / 2)
+
+        ball_rgbd:SetVelocity(-x_vel, y_vel + y_refract)
+    end
+end

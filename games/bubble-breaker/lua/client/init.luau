@@ -11,4 +11,5 @@ hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
     playerMovement(player, dt, keymap.key_a, keymap.key_d)
     ballWallBounce(ball)
+    ballPlayerBounce(ball, player)
 end)
