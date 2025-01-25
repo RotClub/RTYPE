@@ -7,3 +7,6 @@ r-type_server
 .cache
 build
 logs
+*.exe
+*.ilk
+*.pdb
