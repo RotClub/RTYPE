@@ -25,5 +25,17 @@ function playerMovement(player, dt, leftKey, rightKey)
     if IsKeyPressed(rightKey) then
         x = x + speed * dt
     end
+    if IsKeyJustPressed(leftKey) then
+        sendAction(1, true)
+    end
+    if IsKeyJustPressed(rightKey) then
+        sendAction(2, true)
+    end
+    if IsKeyJustReleased(leftKey) then
+        sendAction(1, false)
+    end
+    if IsKeyJustReleased(rightKey) then
+        sendAction(2, false)
+    end
     player:SetPosition(x, y)
 end
