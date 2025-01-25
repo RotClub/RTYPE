@@ -20,10 +20,8 @@ function generateBall()
     local ball = root:CreateChild("Node2D", "ball")
     ball:SetPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
     local x_vel, y_vel = generateBallVelocity()
-    local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, ENTITY_WIDTH, ENTITY_WIDTH, x_vel, y_vel)
-    local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/ball.png") --change this to the correct path
-
-
-    ball_sprite:SetSize(ENTITY_WIDTH, ENTITY_WIDTH)
+    local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, BALL_WIDTH, BALL_WIDTH, x_vel, y_vel)
+    local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/bricks/Colored_Purple-64x32.png") --change this to the correct path
+    ball_sprite:SetSize(BALL_WIDTH, BALL_WIDTH)
     return ball
 end
