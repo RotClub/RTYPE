@@ -25,3 +25,23 @@ function generateBall()
     ball_sprite:SetSize(BALL_WIDTH, BALL_WIDTH)
     return ball
 end
+
+function ballWallBounce(ball)
+    local rgbd = ball:GetChild("ball_body")
+    local x_vel, y_vel = rgbd:GetVelocity()
+    local x_pos, y_pos = rgbd:GetGlobalPosition()
+
+    local max_y = WINDOW_HEIGHT
+    local min_y = 0
+    local max_x = WINDOW_WIDTH
+    local min_x = 0
+
+    if x_pos < min_x or x_pos > max_x then
+        x_vel = -x_vel
+    end
+    if y_pos < min_y or y_pos > max_y then
+        y_vel = -y_vel
+    end
+
+    rgbd:SetVelocity(x_vel, y_vel)
+end
