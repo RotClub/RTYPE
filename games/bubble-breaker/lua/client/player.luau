@@ -6,12 +6,12 @@ function generatePlayer(x_pos, y_pos, player_nb)
     player:SetPosition(x_pos, y_pos)
     if player_nb == 1 then
         local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/paddle/Paddle_B_Purple_128x28.png")
-        player_sprite:SetSize(ENTITY_WIDTH, ENTITY_HEIGHT)
+        player_sprite:SetSize(PLAYER_WIDTH, PLAYER_HEIGHT)
     else
         local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/paddle/Paddle_B_Yellow_128x28.png")
-        player_sprite:SetSize(ENTITY_WIDTH, ENTITY_HEIGHT)
+        player_sprite:SetSize(PLAYER_WIDTH, PLAYER_HEIGHT)
     end
-    player:CreateChild("Area2D", "player_hitbox", 0, 0, ENTITY_WIDTH, ENTITY_HEIGHT)
+    player:CreateChild("Area2D", "player_hitbox", 0, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
     return player
 end
 
