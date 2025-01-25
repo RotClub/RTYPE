@@ -1,4 +1,4 @@
-include("client/utils.luau")
+include("common/game.luau")
 
 function generatePlayer(x_pos, y_pos, player_nb)
     local player_name = "player_" .. player_nb
@@ -6,12 +6,12 @@ function generatePlayer(x_pos, y_pos, player_nb)
     player:SetPosition(x_pos, y_pos)
     if player_nb == 1 then
         local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/paddle/Paddle_B_Purple_128x28.png")
-        player_sprite:SetSize(PLAYER_WIDTH, PLAYER_HEIGHT)
+        player_sprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     else
         local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/paddle/Paddle_B_Yellow_128x28.png")
-        player_sprite:SetSize(PLAYER_WIDTH, PLAYER_HEIGHT)
+        player_sprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     end
-    player:CreateChild("Area2D", "player_hitbox", 0, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
+    player:CreateChild("Area2D", "player_hitbox", 0, 0, Game.playersSize.x, Game.playersSize.y)
     return player
 end
 

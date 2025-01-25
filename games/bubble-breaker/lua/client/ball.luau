@@ -1,10 +1,10 @@
-include("client/utils.luau")
+include("common/game.luau")
 
 local function generateBallVelocity()
     local angle = math.rad(math.random(30, 150))
 
-    local x_vel = math.cos(angle) * BALL_VELOCITY_COEFFICIENT
-    local y_vel = math.sin(angle) * BALL_VELOCITY_COEFFICIENT
+    local x_vel = math.cos(angle) * Game.ballVelocityCoefficient
+    local y_vel = math.sin(angle) * Game.ballVelocityCoefficient
 
     if math.random(0, 1) == 0 then
         x_vel = -x_vel
@@ -18,11 +18,11 @@ end
 
 function generateBall()
     local ball = root:CreateChild("Node2D", "ball")
-    ball:SetPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+    ball:SetPosition(Game.windowSize.x / 2, Game.windowSize.y / 2)
     local x_vel, y_vel = generateBallVelocity()
-    local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, BALL_WIDTH, BALL_WIDTH, x_vel, y_vel)
+    local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, Game.ballSize, Game.ballSize, x_vel, y_vel)
     local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/bricks/Colored_Purple-64x32.png") --change this to the correct path
-    ball_sprite:SetSize(BALL_WIDTH, BALL_WIDTH)
+    ball_sprite:SetSize(Game.ballSize, Game.ballSize)
     return ball
 end
 
@@ -31,9 +31,9 @@ function ballWallBounce(ball)
     local x_vel, y_vel = rgbd:GetVelocity()
     local x_pos, y_pos = rgbd:GetGlobalPosition()
 
-    local max_y = WINDOW_HEIGHT
+    local max_y = Game.windowSize.y
     local min_y = 0
-    local max_x = WINDOW_WIDTH
+    local max_x = Game.windowSize.x
     local min_x = 0
 
     if x_pos < min_x or x_pos > max_x then
@@ -57,7 +57,7 @@ function ballPlayerBounce(ball, player)
         local _, player_height = player_hitbox:GetSize()
 
         local player_center = player_y + player_height / 2
-        local ball_center = y_pos + BALL_WIDTH / 2
+        local ball_center = y_pos + Game.ballSize / 2
 
         local y_diff = ball_center - player_center
         local y_refract = y_diff / (player_height / 2)
