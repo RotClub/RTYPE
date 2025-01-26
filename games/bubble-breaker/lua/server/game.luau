@@ -16,7 +16,7 @@ function defaultPaddle(id: number)
         },
         buffered_shot = false,
         shoot_cd = 0.0,
-        soaps = 100
+        soaps = 3
     }
 end
 
