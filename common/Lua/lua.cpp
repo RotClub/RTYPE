@@ -7,6 +7,9 @@
 #include "Nodes/UI/Label/Label.hpp"
 #include "Nodes/UI/Parallax/Parallax.hpp"
 #include "luaconf.h"
+#include <cstring>
+#include <random>
+#include <stdexcept>
 
 #include <Nodes/Node.hpp>
 #include <Nodes/Node2D/CollisionNode2D/Area2D/Area2D.hpp>
@@ -1595,6 +1598,23 @@ LUA_API int luau_EngineGetRenderHeight(lua_State *L)
     return 1;
 }
 
+LUA_API int luau_GenerateUUID(lua_State *L)
+{
+    static std::random_device dev;
+    static std::mt19937 rng(dev());
+
+    std::uniform_int_distribution<int> dist(0, 15);
+
+    const char *v = "0123456789ABCDEF";
+
+    std::string str;
+    for (int i = 0; i < 16; i++) {
+        str += v[dist(rng)];
+    }
+    lua_pushstring(L, str.c_str());
+    return 1;
+}
+
 void luau_ExposeFunctions(lua_State *L)
 {
     luau_ExposeGlobalFunction(L, luau_Include, "include");
@@ -1602,6 +1622,7 @@ void luau_ExposeFunctions(lua_State *L)
     luau_ExposeGlobalFunction(L, luau_Warn, "warn");
     luau_ExposeGlobalFunction(L, luau_Error, "error");
     luau_ExposeGlobalFunction(L, luau_Debug, "debug");
+    luau_ExposeGlobalFunction(L, luau_GenerateUUID, "generateUUID");
 
     /* NODE LIBRARY */
     constexpr luaL_Reg nodeRegistry[] = {{"GetName", luau_NodeGetName},
