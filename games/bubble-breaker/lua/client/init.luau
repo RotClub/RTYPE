@@ -85,7 +85,5 @@ net.Receive("BrickSpawn", function(len, ply)
 end)
 
 net.Receive("BallSpawn", function(len, ply)
-    local x_pos = net.ReadFloat()
-    local y_pos = net.ReadFloat()
     generateBall()
 end)

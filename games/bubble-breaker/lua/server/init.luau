@@ -1,5 +1,6 @@
 include("server/game.luau")
 include("server/network.luau")
+include("common/ball.luau")
 
 paddles = {
     defaultPaddle(1),
