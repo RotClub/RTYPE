@@ -67,7 +67,7 @@ function syncNewPlayer(ply: string)
     for k, v in pairs(bricks) do
         local x, y = v:GetPosition()
         net.Start("BrickSpawn")
-            net.WriteInt(k)
+            net.WriteString(k)
             net.WriteFloat(x)
             net.WriteFloat(y)
         net.SendToClient(ply)

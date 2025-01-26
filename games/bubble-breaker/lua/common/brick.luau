@@ -9,7 +9,7 @@ function generateBrick(x_pos, y_pos, brick_nb)
         brick_sprite:SetSize(Game.bricksSize.x, Game.bricksSize.y)
     elseif SERVER then
         net.Start("BrickSpawn")
-            net.WriteInt(brick_nb)
+            net.WriteString(brick_nb)
             net.WriteFloat(x_pos)
             net.WriteFloat(y_pos)
         net.Broadcast()

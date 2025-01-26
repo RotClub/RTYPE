@@ -77,7 +77,7 @@ end)
 
 net.Receive("BrickSpawn", function(len, ply)
     info("Brick spawned")
-    local brick_nb = net.ReadInt()
+    local brick_nb = net.ReadString()
     local x_pos = net.ReadFloat()
     local y_pos = net.ReadFloat()
     bricks[brick_nb] = generateBrick(x_pos, y_pos, brick_nb)
