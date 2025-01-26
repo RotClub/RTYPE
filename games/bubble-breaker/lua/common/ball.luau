@@ -83,3 +83,19 @@ function ballPlayerBounce(ball, player)
         ball:SetVelocity(x_vel + x_refract, -y_vel)
     end
 end
+
+function ballBrickBounce(ball, brick)
+    if ball:Collide(brick) then
+        local x_vel, y_vel = ball:GetVelocity()
+        local x_pos, y_pos = ball:GetGlobalPosition()
+        local _, brick_y = brick:GetPosition()
+
+        local brick_center = brick_y + Game.brickSize.y / 2
+        local ball_center = y_pos + Game.ballSize / 2
+
+        local y_diff = ball_center - brick_center
+
+        ball:SetPosition(x_pos, brick_y - Game.ballSize)
+        ball:SetVelocity(x_vel, -y_vel)
+    end
+end
