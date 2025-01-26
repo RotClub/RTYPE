@@ -114,12 +114,19 @@ function ballBrickBounce(ball, brick, id)
             end
         end
 
-        brick:Destroy()
-        bricks[id] = nil
-        table.remove(bricks, table.find(bricks, id))
-        net.Start("BrickDespawn")
-            net.WriteString(id)
-        net.Broadcast()
+        if (#brick:GetChildren() == 1) then
+            brick:Destroy()
+            bricks[id] = nil
+            table.remove(bricks, table.find(bricks, id))
+            net.Start("BrickDespawn")
+                net.WriteString(id)
+            net.Broadcast()
+        else
+            brick:GetChild("yucky"):Destroy()
+            net.Start("BrickCleaned")
+                net.WriteString(id)
+            net.Broadcast()
+        end
 
         ball:SetPosition(x_pos, y_pos)
         ball:SetVelocity(x_vel, y_vel)

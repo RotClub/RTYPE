@@ -88,6 +88,12 @@ net.Receive("BrickDespawn", function(len, ply)
     table.remove(bricks, table.find(bricks, brick_id))
 end)
 
+net.Receive("BrickCleaned", function(len, ply)
+    local brick_id = net.ReadString()
+    -- enlever le sprite yucky
+    bricks[brick_id]:GetChild("yucky_sprite"):Destroy()
+end)
+
 net.Receive("BallSpawn", function(len, ply)
     local id = net.ReadString()
     local x_pos = net.ReadFloat()

@@ -44,6 +44,7 @@ end
 
 net.CreatePacket("BrickSpawn", true)
 net.CreatePacket("BrickDespawn", true)
+net.CreatePacket("BrickCleaned", true)
 
 net.CreatePacket("BallSpawn", true)
 net.CreatePacket("BallDespawn", true)
