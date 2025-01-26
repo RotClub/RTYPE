@@ -1,4 +1,5 @@
 include("client/player.luau")
+include ("client/bubble.luau")
 include("common/game.luau")
 include("common/brick.luau")
 include("common/ball.luau")
@@ -26,7 +27,7 @@ otherPlayer = {
 }
 
 hook.Add("Tick", "main", function(delta)
-    local dt = delta / 1000000000
+    local dt = delta / 1_000_000_000
     if localPlayer.node then
         playerMovement(localPlayer.node, dt, 65, 68)
         for k, ball in pairs(balls) do
@@ -34,6 +35,7 @@ hook.Add("Tick", "main", function(delta)
             ball:GetChild("ball_sprite"):SetRotation(ball:GetChild("ball_sprite"):GetRotation() + 0.1)
         end
     end
+    updateBubbles(dt)
 end)
 
 net.Receive("PaddleSpawn", function(len, ply)
@@ -83,9 +85,11 @@ end)
 
 net.Receive("BrickDespawn", function(len, ply)
     local brick_id = net.ReadString()
+    local x_pos, y_pos = bricks[brick_id]:GetPosition()
     bricks[brick_id]:Destroy()
     bricks[brick_id] = nil
     table.remove(bricks, table.find(bricks, brick_id))
+    bubbleExplosion(x_pos + Game.brickSize.x / 2, y_pos + Game.brickSize.y / 2)
 end)
 
 net.Receive("BrickCleaned", function(len, ply)
