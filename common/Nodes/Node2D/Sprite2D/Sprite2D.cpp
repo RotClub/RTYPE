@@ -56,5 +56,5 @@ void Sprite2D::Draw()
     if (finalSize.x == 0 && finalSize.y == 0) {
         finalSize = {_source.size.x, _source.size.y};
     }
-    tex.Draw(src, {getGlobalPosition().x, getGlobalPosition().y, finalSize.x, finalSize.y}, {0, 0}, 0);
+    tex.Draw(src, {getGlobalPosition().x, getGlobalPosition().y, finalSize.x, finalSize.y}, {0, 0}, _rotation);
 }
