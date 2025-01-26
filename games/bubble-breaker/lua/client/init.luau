@@ -90,7 +90,6 @@ end)
 
 net.Receive("BrickCleaned", function(len, ply)
     local brick_id = net.ReadString()
-    -- enlever le sprite yucky
     bricks[brick_id]:GetChild("yucky_sprite"):Destroy()
 end)
 
