@@ -14,10 +14,10 @@ end
 
 function generateBrick(x_pos, y_pos, brick_nb)
     local brick_name = "brick_" .. brick_nb
-    local brick = root:CreateChild("RigidBody2D", brick_name, x_pos, y_pos, Game.bricksSize.x, Game.bricksSize.y, 0, 0)
+    local brick = root:CreateChild("RigidBody2D", brick_name, x_pos, y_pos, Game.brickSize.x, Game.brickSize.y, 0, 0)
     if CLIENT then
         local brick_sprite = brick:CreateChild("Sprite2D", "brick_sprite", "assets/bricks/" .. getRandomBrick())
-        brick_sprite:SetSize(Game.bricksSize.x, Game.bricksSize.y)
+        brick_sprite:SetSize(Game.brickSize.x, Game.brickSize.y)
     elseif SERVER then
         net.Start("BrickSpawn")
             net.WriteString(brick_nb)
@@ -35,6 +35,6 @@ end
 function brickLine(x_pos, y_pos, nb_bricks)
     for i = 0, nb_bricks do
         local id = generateUUID()
-        bricks[id] = generateBrick(x_pos + i * Game.bricksSize.x, y_pos, id)
+        bricks[id] = generateBrick(x_pos + i * Game.brickSize.x, y_pos, id)
     end
 end
