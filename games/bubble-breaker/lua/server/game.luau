@@ -41,3 +41,26 @@ function despawnPaddle(id: number)
         paddles[id].actions[k] = false
     end)
 end
+
+function updatePaddleVelocity(paddle, dt)
+    local vx, vy = paddle.node:GetVelocity()
+    if paddle.actions.MOVE_LEFT then
+        paddle.node:SetVelocity(-Game.playerSpeed, vy)
+    end
+    if paddle.actions.MOVE_RIGHT then
+        paddle.node:SetVelocity(Game.playerSpeed, vy)
+    end
+    if not paddle.actions.MOVE_LEFT and not paddle.actions.MOVE_RIGHT then
+        paddle.node:SetVelocity(0.0, vy)
+    end
+end
+
+function syncNewPlayer(ply: string)
+    for i = 1, #paddles do
+        if paddles[i].bound_player == nil then continue end
+        if paddles[i].bound_player == ply then continue end
+        net.Start("PaddleSpawn")
+            net.WriteInt(i)
+        net.SendToClient(ply)
+    end
+end

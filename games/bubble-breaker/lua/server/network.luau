@@ -17,6 +17,9 @@ local function handleActionChange(ply: string, action: number, state: boolean)
     end
 end
 
+net.CreatePacket("PaddleSpawn", true)
+net.CreatePacket("PaddleDespawn", true)
+
 net.CreatePacket("ActionStart", true)
 net.Receive("ActionStart", function(len, ply)
     local action = net.ReadInt()
@@ -28,3 +31,13 @@ net.Receive("ActionEnd", function(len, ply)
     local action = net.ReadInt()
     handleActionChange(ply, action, false)
 end)
+
+net.CreatePacket("PaddleMovement", false)
+function sendPaddlePosition(paddle)
+    local x, y = paddle.node:GetPosition()
+    net.Start("PaddleMovement")
+        net.WriteInt(paddle.id)
+        net.WriteFloat(x)
+        net.WriteFloat(y)
+    net.Broadcast()
+end

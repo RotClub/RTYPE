@@ -2,8 +2,7 @@ include("common/game.luau")
 
 function generatePlayer(x_pos, y_pos, player_nb)
     local player_name = "player_" .. player_nb
-    local player = root:CreateChild("Node2D", player_name)
-    player:SetPosition(x_pos, y_pos)
+    local player = root:CreateChild("RigidBody2D", "Paddle" .. player_nb, x_pos, y_pos, Game.playersSize.x, Game.playersSize.y, 0, 0)
     if player_nb == 1 then
         local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/paddle/Paddle_B_Purple_128x28.png")
         player_sprite:SetSize(Game.playersSize.x, Game.playersSize.y)
@@ -11,19 +10,30 @@ function generatePlayer(x_pos, y_pos, player_nb)
         local player_sprite = player:CreateChild("Sprite2D", "player_sprite", "assets/paddle/Paddle_B_Yellow_128x28.png")
         player_sprite:SetSize(Game.playersSize.x, Game.playersSize.y)
     end
-    player:CreateChild("Area2D", "player_hitbox", 0, 0, Game.playersSize.x, Game.playersSize.y)
     return player
 end
 
-function playerMovement(player, dt, leftKey, rightKey)
-    local x, y = player:GetPosition()
-    local speed = 600
+function deletePlayer(player)
+    player:Destroy()
+end
 
+function playerMovement(player, dt, leftKey, rightKey)
+    local vx, yx = player:GetVelocity()
     if IsKeyPressed(leftKey) then
-        x = x - speed * dt
+        player:SetVelocity(Game.playerSpeed * -1.0, yx)
     end
     if IsKeyPressed(rightKey) then
-        x = x + speed * dt
+        player:SetVelocity(Game.playerSpeed, yx)
+    end
+    if not IsKeyPressed(leftKey) and not IsKeyPressed(rightKey) then
+        player:SetVelocity(0.0, yx)
+    end
+
+    if IsKeyPressed(leftKey) then
+        vx = -Game.playerSpeed
+    end
+    if IsKeyPressed(rightKey) then
+        vx = Game.playerSpeed
     end
     if IsKeyJustPressed(leftKey) then
         sendAction(1, true)
@@ -31,11 +41,15 @@ function playerMovement(player, dt, leftKey, rightKey)
     if IsKeyJustPressed(rightKey) then
         sendAction(2, true)
     end
-    if IsKeyJustReleased(leftKey) then
+    if IsKeyReleased(leftKey) then
         sendAction(1, false)
     end
-    if IsKeyJustReleased(rightKey) then
+    if IsKeyReleased(rightKey) then
         sendAction(2, false)
     end
-    player:SetPosition(x, y)
+end
+
+function correctPosition(entity, x: number, y: number)
+    local eX, eY = entity:GetGlobalPosition()
+    entity:SetPosition((eX + x) / 2, (eY + y) / 2)
 end
