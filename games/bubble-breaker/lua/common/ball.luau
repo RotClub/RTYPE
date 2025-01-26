@@ -17,7 +17,10 @@ end
 function generateBall()
     local ball = root:CreateChild("Node2D", "ball")
     ball:SetPosition(Game.windowSize.x / 2, Game.windowSize.y / 2)
-    local x_vel, y_vel = generateBallVelocity()
+    local x_vel, y_vel = 0, 0
+    if SERVER then
+        x_vel, y_vel = generateBallVelocity()
+    end
     local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, Game.ballSize, Game.ballSize, x_vel, y_vel)
     if CLIENT then
         local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/bricks/Colored_Purple-64x32.png")
