@@ -25,7 +25,7 @@ hook.Add("Tick", "main", function(delta)
     for k, ball in pairs(balls) do
         ballWallBounce(ball, k)
         for kk, brick in pairs(bricks) do
-            ballBrickBounce(ball, brick, delta)
+            ballBrickBounce(ball, brick, kk)
         end
         for i = 1, #paddles do
             if paddles[i].bound_player then
