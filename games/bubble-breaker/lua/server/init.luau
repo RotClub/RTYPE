@@ -19,6 +19,10 @@ hook.Add("Tick", "main", function(delta)
         sendPaddlePosition(paddles[i])
         handleShooting(paddles[i], delta)
     end
+    for k, ball in pairs(balls) do
+        ballWallBounce(ball)
+    end
+    broadcastBallsPosition()
 end)
 
 hook.Add("PlayerJoin", "main", function(ply)

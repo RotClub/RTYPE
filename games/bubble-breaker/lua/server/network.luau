@@ -47,3 +47,4 @@ net.CreatePacket("BrickDespawn", true)
 
 net.CreatePacket("BallSpawn", true)
 net.CreatePacket("BallDespawn", true)
+net.CreatePacket("BallMovement", false)

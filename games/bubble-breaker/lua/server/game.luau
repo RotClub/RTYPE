@@ -98,3 +98,14 @@ function shoot(ply)
     local id = generateUUID()
     generateBall(x, y, id)
 end
+
+function broadcastBallsPosition()
+    for k, v in pairs(balls) do
+        local x, y = v:GetPosition()
+        net.Start("BallMovement")
+            net.WriteString(k)
+            net.WriteFloat(x)
+            net.WriteFloat(y)
+        net.Broadcast()
+    end
+end

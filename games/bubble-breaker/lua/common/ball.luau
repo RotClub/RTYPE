@@ -25,6 +25,7 @@ function generateBall(x: number, y: number, id: string)
     if CLIENT then
         local ball_sprite = ball:CreateChild("Sprite2D", "ball_sprite", "assets/soap.png")
         ball_sprite:SetSize(Game.ballSize, Game.ballSize)
+        ball_sprite:SetOrigin(Game.ballSize / 2, Game.ballSize / 2)
     elseif SERVER then
         net.Start("BallSpawn")
             net.WriteString(id)
@@ -36,7 +37,6 @@ function generateBall(x: number, y: number, id: string)
 end
 
 function ballWallBounce(ball)
-    local ball = ball
     local x_vel, y_vel = ball:GetVelocity()
     local x_pos, y_pos = ball:GetGlobalPosition()
 
