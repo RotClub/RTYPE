@@ -84,7 +84,7 @@ function ballPlayerBounce(ball, player)
     end
 end
 
-function ballBrickBounce(ball, brick, delta)
+function ballBrickBounce(ball, brick, id)
     if ball:Collide(brick) then
         local x_vel, y_vel = ball:GetVelocity()
         local x_pos, y_pos = ball:GetGlobalPosition()
@@ -113,6 +113,13 @@ function ballBrickBounce(ball, brick, delta)
                 y_pos = brick_y - Game.ballSize
             end
         end
+
+        brick:Destroy()
+        bricks[id] = nil
+        table.remove(bricks, table.find(bricks, id))
+        net.Start("BrickDespawn")
+            net.WriteString(id)
+        net.Broadcast()
 
         ball:SetPosition(x_pos, y_pos)
         ball:SetVelocity(x_vel, y_vel)

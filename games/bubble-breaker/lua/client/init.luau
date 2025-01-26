@@ -81,6 +81,13 @@ net.Receive("BrickSpawn", function(len, ply)
     bricks[brick_nb] = generateBrick(x_pos, y_pos, brick_nb, yucky)
 end)
 
+net.Receive("BrickDespawn", function(len, ply)
+    local brick_id = net.ReadString()
+    bricks[brick_id]:Destroy()
+    bricks[brick_id] = nil
+    table.remove(bricks, table.find(bricks, brick_id))
+end)
+
 net.Receive("BallSpawn", function(len, ply)
     local id = net.ReadString()
     local x_pos = net.ReadFloat()
