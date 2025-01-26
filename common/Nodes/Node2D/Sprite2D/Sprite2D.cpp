@@ -9,7 +9,7 @@
 #include "Rectangle.hpp"
 
 Sprite2D::Sprite2D(const std::string &name, const std::string &texture)
-    : Node2D(name), _rotation(0.0f)
+    : Node2D(name), _rotation(0.0f), _origin(Types::Vector2::Zero())
 {
     SetTexture(texture);
     this->metatable = "Sprite2DMetaTable";
@@ -57,5 +57,5 @@ void Sprite2D::Draw()
     if (finalSize.x == 0 && finalSize.y == 0) {
         finalSize = {_source.size.x, _source.size.y};
     }
-    tex.Draw(src, {getGlobalPosition().x, getGlobalPosition().y, finalSize.x, finalSize.y}, {_source.origin.x, _source.origin.y}, _rotation);
+    tex.Draw(src, {getGlobalPosition().x, getGlobalPosition().y, finalSize.x, finalSize.y}, {_origin.x, _origin.y}, _rotation);
 }

@@ -25,8 +25,8 @@ class Sprite2D : public Node2D
         void setRotation(const float rotation) { _rotation = rotation; }
         [[nodiscard]] float getRotation() const { return _rotation; }
 
-        void setOrigin(const Types::Vector2 &origin) { _source.origin = origin; }
-        [[nodiscard]] Types::Vector2 getOrigin() const { return _source.origin; }
+        void setOrigin(const Types::Vector2 &origin) { _origin = origin; }
+        [[nodiscard]] Types::Vector2 getOrigin() const { return _origin; }
 
         void Draw() override;
 
@@ -34,6 +34,7 @@ class Sprite2D : public Node2D
         std::string _texture;
         Types::Vector2 _size;
         Types::Rect2 _source;
+        Types::Vector2 _origin;
         float _rotation;
 };
 
