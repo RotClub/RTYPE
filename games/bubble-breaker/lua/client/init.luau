@@ -3,6 +3,26 @@ include("common/game.luau")
 include("client/brick.luau")
 include("client/ball.luau")
 
+Game.defaultReferencePoint = root:CreateChild("Node2D", "defaultReferencePoint")
+Game.defaultReferencePoint:SetPosition(0, 0)
+
+local parallaxLayers = {
+    root:CreateChild("Parallax", "parallaxBg1", "assets/clouds/1.png", 1, Game.defaultReferencePoint),
+    root:CreateChild("Parallax", "parallaxBg2", "assets/clouds/2.png", 1.5, Game.defaultReferencePoint),
+    root:CreateChild("Parallax", "parallaxBg3", "assets/clouds/3.png", 2, Game.defaultReferencePoint),
+    root:CreateChild("Parallax", "parallaxBg4", "assets/clouds/4.png", 2.5, Game.defaultReferencePoint),
+    root:CreateChild("Parallax", "parallaxBg5", "assets/clouds/5.png", 3, Game.defaultReferencePoint)
+}
+
+Game.localId = nil
+
+function setParallaxReference(ref)
+    for i = 1, #parallaxLayers do
+        parallaxLayers[i]:SetReferenceNode(ref)
+        debug("Set parallax reference to " .. ref:GetName())
+    end
+end
+
 localPlayer = {
     id = -1,
     node = nil
@@ -19,6 +39,9 @@ hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
     if localPlayer.id ~= -1 then
         playerMovement(localPlayer.node, dt, keymap.key_left, keymap.key_right)
+    end
+    for i = 1, #parallaxLayers do
+        parallaxLayers[i]:AddParallaxPosition(((5 * i) * (i / 2)) * dt, 0)
     end
 end)
 
