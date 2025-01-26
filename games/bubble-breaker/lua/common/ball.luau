@@ -1,5 +1,3 @@
-include("common/game.luau")
-
 local function generateBallVelocity()
     local angle = math.rad(math.random(30, 150))
 
@@ -21,8 +19,10 @@ function generateBall()
     ball:SetPosition(Game.windowSize.x / 2, Game.windowSize.y / 2)
     local x_vel, y_vel = generateBallVelocity()
     local ball_body = ball:CreateChild("RigidBody2D", "ball_body", 0, 0, Game.ballSize, Game.ballSize, x_vel, y_vel)
-    local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/bricks/Colored_Purple-64x32.png") --change this to the correct path
-    ball_sprite:SetSize(Game.ballSize, Game.ballSize)
+    if CLIENT then
+        local ball_sprite = ball_body:CreateChild("Sprite2D", "ball_sprite", "assets/bricks/Colored_Purple-64x32.png")
+        ball_sprite:SetSize(Game.ballSize, Game.ballSize)
+    end
     return ball
 end
 

@@ -1,7 +1,5 @@
 include("client/player.luau")
 include("common/game.luau")
-include("client/brick.luau")
-include("client/ball.luau")
 
 Game.defaultReferencePoint = root:CreateChild("Node2D", "defaultReferencePoint")
 Game.defaultReferencePoint:SetPosition(0, 0)
@@ -31,9 +29,6 @@ otherPlayer = {
     id = -1,
     node = nil
 }
-
-local brick = generateBrick(100, 100, 1)
-local ball = generateBall()
 
 hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
