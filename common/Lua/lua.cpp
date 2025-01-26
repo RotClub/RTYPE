@@ -7,6 +7,9 @@
 #include "Nodes/UI/Label/Label.hpp"
 #include "Nodes/UI/Parallax/Parallax.hpp"
 #include "luaconf.h"
+#include <cstring>
+#include <random>
+#include <stdexcept>
 
 #include <Nodes/Node.hpp>
 #include <Nodes/Node2D/CollisionNode2D/Area2D/Area2D.hpp>
@@ -1006,6 +1009,39 @@ LUA_API int luau_Sprite2DSetSource(lua_State *L)
     return 0;
 }
 
+LUA_API int luau_Sprite2DSetRotation(lua_State *L)
+{
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    double rotation = luaL_checknumber(L, 2);
+    sprite->setRotation(static_cast<float>(rotation));
+    return 0;
+}
+
+LUA_API int luau_Sprite2DGetRotation(lua_State *L)
+{
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    lua_pushnumber(L, sprite->getRotation());
+    return 1;
+}
+
+LUA_API int luau_Sprite2DSetOrigin(lua_State *L)
+{
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    double x = luaL_checknumber(L, 2);
+    double y = luaL_checknumber(L, 3);
+    sprite->setOrigin(Types::Vector2(x, y));
+    return 0;
+}
+
+LUA_API int luau_Sprite2DGetOrigin(lua_State *L)
+{
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    Types::Vector2 origin = sprite->getOrigin();
+    lua_pushnumber(L, origin.x);
+    lua_pushnumber(L, origin.y);
+    return 2;
+}
+
 /** Sprite2D functions **/
 
 /** Collide functions **/
@@ -1595,6 +1631,23 @@ LUA_API int luau_EngineGetRenderHeight(lua_State *L)
     return 1;
 }
 
+LUA_API int luau_GenerateUUID(lua_State *L)
+{
+    static std::random_device dev;
+    static std::mt19937 rng(dev());
+
+    std::uniform_int_distribution<int> dist(0, 15);
+
+    const char *v = "0123456789ABCDEF";
+
+    std::string str;
+    for (int i = 0; i < 16; i++) {
+        str += v[dist(rng)];
+    }
+    lua_pushstring(L, str.c_str());
+    return 1;
+}
+
 void luau_ExposeFunctions(lua_State *L)
 {
     luau_ExposeGlobalFunction(L, luau_Include, "include");
@@ -1602,6 +1655,7 @@ void luau_ExposeFunctions(lua_State *L)
     luau_ExposeGlobalFunction(L, luau_Warn, "warn");
     luau_ExposeGlobalFunction(L, luau_Error, "error");
     luau_ExposeGlobalFunction(L, luau_Debug, "debug");
+    luau_ExposeGlobalFunction(L, luau_GenerateUUID, "generateUUID");
 
     /* NODE LIBRARY */
     constexpr luaL_Reg nodeRegistry[] = {{"GetName", luau_NodeGetName},
@@ -1639,6 +1693,10 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"SetSize", luau_Sprite2DSetSize},
                                             {"SetTexture", luau_Sprite2DSetTexture},
                                             {"SetSource", luau_Sprite2DSetSource},
+                                            {"SetRotation", luau_Sprite2DSetRotation},
+                                            {"GetRotation", luau_Sprite2DGetRotation},
+                                            {"SetOrigin", luau_Sprite2DSetOrigin},
+                                            {"GetOrigin", luau_Sprite2DGetOrigin},
                                             {"Destroy", luau_Sprite2DDestroy},
                                             {"__gc", lua_gcSprite2D},
                                             {nullptr, nullptr}};
