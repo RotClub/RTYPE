@@ -78,11 +78,16 @@ net.Receive("BrickSpawn", function(len, ply)
     local x_pos = net.ReadFloat()
     local y_pos = net.ReadFloat()
     local yucky = net.ReadBool()
-    bricks[brick_nb] = generateBrick(x_pos, y_pos, brick_nb, yucky)
+    local soapy = net.ReadBool()
+    bricks[brick_nb] = generateBrick(x_pos, y_pos, brick_nb, yucky, soapy)
 end)
 
 net.Receive("BrickDespawn", function(len, ply)
     local brick_id = net.ReadString()
+    local soap = net.ReadBool()
+    if soap then
+        bricks[brick_id]:GetChild("soap_sprite"):Destroy()
+    end
     bricks[brick_id]:Destroy()
     bricks[brick_id] = nil
     table.remove(bricks, table.find(bricks, brick_id))

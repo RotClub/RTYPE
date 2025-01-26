@@ -84,7 +84,7 @@ function ballPlayerBounce(ball, player)
     end
 end
 
-function ballBrickBounce(ball, brick, id)
+function ballBrickBounce(ball, brick, id, balls)
     if ball:Collide(brick) then
         local x_vel, y_vel = ball:GetVelocity()
         local x_pos, y_pos = ball:GetGlobalPosition()
@@ -114,18 +114,40 @@ function ballBrickBounce(ball, brick, id)
             end
         end
 
-        if (#brick:GetChildren() == 1) then
-            brick:Destroy()
-            bricks[id] = nil
-            table.remove(bricks, table.find(bricks, id))
-            net.Start("BrickDespawn")
-                net.WriteString(id)
-            net.Broadcast()
-        else
+        local is_yucky = false
+        local is_soapy = false
+        for _, child in pairs(brick:GetChildren()) do
+            if child:GetName() == "yucky" then
+                is_yucky = true
+            elseif child:GetName() == "soap" then
+                is_soapy = true
+            end
+        end
+
+        if is_yucky then
             brick:GetChild("yucky"):Destroy()
             net.Start("BrickCleaned")
                 net.WriteString(id)
             net.Broadcast()
+        elseif is_soapy then
+            brick:GetChild("soap"):Destroy()
+            net.Start("BrickDespawn")
+                net.WriteString(id)
+                net.WriteBool(true)
+            net.Broadcast()
+            brick:Destroy()
+            bricks[id] = nil
+            table.remove(bricks, table.find(bricks, id))
+            local new_id = generateUUID()
+            local new_ball = generateBall(x_pos, y_pos, new_id)
+        else
+            net.Start("BrickDespawn")
+                net.WriteString(id)
+                net.WriteBool(false)
+            net.Broadcast()
+            brick:Destroy()
+            bricks[id] = nil
+            table.remove(bricks, table.find(bricks, id))
         end
 
         ball:SetPosition(x_pos, y_pos)

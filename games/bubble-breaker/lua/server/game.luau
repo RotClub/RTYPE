@@ -68,12 +68,21 @@ function syncNewPlayer(ply: string)
     end
     for k, v in pairs(bricks) do
         local x, y = v:GetPosition()
-        local is_yucky = #v:GetChildren() > 1
+        local is_yucky = false
+        local is_soapy = false
+        for _, child in pairs(v:GetChildren()) do
+            if child:GetName() == "yucky" then
+                is_yucky = true
+            elseif child:GetName() == "soap" then
+                is_soapy = true
+            end
+        end
         net.Start("BrickSpawn")
             net.WriteString(k)
             net.WriteFloat(x)
             net.WriteFloat(y)
             net.WriteBool(is_yucky)
+            net.WriteBool(is_soapy)
         net.SendToClient(ply)
     end
 end
