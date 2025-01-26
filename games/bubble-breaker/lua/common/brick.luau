@@ -9,7 +9,7 @@ function generateBrick(x_pos, y_pos, brick_nb)
         brick_sprite:SetSize(Game.bricksSize.x, Game.bricksSize.y)
     elseif SERVER then
         net.Start("BrickSpawn")
-            net.WriteInt(brick_nb)
+            net.WriteString(brick_nb)
             net.WriteFloat(x_pos)
             net.WriteFloat(y_pos)
         net.Broadcast()
@@ -23,7 +23,7 @@ end
 
 function brickLine(x_pos, y_pos, nb_bricks)
     for i = 0, nb_bricks do
-        local id = math.random(99999999999)
+        local id = generateUUID()
         bricks[id] = generateBrick(x_pos + i * Game.bricksSize.x, y_pos, id)
     end
 end
