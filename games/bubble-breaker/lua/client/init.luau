@@ -29,8 +29,8 @@ hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
     if localPlayer.node then
         playerMovement(localPlayer.node, dt, 65, 68)
-        for k, balls in pairs(balls) do
-            balls:GetChild("ball_sprite"):SetRotation(balls:GetChild("ball_sprite"):GetRotation() + 0.1)
+        for k, ball in pairs(balls) do
+            -- ball:GetChild("ball_sprite"):SetRotation(ball:GetChild("ball_sprite"):GetRotation() + 0.1)
         end
     end
 end)
@@ -83,5 +83,6 @@ net.Receive("BallSpawn", function(len, ply)
     local id = net.ReadString()
     local x_pos = net.ReadFloat()
     local y_pos = net.ReadFloat()
+    info("Ball spawned at " .. x_pos .. ", " .. y_pos)
     generateBall(x_pos, y_pos, id)
 end)

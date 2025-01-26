@@ -16,7 +16,7 @@ function defaultPaddle(id: number)
         },
         buffered_shot = false,
         shoot_cd = 0.0,
-        soaps = 1
+        soaps = 100
     }
 end
 
@@ -79,7 +79,7 @@ end
 function handleShooting(ply, delta)
     if ply.buffered_shot then
         if ply.shoot_cd <= 0.0 then
-            ply.shoot_cd = SHOOT_CD
+            ply.shoot_cd = Game.shootCooldown
             ply.buffered_shot = false
             shoot(ply)
         end
@@ -94,6 +94,7 @@ function shoot(ply)
     ply.soaps = ply.soaps - 1
     local x, y = ply.node:GetPosition()
     x = x + Game.playersSize.x / 2
+    y = y - Game.playersSize.y / 2
     local id = generateUUID()
     generateBall(x, y, id)
 end
