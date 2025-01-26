@@ -1,4 +1,5 @@
 include("common/game.luau")
+include("common/brick.luau")
 
 function defaultPaddle(id: number)
     return {
@@ -61,6 +62,14 @@ function syncNewPlayer(ply: string)
         if paddles[i].bound_player == ply then continue end
         net.Start("PaddleSpawn")
             net.WriteInt(i)
+        net.SendToClient(ply)
+    end
+    for k, v in pairs(bricks) do
+        local x, y = v:GetPosition()
+        net.Start("BrickSpawn")
+            net.WriteInt(k)
+            net.WriteFloat(x)
+            net.WriteFloat(y)
         net.SendToClient(ply)
     end
 end

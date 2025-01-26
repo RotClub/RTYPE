@@ -41,3 +41,8 @@ function sendPaddlePosition(paddle)
         net.WriteFloat(y)
     net.Broadcast()
 end
+
+net.CreatePacket("BrickSpawn", true)
+net.CreatePacket("BrickDespawn", true)
+
+net.CreatePacket("ScoreUpdate", true)
