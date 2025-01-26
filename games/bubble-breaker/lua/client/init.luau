@@ -30,7 +30,7 @@ hook.Add("Tick", "main", function(delta)
     if localPlayer.node then
         playerMovement(localPlayer.node, dt, 65, 68)
         for k, ball in pairs(balls) do
-            -- ball:GetChild("ball_sprite"):SetRotation(ball:GetChild("ball_sprite"):GetRotation() + 0.1)
+            ball:GetChild("ball_sprite"):SetRotation(ball:GetChild("ball_sprite"):GetRotation() + 0.1)
         end
     end
 end)
