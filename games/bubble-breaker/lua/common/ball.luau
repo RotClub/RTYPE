@@ -34,9 +34,10 @@ function generateBall(x: number, y: number, id: string)
         net.Broadcast()
     end
     balls[id] = ball
+    return ball
 end
 
-function ballWallBounce(ball)
+function ballWallBounce(ball, id)
     local x_vel, y_vel = ball:GetVelocity()
     local x_pos, y_pos = ball:GetGlobalPosition()
 
@@ -48,28 +49,37 @@ function ballWallBounce(ball)
     if x_pos < min_x or x_pos > max_x then
         x_vel = -x_vel
     end
-    if y_pos < min_y or y_pos > max_y then
+    if y_pos < min_y then
         y_vel = -y_vel
+    end
+
+    if y_pos > max_y then
+        ball:Destroy()
+        balls[id] = nil
+        table.remove(balls, table.find(balls, id))
+        net.Start("BallDespawn")
+            net.WriteString(id)
+        net.Broadcast()
+        return
     end
 
     ball:SetVelocity(x_vel, y_vel)
 end
 
 function ballPlayerBounce(ball, player)
-    local player_hitbox = player:GetChild("player_hitbox")
-
-    if ball:Collide(player_hitbox) then
+    if ball:Collide(player) then
         local x_vel, y_vel = ball:GetVelocity()
-        local _, y_pos = ball:GetGlobalPosition()
+        local ply_x_vel, _ = player:GetVelocity()
+        local x_pos, y_pos = ball:GetGlobalPosition()
         local _, player_y = player:GetPosition()
-        local _, player_height = player_hitbox:GetSize()
 
-        local player_center = player_y + player_height / 2
+        local player_center = player_y + Game.playersSize.y / 2
         local ball_center = y_pos + Game.ballSize / 2
 
         local y_diff = ball_center - player_center
-        local y_refract = y_diff / (player_height / 2)
+        local x_refract = ply_x_vel * 0.2
 
-        ball:SetVelocity(-x_vel, y_vel + y_refract)
+        ball:SetPosition(x_pos, player_y - Game.ballSize)
+        ball:SetVelocity(x_vel + x_refract, -y_vel)
     end
 end

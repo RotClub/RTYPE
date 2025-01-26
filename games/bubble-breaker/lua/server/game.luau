@@ -96,7 +96,9 @@ function shoot(ply)
     x = x + Game.playersSize.x / 2
     y = y - Game.playersSize.y / 2
     local id = generateUUID()
-    generateBall(x, y, id)
+    local ball = generateBall(x, y, id)
+    local ply_x, ply_y = ply.node:GetVelocity()
+    ball:SetVelocity(ply_x / 2, -Game.ballSpeed)
 end
 
 function broadcastBallsPosition()

@@ -20,7 +20,12 @@ hook.Add("Tick", "main", function(delta)
         handleShooting(paddles[i], delta)
     end
     for k, ball in pairs(balls) do
-        ballWallBounce(ball)
+        ballWallBounce(ball, k)
+        for i = 1, #paddles do
+            if paddles[i].bound_player then
+                ballPlayerBounce(ball, paddles[i].node)
+            end
+        end
     end
     broadcastBallsPosition()
 end)

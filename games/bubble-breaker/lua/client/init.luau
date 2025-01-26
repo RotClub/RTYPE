@@ -30,6 +30,7 @@ hook.Add("Tick", "main", function(delta)
     if localPlayer.node then
         playerMovement(localPlayer.node, dt, 65, 68)
         for k, ball in pairs(balls) do
+            if not ball then continue end
             ball:GetChild("ball_sprite"):SetRotation(ball:GetChild("ball_sprite"):GetRotation() + 0.1)
         end
     end
@@ -83,8 +84,14 @@ net.Receive("BallSpawn", function(len, ply)
     local id = net.ReadString()
     local x_pos = net.ReadFloat()
     local y_pos = net.ReadFloat()
-    info("Ball spawned at " .. x_pos .. ", " .. y_pos)
     generateBall(x_pos, y_pos, id)
+end)
+
+net.Receive("BallDespawn", function(len, ply)
+    local id = net.ReadString()
+    balls[id]:Destroy()
+    balls[id] = nil
+    table.remove(balls, table.find(balls, id))
 end)
 
 net.Receive("BallMovement", function(len, ply)
