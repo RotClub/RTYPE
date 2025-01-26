@@ -18,8 +18,11 @@ end
 
 function generateBall(x: number, y: number, id: string)
     ball:SetPosition(Game.windowSize.x / 2, Game.windowSize.y / 2)
-    local x_vel, y_vel = generateBallVelocity()
-    local ball = ball:CreateChild("RigidBody2D", "ball-" .. id, x, y, Game.ballSize, Game.ballSize, x_vel, y_vel)
+    local x_vel, y_vel = 0, 0
+    if SERVER then
+        x_vel, y_vel = generateBallVelocity()
+    end
+    local ball = ball:CreateChild("RigidBody2D", "ball-" .. id, 0, 0, Game.ballSize, Game.ballSize, x_vel, y_vel)
     if CLIENT then
         local ball_sprite = ball:CreateChild("Sprite2D", "ball_sprite", "assets/soap.png")
         ball_sprite:SetSize(Game.ballSize, Game.ballSize)
