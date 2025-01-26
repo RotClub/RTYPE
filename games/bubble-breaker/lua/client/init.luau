@@ -7,11 +7,11 @@ Game.defaultReferencePoint = root:CreateChild("Node2D", "defaultReferencePoint")
 Game.defaultReferencePoint:SetPosition(0, 0)
 
 local parallaxLayers = {
-    root:CreateChild("Parallax", "parallaxBg1", "assets/clouds/1.png", 1, Game.defaultReferencePoint),
-    root:CreateChild("Parallax", "parallaxBg2", "assets/clouds/2.png", 1.5, Game.defaultReferencePoint),
-    root:CreateChild("Parallax", "parallaxBg3", "assets/clouds/3.png", 2, Game.defaultReferencePoint),
-    root:CreateChild("Parallax", "parallaxBg4", "assets/clouds/4.png", 2.5, Game.defaultReferencePoint),
-    root:CreateChild("Parallax", "parallaxBg5", "assets/clouds/5.png", 3, Game.defaultReferencePoint)
+    root:CreateChild("Parallax", "parallaxBg1", "assets/clouds/1v2.png", 1, Game.defaultReferencePoint),
+    root:CreateChild("Parallax", "parallaxBg2", "assets/clouds/2v2.png", 1.5, Game.defaultReferencePoint),
+    root:CreateChild("Parallax", "parallaxBg3", "assets/clouds/3v2.png", 2, Game.defaultReferencePoint),
+    root:CreateChild("Parallax", "parallaxBg4", "assets/clouds/4v2.png", 2.5, Game.defaultReferencePoint),
+    root:CreateChild("Parallax", "parallaxBg5", "assets/clouds/5v2.png", 3, Game.defaultReferencePoint)
 }
 
 Game.localId = nil
