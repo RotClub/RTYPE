@@ -10,6 +10,8 @@ brickLine(16, 0, 11)
 brickLine(16, 32, 11)
 brickLine(16, 64, 11)
 
+generateBall()
+
 hook.Add("Tick", "main", function(delta)
     delta = delta / 1_000_000_000
     for i = 1, #paddles do

@@ -72,4 +72,6 @@ function syncNewPlayer(ply: string)
             net.WriteFloat(y)
         net.SendToClient(ply)
     end
+    net.Start("BallSpawn")
+    net.SendToClient(ply)
 end

@@ -45,4 +45,7 @@ end
 net.CreatePacket("BrickSpawn", true)
 net.CreatePacket("BrickDespawn", true)
 
+net.CreatePacket("BallSpawn", true)
+net.CreatePacket("BallDespawn", true)
+
 net.CreatePacket("ScoreUpdate", true)

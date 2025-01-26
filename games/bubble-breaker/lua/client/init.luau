@@ -1,6 +1,7 @@
 include("client/player.luau")
 include("common/game.luau")
 include("common/brick.luau")
+include("common/ball.luau")
 
 Game.defaultReferencePoint = root:CreateChild("Node2D", "defaultReferencePoint")
 Game.defaultReferencePoint:SetPosition(0, 0)
@@ -76,9 +77,14 @@ net.Receive("PaddleMovement", function(len, ply)
 end)
 
 net.Receive("BrickSpawn", function(len, ply)
-    info("Brick spawned")
     local brick_nb = net.ReadInt()
     local x_pos = net.ReadFloat()
     local y_pos = net.ReadFloat()
     bricks[brick_nb] = generateBrick(x_pos, y_pos, brick_nb)
+end)
+
+net.Receive("BallSpawn", function(len, ply)
+    local x_pos = net.ReadFloat()
+    local y_pos = net.ReadFloat()
+    generateBall()
 end)
