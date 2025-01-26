@@ -17,6 +17,18 @@ function deletePlayer(player)
     player:Destroy()
 end
 
+function sendAction(action, state)
+    if state then
+        net.Start("ActionStart")
+            net.WriteInt(action)
+        net.SendToServer()
+    else
+        net.Start("ActionEnd")
+            net.WriteInt(action)
+        net.SendToServer()
+    end
+end
+
 function playerMovement(player, dt, leftKey, rightKey)
     local vx, yx = player:GetVelocity()
     if IsKeyPressed(leftKey) then
@@ -29,12 +41,6 @@ function playerMovement(player, dt, leftKey, rightKey)
         player:SetVelocity(0.0, yx)
     end
 
-    if IsKeyPressed(leftKey) then
-        vx = -Game.playerSpeed
-    end
-    if IsKeyPressed(rightKey) then
-        vx = Game.playerSpeed
-    end
     if IsKeyJustPressed(leftKey) then
         sendAction(1, true)
     end

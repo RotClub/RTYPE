@@ -27,7 +27,7 @@ end
 
 function spawnPaddle(id: number, ply: string)
     paddles[id].bound_player = ply
-    paddles[id].node = root:CreateChild("RigidBody2D", "Paddle" .. id, 300, 500, Game.playersSize.x, Game.playersSize.y, 0, 0)
+    paddles[id].node = root:CreateChild("RigidBody2D", "Paddle" .. id, 300, 565, Game.playersSize.x, Game.playersSize.y, 0, 0)
 end
 
 function despawnPaddle(id: number)
@@ -53,7 +53,6 @@ function updatePaddleVelocity(paddle, dt)
     if not paddle.actions.MOVE_LEFT and not paddle.actions.MOVE_RIGHT then
         paddle.node:SetVelocity(0.0, vy)
     end
-    print(paddle.node:GetVelocity())
 end
 
 function syncNewPlayer(ply: string)
