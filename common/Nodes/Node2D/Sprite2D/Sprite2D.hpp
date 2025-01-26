@@ -22,12 +22,19 @@ class Sprite2D : public Node2D
         Sprite2D &SetSource(const Types::Rect2 &source);
         Sprite2D &SetSize(const Types::Vector2 &size);
 
+        void setRotation(const float rotation) { _rotation = rotation; }
+        [[nodiscard]] float getRotation() const { return _rotation; }
+
+        void setOrigin(const Types::Vector2 &origin) { _source.origin = origin; }
+        [[nodiscard]] Types::Vector2 getOrigin() const { return _source.origin; }
+
         void Draw() override;
 
     private:
         std::string _texture;
         Types::Vector2 _size;
         Types::Rect2 _source;
+        float _rotation;
 };
 
 #endif /* !SPRITE2D_HPP_ */

@@ -1,0 +1,7 @@
+{
+    "name": "Bubble Breaker",
+    "description": "Game made for the Global Game Jam 2025, the theme was 'Bubbles'",
+    "max_players": 2,
+    "authors": ["Kapsulon", "IceBird"],
+    "version": "1.0"
+}
