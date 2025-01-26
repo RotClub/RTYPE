@@ -19,6 +19,7 @@ hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
     if localPlayer.id ~= -1 then
         playerMovement(localPlayer.node, dt, keymap.key_left, keymap.key_right)
+        print(localPlayer.node:GetGlobalPosition())
     end
 end)
 
