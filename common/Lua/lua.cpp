@@ -1009,6 +1009,21 @@ LUA_API int luau_Sprite2DSetSource(lua_State *L)
     return 0;
 }
 
+LUA_API int luau_Sprite2DSetRotation(lua_State *L)
+{
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    double rotation = luaL_checknumber(L, 2);
+    sprite->setRotation(static_cast<float>(rotation));
+    return 0;
+}
+
+LUA_API int luau_Sprite2DGetRotation(lua_State *L)
+{
+    Sprite2D *sprite = *static_cast<Sprite2D **>(luaL_checkudata(L, 1, "Sprite2DMetaTable"));
+    lua_pushnumber(L, sprite->getRotation());
+    return 1;
+}
+
 /** Sprite2D functions **/
 
 /** Collide functions **/
@@ -1660,6 +1675,8 @@ void luau_ExposeFunctions(lua_State *L)
                                             {"SetSize", luau_Sprite2DSetSize},
                                             {"SetTexture", luau_Sprite2DSetTexture},
                                             {"SetSource", luau_Sprite2DSetSource},
+                                            {"SetRotation", luau_Sprite2DSetRotation},
+                                            {"GetRotation", luau_Sprite2DGetRotation},
                                             {"Destroy", luau_Sprite2DDestroy},
                                             {"__gc", lua_gcSprite2D},
                                             {nullptr, nullptr}};

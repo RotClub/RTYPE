@@ -16,13 +16,6 @@ local parallaxLayers = {
 
 Game.localId = nil
 
-function setParallaxReference(ref)
-    for i = 1, #parallaxLayers do
-        parallaxLayers[i]:SetReferenceNode(ref)
-        debug("Set parallax reference to " .. ref:GetName())
-    end
-end
-
 localPlayer = {
     id = -1,
     node = nil
@@ -36,6 +29,9 @@ hook.Add("Tick", "main", function(delta)
     local dt = delta / 1000000000
     if localPlayer.node then
         playerMovement(localPlayer.node, dt, 65, 68)
+        for k, balls in pairs(balls) do
+            balls:GetChild("ball_sprite"):SetRotation(balls:GetChild("ball_sprite"):GetRotation() + 0.1)
+        end
     end
 end)
 
@@ -77,7 +73,6 @@ net.Receive("PaddleMovement", function(len, ply)
 end)
 
 net.Receive("BrickSpawn", function(len, ply)
-    info("Brick spawned")
     local brick_nb = net.ReadString()
     local x_pos = net.ReadFloat()
     local y_pos = net.ReadFloat()
@@ -85,5 +80,8 @@ net.Receive("BrickSpawn", function(len, ply)
 end)
 
 net.Receive("BallSpawn", function(len, ply)
-    generateBall()
+    local id = net.ReadString()
+    local x_pos = net.ReadFloat()
+    local y_pos = net.ReadFloat()
+    generateBall(x_pos, y_pos, id)
 end)

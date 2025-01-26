@@ -1,5 +1,6 @@
 include("common/game.luau")
 include("common/brick.luau")
+include("common/ball.luau")
 
 function defaultPaddle(id: number)
     return {
@@ -14,7 +15,8 @@ function defaultPaddle(id: number)
             SHOOT = false
         },
         buffered_shot = false,
-        shoot_cd = 0.0
+        shoot_cd = 0.0,
+        soaps = 1
     }
 end
 
@@ -72,6 +74,26 @@ function syncNewPlayer(ply: string)
             net.WriteFloat(y)
         net.SendToClient(ply)
     end
-    net.Start("BallSpawn")
-    net.SendToClient(ply)
+end
+
+function handleShooting(ply, delta)
+    if ply.buffered_shot then
+        if ply.shoot_cd <= 0.0 then
+            ply.shoot_cd = SHOOT_CD
+            ply.buffered_shot = false
+            shoot(ply)
+        end
+    end
+    if ply.shoot_cd > 0.0 then
+        ply.shoot_cd = ply.shoot_cd - delta
+    end
+end
+
+function shoot(ply)
+    if ply.soaps <= 0 then return end
+    ply.soaps = ply.soaps - 1
+    local x, y = ply.node:GetPosition()
+    x = x + Game.playersSize.x / 2
+    local id = generateUUID()
+    generateBall(x, y, id)
 end

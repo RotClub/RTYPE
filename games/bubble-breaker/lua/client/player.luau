@@ -53,6 +53,10 @@ function playerMovement(player, dt, leftKey, rightKey)
     if IsKeyReleased(rightKey) then
         sendAction(2, false)
     end
+    if IsKeyJustPressed(74) then
+        sendAction(5, true)
+        sendAction(5, false)
+    end
 end
 
 function correctPosition(entity, x: number, y: number)
